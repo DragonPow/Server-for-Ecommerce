@@ -2,7 +2,12 @@ module github.com/DragonPow/Server-for-Ecommerce
 
 go 1.18
 
-require google.golang.org/grpc v1.50.0
+replace google.golang.org/grpc => google.golang.org/grpc v1.36.0
+
+require (
+	github.com/grpc-ecosystem/grpc-gateway v1.16.0
+	google.golang.org/grpc v1.48.0
+)
 
 require (
 	github.com/golang/protobuf v1.5.2 // indirect

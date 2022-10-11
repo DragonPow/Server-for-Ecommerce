@@ -17,6 +17,17 @@ type grpcConfig struct {
 	MaxConcurrentStream uint32
 }
 
+func createDefaultGrpcConfig() *grpcConfig {
+	return &grpcConfig{
+		Addr: Listen{
+			Host: "0.0.0.0",
+			Port: 10443,
+		},
+		ServerOption:        nil,
+		MaxConcurrentStream: 1000,
+	}
+}
+
 func (c grpcConfig) ServerOptions() []grpc.ServerOption {
 	return append([]grpc.ServerOption{
 		grpc.MaxConcurrentStreams(c.MaxConcurrentStream),

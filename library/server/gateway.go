@@ -2,6 +2,9 @@ package server
 
 import (
 	"context"
+	"fmt"
+	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	"google.golang.org/grpc"
 	"log"
 	"net"
 	"net/http"
@@ -16,6 +19,7 @@ type gatewayServer struct {
 type gatewayConfig struct {
 	Addr           Listen
 	ServerConfig   *HTTPServerConfig
+	MuxOptions     []runtime.ServeMuxOption
 	ServerHandlers []HTTPServerHandler
 }
 
@@ -34,7 +38,42 @@ func createDefaultGatewayConfig() *gatewayConfig {
 		},
 		ServerConfig:   nil,
 		ServerHandlers: nil,
+		MuxOptions: []runtime.ServeMuxOption{
+			runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{EmitDefaults: true}),
+			runtime.WithProtoErrorHandler(runtime.DefaultHTTPProtoErrorHandler),
+		},
 	}
+}
+
+func newGatewayServer(c *gatewayConfig, conn *grpc.ClientConn, servers []ServiceServer) (*gatewayServer, error) {
+	mux := runtime.NewServeMux(c.MuxOptions...)
+	httpMux := http.NewServeMux()
+
+	for _, handler := range c.ServerHandlers {
+		handler(httpMux)
+	}
+	httpMux.Handle("/", mux)
+
+	server := &http.Server{
+		Addr:           c.Addr.String(),
+		Handler:        httpMux,
+		ReadTimeout:    c.ServerConfig.ReadTimeout,
+		WriteTimeout:   c.ServerConfig.WriteTimeout,
+		MaxHeaderBytes: c.ServerConfig.MaxHeaderBytes,
+		ConnState:      c.ServerConfig.ConnState,
+	}
+
+	for _, server := range servers {
+		err := server.RegisterWithHandler(context.Background(), mux, conn)
+		if err != nil {
+			return nil, fmt.Errorf("Fail to register handler, %v\n", err)
+		}
+	}
+
+	return &gatewayServer{
+		server: server,
+		config: c,
+	}, nil
 }
 
 func (s *gatewayServer) Serve() error {
