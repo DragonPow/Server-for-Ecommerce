@@ -9,7 +9,7 @@ import (
 
 type Server struct {
 	grpcServer *grpcServer
-	gateServer *gatewayServer
+	gatewayServer *gatewayServer
 	config     *Config
 }
 
@@ -33,7 +33,7 @@ func New(opts ...Option) (*Server, error) {
 
 	return &Server{
 		grpcServer: grpcServer,
-		gateServer: gatewayServer,
+		gatewayServer: gatewayServer,
 		config:     c,
 	}, nil
 }
