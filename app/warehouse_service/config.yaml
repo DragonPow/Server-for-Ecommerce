@@ -6,10 +6,10 @@ SERVER:
 
 MIGRATION_FOLDER: file://sql/migrations
 
-WMS_ODOO_SERVICE_DB:
+WAREHOUSE_SERVICE_DB:
   HOST: 127.0.0.1
   PORT: 5432
   USERNAME: vungocthach
   PASSWORD: 111200
-  DATABASE: warehouse_service
+  DATABASE: ecommerce_warehouse
   OPTIONS: ?sslmode=disable

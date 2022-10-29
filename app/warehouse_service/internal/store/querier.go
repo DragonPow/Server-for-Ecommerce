@@ -9,7 +9,8 @@ import (
 )
 
 type Querier interface {
-	getImportBills(ctx context.Context) ([]ImportBill, error)
+	getImportBillDetails(ctx context.Context, arg getImportBillDetailsParams) ([]ImportBillDetail, error)
+	getImportBills(ctx context.Context, ids []int64) ([]ImportBill, error)
 }
 
 var _ Querier = (*Queries)(nil)

@@ -34,4 +34,4 @@ proto-warehouse:
     		--validate_out=lang=go:. \
     		--grpc-gateway_out=allow_repeated_fields_in_body=true:. \
     		--ecode_out=. \
-            app/warehouse_service/api/api.proto
+            app/warehouse_service/api/*.proto

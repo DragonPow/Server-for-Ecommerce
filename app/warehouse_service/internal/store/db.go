@@ -24,6 +24,9 @@ func New(db DBTX) *Queries {
 func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	q := Queries{db: db}
 	var err error
+	if q.getImportBillDetailsStmt, err = db.PrepareContext(ctx, getImportBillDetails); err != nil {
+		return nil, fmt.Errorf("error preparing query getImportBillDetails: %w", err)
+	}
 	if q.getImportBillsStmt, err = db.PrepareContext(ctx, getImportBills); err != nil {
 		return nil, fmt.Errorf("error preparing query getImportBills: %w", err)
 	}
@@ -32,6 +35,11 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 
 func (q *Queries) Close() error {
 	var err error
+	if q.getImportBillDetailsStmt != nil {
+		if cerr := q.getImportBillDetailsStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getImportBillDetailsStmt: %w", cerr)
+		}
+	}
 	if q.getImportBillsStmt != nil {
 		if cerr := q.getImportBillsStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getImportBillsStmt: %w", cerr)
@@ -74,15 +82,17 @@ func (q *Queries) queryRow(ctx context.Context, stmt *sql.Stmt, query string, ar
 }
 
 type Queries struct {
-	db                 DBTX
-	tx                 *sql.Tx
-	getImportBillsStmt *sql.Stmt
+	db                       DBTX
+	tx                       *sql.Tx
+	getImportBillDetailsStmt *sql.Stmt
+	getImportBillsStmt       *sql.Stmt
 }
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	return &Queries{
-		db:                 tx,
-		tx:                 tx,
-		getImportBillsStmt: q.getImportBillsStmt,
+		db:                       tx,
+		tx:                       tx,
+		getImportBillDetailsStmt: q.getImportBillDetailsStmt,
+		getImportBillsStmt:       q.getImportBillsStmt,
 	}
 }

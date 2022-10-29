@@ -2,11 +2,11 @@ package migrate
 
 import (
 	"fmt"
+	log "github.com/DragonPow/Server-for-Ecommerce/library/log"
 	migrateV4 "github.com/golang-migrate/migrate/v4"
 	"github.com/urfave/cli/v2"
 	"go.uber.org/zap"
 	"io/ioutil"
-	"log"
 	"strconv"
 	"strings"
 	"time"
@@ -19,10 +19,7 @@ import (
 
 func CliCommand(sourceURL string, databaseURL string) []*cli.Command {
 	// Migration should always run on development mode
-	logger, err := zap.NewDevelopment()
-	if err != nil {
-		panic(err)
-	}
+	logger := log.MustBuildLogR()
 
 	return []*cli.Command{
 		{
@@ -31,12 +28,12 @@ func CliCommand(sourceURL string, databaseURL string) []*cli.Command {
 			Action: func(c *cli.Context) error {
 				m, err := migrateV4.New(sourceURL, databaseURL)
 				if err != nil {
-					log.Fatal("Error create migration", zap.Error(err))
+					logger.Error(err, "Error create migration")
 				}
 
 				logger.Info("migration up")
 				if err := m.Up(); err != nil && err != migrateV4.ErrNoChange {
-					logger.Fatal(err.Error())
+					logger.Error(err, "Migrate up fail")
 				}
 				return err
 			},
@@ -47,17 +44,17 @@ func CliCommand(sourceURL string, databaseURL string) []*cli.Command {
 			Action: func(c *cli.Context) error {
 				m, err := migrateV4.New(sourceURL, databaseURL)
 				if err != nil {
-					logger.Fatal("Error create migration", zap.Error(err))
+					logger.Error(err, "Error create migration")
 				}
 
 				down, err := strconv.Atoi(c.Args().Get(0))
 				if err != nil {
-					logger.Fatal("rev should be a number", zap.Error(err))
+					logger.Error(err, "rev should be a number")
 				}
 
 				logger.Info("migration down", zap.Int("down", -down))
 				if err := m.Steps(-down); err != nil {
-					logger.Fatal(err.Error())
+					logger.Error(err, "Migrate down fail")
 				}
 				return err
 			},
@@ -79,10 +76,10 @@ func CliCommand(sourceURL string, databaseURL string) []*cli.Command {
 				logger.Info("down script", zap.String("down", up))
 
 				if err := ioutil.WriteFile(up, []byte{}, 0600); err != nil {
-					logger.Fatal("Create migration up error", zap.Error(err))
+					logger.Error(err, "Create migration up error")
 				}
 				if err := ioutil.WriteFile(down, []byte{}, 0600); err != nil {
-					logger.Fatal("Create migration down error", zap.Error(err))
+					logger.Error(err, "Create migration down error")
 				}
 				return nil
 			},

@@ -33,10 +33,10 @@ var (
 	_ = anypb.Any{}
 )
 
-// Validate checks the field values on CreateImportRequestRequest with the
-// rules defined in the proto definition for this message. If any rules are
+// Validate checks the field values on CreateImportBillRequest with the rules
+// defined in the proto definition for this message. If any rules are
 // violated, an error is returned.
-func (m *CreateImportRequestRequest) Validate() error {
+func (m *CreateImportBillRequest) Validate() error {
 	if m == nil {
 		return nil
 	}
@@ -50,9 +50,9 @@ func (m *CreateImportRequestRequest) Validate() error {
 	return nil
 }
 
-// CreateImportRequestRequestValidationError is the validation error returned
-// by CreateImportRequestRequest.Validate if the designated constraints aren't met.
-type CreateImportRequestRequestValidationError struct {
+// CreateImportBillRequestValidationError is the validation error returned by
+// CreateImportBillRequest.Validate if the designated constraints aren't met.
+type CreateImportBillRequestValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -60,24 +60,24 @@ type CreateImportRequestRequestValidationError struct {
 }
 
 // Field function returns field value.
-func (e CreateImportRequestRequestValidationError) Field() string { return e.field }
+func (e CreateImportBillRequestValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e CreateImportRequestRequestValidationError) Reason() string { return e.reason }
+func (e CreateImportBillRequestValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e CreateImportRequestRequestValidationError) Cause() error { return e.cause }
+func (e CreateImportBillRequestValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e CreateImportRequestRequestValidationError) Key() bool { return e.key }
+func (e CreateImportBillRequestValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e CreateImportRequestRequestValidationError) ErrorName() string {
-	return "CreateImportRequestRequestValidationError"
+func (e CreateImportBillRequestValidationError) ErrorName() string {
+	return "CreateImportBillRequestValidationError"
 }
 
 // Error satisfies the builtin error interface
-func (e CreateImportRequestRequestValidationError) Error() string {
+func (e CreateImportBillRequestValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -89,14 +89,14 @@ func (e CreateImportRequestRequestValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sCreateImportRequestRequest.%s: %s%s",
+		"invalid %sCreateImportBillRequest.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = CreateImportRequestRequestValidationError{}
+var _ error = CreateImportBillRequestValidationError{}
 
 var _ interface {
 	Field() string
@@ -104,12 +104,12 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = CreateImportRequestRequestValidationError{}
+} = CreateImportBillRequestValidationError{}
 
-// Validate checks the field values on CreateImportRequestResponse with the
-// rules defined in the proto definition for this message. If any rules are
+// Validate checks the field values on CreateImportBillResponse with the rules
+// defined in the proto definition for this message. If any rules are
 // violated, an error is returned.
-func (m *CreateImportRequestResponse) Validate() error {
+func (m *CreateImportBillResponse) Validate() error {
 	if m == nil {
 		return nil
 	}
@@ -120,7 +120,7 @@ func (m *CreateImportRequestResponse) Validate() error {
 
 	if v, ok := interface{}(m.GetData()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
-			return CreateImportRequestResponseValidationError{
+			return CreateImportBillResponseValidationError{
 				field:  "Data",
 				reason: "embedded message failed validation",
 				cause:  err,
@@ -131,10 +131,9 @@ func (m *CreateImportRequestResponse) Validate() error {
 	return nil
 }
 
-// CreateImportRequestResponseValidationError is the validation error returned
-// by CreateImportRequestResponse.Validate if the designated constraints
-// aren't met.
-type CreateImportRequestResponseValidationError struct {
+// CreateImportBillResponseValidationError is the validation error returned by
+// CreateImportBillResponse.Validate if the designated constraints aren't met.
+type CreateImportBillResponseValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -142,24 +141,24 @@ type CreateImportRequestResponseValidationError struct {
 }
 
 // Field function returns field value.
-func (e CreateImportRequestResponseValidationError) Field() string { return e.field }
+func (e CreateImportBillResponseValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e CreateImportRequestResponseValidationError) Reason() string { return e.reason }
+func (e CreateImportBillResponseValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e CreateImportRequestResponseValidationError) Cause() error { return e.cause }
+func (e CreateImportBillResponseValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e CreateImportRequestResponseValidationError) Key() bool { return e.key }
+func (e CreateImportBillResponseValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e CreateImportRequestResponseValidationError) ErrorName() string {
-	return "CreateImportRequestResponseValidationError"
+func (e CreateImportBillResponseValidationError) ErrorName() string {
+	return "CreateImportBillResponseValidationError"
 }
 
 // Error satisfies the builtin error interface
-func (e CreateImportRequestResponseValidationError) Error() string {
+func (e CreateImportBillResponseValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -171,14 +170,14 @@ func (e CreateImportRequestResponseValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sCreateImportRequestResponse.%s: %s%s",
+		"invalid %sCreateImportBillResponse.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = CreateImportRequestResponseValidationError{}
+var _ error = CreateImportBillResponseValidationError{}
 
 var _ interface {
 	Field() string
@@ -186,25 +185,29 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = CreateImportRequestResponseValidationError{}
+} = CreateImportBillResponseValidationError{}
 
-// Validate checks the field values on CreateImportRequestResponse_Data with
-// the rules defined in the proto definition for this message. If any rules
-// are violated, an error is returned.
-func (m *CreateImportRequestResponse_Data) Validate() error {
+// Validate checks the field values on GetImportBillRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, an error is returned.
+func (m *GetImportBillRequest) Validate() error {
 	if m == nil {
 		return nil
 	}
 
-	// no validation rules for ImportId
+	if m.GetImportId() <= 0 {
+		return GetImportBillRequestValidationError{
+			field:  "ImportId",
+			reason: "value must be greater than 0",
+		}
+	}
 
 	return nil
 }
 
-// CreateImportRequestResponse_DataValidationError is the validation error
-// returned by CreateImportRequestResponse_Data.Validate if the designated
-// constraints aren't met.
-type CreateImportRequestResponse_DataValidationError struct {
+// GetImportBillRequestValidationError is the validation error returned by
+// GetImportBillRequest.Validate if the designated constraints aren't met.
+type GetImportBillRequestValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -212,24 +215,24 @@ type CreateImportRequestResponse_DataValidationError struct {
 }
 
 // Field function returns field value.
-func (e CreateImportRequestResponse_DataValidationError) Field() string { return e.field }
+func (e GetImportBillRequestValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e CreateImportRequestResponse_DataValidationError) Reason() string { return e.reason }
+func (e GetImportBillRequestValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e CreateImportRequestResponse_DataValidationError) Cause() error { return e.cause }
+func (e GetImportBillRequestValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e CreateImportRequestResponse_DataValidationError) Key() bool { return e.key }
+func (e GetImportBillRequestValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e CreateImportRequestResponse_DataValidationError) ErrorName() string {
-	return "CreateImportRequestResponse_DataValidationError"
+func (e GetImportBillRequestValidationError) ErrorName() string {
+	return "GetImportBillRequestValidationError"
 }
 
 // Error satisfies the builtin error interface
-func (e CreateImportRequestResponse_DataValidationError) Error() string {
+func (e GetImportBillRequestValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -241,14 +244,14 @@ func (e CreateImportRequestResponse_DataValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sCreateImportRequestResponse_Data.%s: %s%s",
+		"invalid %sGetImportBillRequest.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = CreateImportRequestResponse_DataValidationError{}
+var _ error = GetImportBillRequestValidationError{}
 
 var _ interface {
 	Field() string
@@ -256,4 +259,85 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = CreateImportRequestResponse_DataValidationError{}
+} = GetImportBillRequestValidationError{}
+
+// Validate checks the field values on GetImportBillResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, an error is returned.
+func (m *GetImportBillResponse) Validate() error {
+	if m == nil {
+		return nil
+	}
+
+	// no validation rules for Code
+
+	// no validation rules for Message
+
+	if v, ok := interface{}(m.GetData()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return GetImportBillResponseValidationError{
+				field:  "Data",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	return nil
+}
+
+// GetImportBillResponseValidationError is the validation error returned by
+// GetImportBillResponse.Validate if the designated constraints aren't met.
+type GetImportBillResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetImportBillResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetImportBillResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetImportBillResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetImportBillResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetImportBillResponseValidationError) ErrorName() string {
+	return "GetImportBillResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetImportBillResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetImportBillResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetImportBillResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetImportBillResponseValidationError{}

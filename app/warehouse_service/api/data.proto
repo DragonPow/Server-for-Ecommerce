@@ -1,0 +1,41 @@
+syntax = "proto3";
+package app.warehouse_service.api;
+option go_package = "app/warehouse_service/api";
+
+message CreateImportBillResponseData {
+  // ImportId
+  int64 import_id = 1;
+}
+
+message GetImportBillResponseData {
+  // Item
+  GetImportBillItem item = 1;
+}
+
+message GetImportBillItem {
+  // Id
+  int64 id = 1;
+  // Code
+  string code = 2;
+  // LastActionById
+  int64 last_action_by_id = 3;
+  // LastActionByName
+  string last_action_by_name = 4;
+  // CreateById
+  int64 create_by_id = 5;
+  // CreateByName
+  string create_by_name = 6;
+  // ItemDetails
+  repeated GetImportBillItemDetail item_details = 7;
+}
+
+message GetImportBillItemDetail {
+  // ProductId
+  int64 product_id = 1;
+  // ProductName
+  string product_name = 2;
+  // UomName
+  string uom_name = 3;
+  // Quantity
+  double quantity = 4;
+}

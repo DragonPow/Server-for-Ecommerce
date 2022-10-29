@@ -10,7 +10,7 @@ import (
 
 type ImportBill struct {
 	ID                int64          `json:"id"`
-	Code              sql.NullString `json:"code"`
+	Code              string         `json:"code"`
 	Note              sql.NullString `json:"note"`
 	ContactPersonName sql.NullString `json:"contact_person_name"`
 	ContactEmail      sql.NullString `json:"contact_email"`
@@ -22,10 +22,10 @@ type ImportBill struct {
 }
 
 type ImportBillDetail struct {
-	ID         int64           `json:"id"`
-	ImportID   int64           `json:"import_id"`
-	ProductID  int64           `json:"product_id"`
-	Quantity   sql.NullFloat64 `json:"quantity"`
-	CreateDate sql.NullTime    `json:"create_date"`
-	WriteDate  sql.NullTime    `json:"write_date"`
+	ID         int64        `json:"id"`
+	ImportID   int64        `json:"import_id"`
+	ProductID  int64        `json:"product_id"`
+	Quantity   float64      `json:"quantity"`
+	CreateDate sql.NullTime `json:"create_date"`
+	WriteDate  sql.NullTime `json:"write_date"`
 }

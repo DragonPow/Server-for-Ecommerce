@@ -53,7 +53,7 @@ func Load() (*Config, error) {
 func loadDefaultConfig() *Config {
 	return &Config{
 		Server:             config.DefaultServerConfig(),
-		MigrationFolder:    "file://app/warehouse/warehouse_service/sql/migrations",
+		MigrationFolder:    "file://app/warehouse_service/sql/migrations",
 		WarehouseServiceDB: database.PostgresSQLDefaultConfig(),
 	}
 }
