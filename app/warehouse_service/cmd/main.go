@@ -1,7 +1,9 @@
-package cmd
+package main
 
 import (
 	"github.com/DragonPow/Server-for-Ecommerce/app/warehouse_service/config"
+	"github.com/DragonPow/Server-for-Ecommerce/app/warehouse_service/internal/service"
+	"github.com/DragonPow/Server-for-Ecommerce/library/server"
 	"github.com/urfave/cli/v2"
 	"log"
 	"os"
@@ -18,7 +20,7 @@ func main() {
 }
 
 func run(args []string) (err error) {
-	cfg, err := config.Load()
+	cfg, err = config.Load()
 	if err != nil {
 		return err
 	}
@@ -39,8 +41,27 @@ func run(args []string) (err error) {
 
 func serverAction(context *cli.Context) error {
 	service, err := newService(cfg)
+	if err != nil {
+		log.Printf("Cannot init server, err = %v", err)
+		return err
+	}
+	s, err := server.New(
+		server.WithGatewayAddrListen(cfg.Server.HTTP),
+		server.WithGrpcAddrListen(cfg.Server.GRPC),
+		server.WithServiceServer(service),
+	)
+	if err != nil {
+		log.Printf("Error new server, err = %v", err)
+		return err
+	}
+
+	if err := s.Serve(); err != nil {
+		log.Printf("Error start server, err = %v", err)
+		return err
+	}
+	return nil
 }
 
-func newService(c *config.Config) (*service.Server, error) {
-
+func newService(cfg *config.Config) (*service.Service, error) {
+	return service.NewService(cfg), nil
 }

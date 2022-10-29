@@ -55,12 +55,11 @@ func newGatewayServer(c *gatewayConfig, conn *grpc.ClientConn, servers []Service
 	httpMux.Handle("/", mux)
 
 	server := &http.Server{
-		Addr:           c.Addr.String(),
-		Handler:        httpMux,
-		ReadTimeout:    c.ServerConfig.ReadTimeout,
-		WriteTimeout:   c.ServerConfig.WriteTimeout,
-		MaxHeaderBytes: c.ServerConfig.MaxHeaderBytes,
-		ConnState:      c.ServerConfig.ConnState,
+		Addr:    c.Addr.String(),
+		Handler: httpMux,
+	}
+	if cfg := c.ServerConfig; cfg != nil {
+		cfg.applyTo(server)
 	}
 
 	for _, server := range servers {
@@ -91,4 +90,11 @@ func (s *gatewayServer) Shutdown(ctx context.Context) {
 	if err != nil {
 		log.Printf("Fail shut down gateway server, %v\n", err)
 	}
+}
+
+func (c *HTTPServerConfig) applyTo(s *http.Server) {
+	s.ReadTimeout = c.ReadTimeout
+	s.WriteTimeout = c.WriteTimeout
+	s.MaxHeaderBytes = c.MaxHeaderBytes
+	s.ConnState = c.ConnState
 }
