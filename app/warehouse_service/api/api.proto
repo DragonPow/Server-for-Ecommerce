@@ -1,25 +1,34 @@
 syntax = "proto3";
-package sfe.app.warehouse_service.api;
+package app.warehouse_service.api;
 option go_package = "app/warehouse_service/api";
 import "validate/validate.proto";
 import "google/rpc/code.proto";
 import "google/api/http.proto";
 import "google/api/annotations.proto";
 import "gogoproto/gogo.proto";
+import "app/warehouse_service/api/data.proto";
+
 //-------------------------end generated header---------------------------//
 
 // WarehouseService
 service WarehouseService {
-  // CreateImportRequest
-  rpc CreateImportRequest(CreateImportRequestRequest) returns (CreateImportRequestResponse) {
+  // CreateImportBill
+  rpc CreateImportBill(CreateImportBillRequest) returns (CreateImportBillResponse) {
     option (google.api.http) = {
       post: "/api/v1/import"
       body: "*"
     };
   }
+  // GetImportBill
+  rpc GetImportBill(GetImportBillRequest) returns (GetImportBillResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/import"
+    };
+  }
 }
 
-message CreateImportRequestRequest {
+// CreateImportBillRequest
+message CreateImportBillRequest {
   // ProductId
   int64 product_id = 1;
   // Quantity
@@ -28,16 +37,28 @@ message CreateImportRequestRequest {
   int64 action_by_id = 3;
 }
 
-message  CreateImportRequestResponse {
-  // Data
-  message Data {
-    // ImportId
-    int64 import_id = 1;
-  }
+// CreateImportBillResponse
+message CreateImportBillResponse {
   // Code
   int32 code = 1;
   // Message
   string message = 2;
   // Data
-  Data data = 3;
+  CreateImportBillResponseData data = 3;
+}
+
+// GetImportBillRequest
+message GetImportBillRequest {
+  // ImportId
+  int64 import_id = 1 [(validate.rules).int64.gt = 0];
+}
+
+// GetImportBillResponse
+message  GetImportBillResponse {
+  // Code
+  int32 code = 1;
+  // Message
+  string message = 2;
+  // Data
+  GetImportBillResponseData data = 3;
 }

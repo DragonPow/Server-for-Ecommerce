@@ -22,3 +22,16 @@ update:
 
 go-doc:
 	godoc -http=:6060
+
+proto-warehouse:
+		protoc \
+    		-I . \
+    		-I vendor \
+    		-I third_party/envoyproxy \
+    		-I third_party/gogoprotobuf \
+    		-I third_party/googleapis \
+    		--gofast_out=plugins=grpc,Mgoogle/protobuf/wrappers.proto=github.com/gogo/protobuf/types:. \
+    		--validate_out=lang=go:. \
+    		--grpc-gateway_out=allow_repeated_fields_in_body=true:. \
+    		--ecode_out=. \
+            app/warehouse_service/api/*.proto

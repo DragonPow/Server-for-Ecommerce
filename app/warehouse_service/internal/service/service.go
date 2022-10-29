@@ -4,21 +4,29 @@ import (
 	"context"
 	"github.com/DragonPow/Server-for-Ecommerce/app/warehouse_service/api"
 	"github.com/DragonPow/Server-for-Ecommerce/app/warehouse_service/config"
+	"github.com/DragonPow/Server-for-Ecommerce/app/warehouse_service/internal/store"
+	"github.com/go-logr/logr"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"google.golang.org/grpc"
 	"log"
 )
 
 type Service struct {
-	cfg *config.Config
+	cfg     *config.Config
+	log     logr.Logger
+	storeDb store.StoreQuerier
 	api.UnimplementedWarehouseServiceServer
 }
 
 func NewService(
 	cfg *config.Config,
+	log logr.Logger,
+	storeDb store.StoreQuerier,
 ) *Service {
 	return &Service{
-		cfg: cfg,
+		cfg:     cfg,
+		log:     log,
+		storeDb: storeDb,
 	}
 }
 

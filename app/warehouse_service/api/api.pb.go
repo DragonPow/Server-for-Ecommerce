@@ -31,7 +31,8 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
-type CreateImportRequestRequest struct {
+// CreateImportBillRequest
+type CreateImportBillRequest struct {
 	// ProductId
 	ProductId int64 `protobuf:"varint,1,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"`
 	// Quantity
@@ -43,18 +44,18 @@ type CreateImportRequestRequest struct {
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *CreateImportRequestRequest) Reset()         { *m = CreateImportRequestRequest{} }
-func (m *CreateImportRequestRequest) String() string { return proto.CompactTextString(m) }
-func (*CreateImportRequestRequest) ProtoMessage()    {}
-func (*CreateImportRequestRequest) Descriptor() ([]byte, []int) {
+func (m *CreateImportBillRequest) Reset()         { *m = CreateImportBillRequest{} }
+func (m *CreateImportBillRequest) String() string { return proto.CompactTextString(m) }
+func (*CreateImportBillRequest) ProtoMessage()    {}
+func (*CreateImportBillRequest) Descriptor() ([]byte, []int) {
 	return fileDescriptor_c3cfa98a0a61d9eb, []int{0}
 }
-func (m *CreateImportRequestRequest) XXX_Unmarshal(b []byte) error {
+func (m *CreateImportBillRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *CreateImportRequestRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *CreateImportBillRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_CreateImportRequestRequest.Marshal(b, m, deterministic)
+		return xxx_messageInfo_CreateImportBillRequest.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -64,63 +65,64 @@ func (m *CreateImportRequestRequest) XXX_Marshal(b []byte, deterministic bool) (
 		return b[:n], nil
 	}
 }
-func (m *CreateImportRequestRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_CreateImportRequestRequest.Merge(m, src)
+func (m *CreateImportBillRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_CreateImportBillRequest.Merge(m, src)
 }
-func (m *CreateImportRequestRequest) XXX_Size() int {
+func (m *CreateImportBillRequest) XXX_Size() int {
 	return m.Size()
 }
-func (m *CreateImportRequestRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_CreateImportRequestRequest.DiscardUnknown(m)
+func (m *CreateImportBillRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_CreateImportBillRequest.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_CreateImportRequestRequest proto.InternalMessageInfo
+var xxx_messageInfo_CreateImportBillRequest proto.InternalMessageInfo
 
-func (m *CreateImportRequestRequest) GetProductId() int64 {
+func (m *CreateImportBillRequest) GetProductId() int64 {
 	if m != nil {
 		return m.ProductId
 	}
 	return 0
 }
 
-func (m *CreateImportRequestRequest) GetQuantity() float32 {
+func (m *CreateImportBillRequest) GetQuantity() float32 {
 	if m != nil {
 		return m.Quantity
 	}
 	return 0
 }
 
-func (m *CreateImportRequestRequest) GetActionById() int64 {
+func (m *CreateImportBillRequest) GetActionById() int64 {
 	if m != nil {
 		return m.ActionById
 	}
 	return 0
 }
 
-type CreateImportRequestResponse struct {
+// CreateImportBillResponse
+type CreateImportBillResponse struct {
 	// Code
 	Code int32 `protobuf:"varint,1,opt,name=code,proto3" json:"code,omitempty"`
 	// Message
 	Message string `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
 	// Data
-	Data                 *CreateImportRequestResponse_Data `protobuf:"bytes,3,opt,name=data,proto3" json:"data,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}                          `json:"-"`
-	XXX_unrecognized     []byte                            `json:"-"`
-	XXX_sizecache        int32                             `json:"-"`
+	Data                 *CreateImportBillResponseData `protobuf:"bytes,3,opt,name=data,proto3" json:"data,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}                      `json:"-"`
+	XXX_unrecognized     []byte                        `json:"-"`
+	XXX_sizecache        int32                         `json:"-"`
 }
 
-func (m *CreateImportRequestResponse) Reset()         { *m = CreateImportRequestResponse{} }
-func (m *CreateImportRequestResponse) String() string { return proto.CompactTextString(m) }
-func (*CreateImportRequestResponse) ProtoMessage()    {}
-func (*CreateImportRequestResponse) Descriptor() ([]byte, []int) {
+func (m *CreateImportBillResponse) Reset()         { *m = CreateImportBillResponse{} }
+func (m *CreateImportBillResponse) String() string { return proto.CompactTextString(m) }
+func (*CreateImportBillResponse) ProtoMessage()    {}
+func (*CreateImportBillResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_c3cfa98a0a61d9eb, []int{1}
 }
-func (m *CreateImportRequestResponse) XXX_Unmarshal(b []byte) error {
+func (m *CreateImportBillResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *CreateImportRequestResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *CreateImportBillResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_CreateImportRequestResponse.Marshal(b, m, deterministic)
+		return xxx_messageInfo_CreateImportBillResponse.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -130,41 +132,41 @@ func (m *CreateImportRequestResponse) XXX_Marshal(b []byte, deterministic bool) 
 		return b[:n], nil
 	}
 }
-func (m *CreateImportRequestResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_CreateImportRequestResponse.Merge(m, src)
+func (m *CreateImportBillResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_CreateImportBillResponse.Merge(m, src)
 }
-func (m *CreateImportRequestResponse) XXX_Size() int {
+func (m *CreateImportBillResponse) XXX_Size() int {
 	return m.Size()
 }
-func (m *CreateImportRequestResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_CreateImportRequestResponse.DiscardUnknown(m)
+func (m *CreateImportBillResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_CreateImportBillResponse.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_CreateImportRequestResponse proto.InternalMessageInfo
+var xxx_messageInfo_CreateImportBillResponse proto.InternalMessageInfo
 
-func (m *CreateImportRequestResponse) GetCode() int32 {
+func (m *CreateImportBillResponse) GetCode() int32 {
 	if m != nil {
 		return m.Code
 	}
 	return 0
 }
 
-func (m *CreateImportRequestResponse) GetMessage() string {
+func (m *CreateImportBillResponse) GetMessage() string {
 	if m != nil {
 		return m.Message
 	}
 	return ""
 }
 
-func (m *CreateImportRequestResponse) GetData() *CreateImportRequestResponse_Data {
+func (m *CreateImportBillResponse) GetData() *CreateImportBillResponseData {
 	if m != nil {
 		return m.Data
 	}
 	return nil
 }
 
-// Data
-type CreateImportRequestResponse_Data struct {
+// GetImportBillRequest
+type GetImportBillRequest struct {
 	// ImportId
 	ImportId             int64    `protobuf:"varint,1,opt,name=import_id,json=importId,proto3" json:"import_id,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
@@ -172,18 +174,18 @@ type CreateImportRequestResponse_Data struct {
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *CreateImportRequestResponse_Data) Reset()         { *m = CreateImportRequestResponse_Data{} }
-func (m *CreateImportRequestResponse_Data) String() string { return proto.CompactTextString(m) }
-func (*CreateImportRequestResponse_Data) ProtoMessage()    {}
-func (*CreateImportRequestResponse_Data) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c3cfa98a0a61d9eb, []int{1, 0}
+func (m *GetImportBillRequest) Reset()         { *m = GetImportBillRequest{} }
+func (m *GetImportBillRequest) String() string { return proto.CompactTextString(m) }
+func (*GetImportBillRequest) ProtoMessage()    {}
+func (*GetImportBillRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c3cfa98a0a61d9eb, []int{2}
 }
-func (m *CreateImportRequestResponse_Data) XXX_Unmarshal(b []byte) error {
+func (m *GetImportBillRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *CreateImportRequestResponse_Data) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *GetImportBillRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_CreateImportRequestResponse_Data.Marshal(b, m, deterministic)
+		return xxx_messageInfo_GetImportBillRequest.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -193,29 +195,97 @@ func (m *CreateImportRequestResponse_Data) XXX_Marshal(b []byte, deterministic b
 		return b[:n], nil
 	}
 }
-func (m *CreateImportRequestResponse_Data) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_CreateImportRequestResponse_Data.Merge(m, src)
+func (m *GetImportBillRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetImportBillRequest.Merge(m, src)
 }
-func (m *CreateImportRequestResponse_Data) XXX_Size() int {
+func (m *GetImportBillRequest) XXX_Size() int {
 	return m.Size()
 }
-func (m *CreateImportRequestResponse_Data) XXX_DiscardUnknown() {
-	xxx_messageInfo_CreateImportRequestResponse_Data.DiscardUnknown(m)
+func (m *GetImportBillRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetImportBillRequest.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_CreateImportRequestResponse_Data proto.InternalMessageInfo
+var xxx_messageInfo_GetImportBillRequest proto.InternalMessageInfo
 
-func (m *CreateImportRequestResponse_Data) GetImportId() int64 {
+func (m *GetImportBillRequest) GetImportId() int64 {
 	if m != nil {
 		return m.ImportId
 	}
 	return 0
 }
 
+// GetImportBillResponse
+type GetImportBillResponse struct {
+	// Code
+	Code int32 `protobuf:"varint,1,opt,name=code,proto3" json:"code,omitempty"`
+	// Message
+	Message string `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	// Data
+	Data                 *GetImportBillResponseData `protobuf:"bytes,3,opt,name=data,proto3" json:"data,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}                   `json:"-"`
+	XXX_unrecognized     []byte                     `json:"-"`
+	XXX_sizecache        int32                      `json:"-"`
+}
+
+func (m *GetImportBillResponse) Reset()         { *m = GetImportBillResponse{} }
+func (m *GetImportBillResponse) String() string { return proto.CompactTextString(m) }
+func (*GetImportBillResponse) ProtoMessage()    {}
+func (*GetImportBillResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c3cfa98a0a61d9eb, []int{3}
+}
+func (m *GetImportBillResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *GetImportBillResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_GetImportBillResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *GetImportBillResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetImportBillResponse.Merge(m, src)
+}
+func (m *GetImportBillResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *GetImportBillResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetImportBillResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetImportBillResponse proto.InternalMessageInfo
+
+func (m *GetImportBillResponse) GetCode() int32 {
+	if m != nil {
+		return m.Code
+	}
+	return 0
+}
+
+func (m *GetImportBillResponse) GetMessage() string {
+	if m != nil {
+		return m.Message
+	}
+	return ""
+}
+
+func (m *GetImportBillResponse) GetData() *GetImportBillResponseData {
+	if m != nil {
+		return m.Data
+	}
+	return nil
+}
+
 func init() {
-	proto.RegisterType((*CreateImportRequestRequest)(nil), "sfe.app.warehouse_service.api.CreateImportRequestRequest")
-	proto.RegisterType((*CreateImportRequestResponse)(nil), "sfe.app.warehouse_service.api.CreateImportRequestResponse")
-	proto.RegisterType((*CreateImportRequestResponse_Data)(nil), "sfe.app.warehouse_service.api.CreateImportRequestResponse.Data")
+	proto.RegisterType((*CreateImportBillRequest)(nil), "app.warehouse_service.api.CreateImportBillRequest")
+	proto.RegisterType((*CreateImportBillResponse)(nil), "app.warehouse_service.api.CreateImportBillResponse")
+	proto.RegisterType((*GetImportBillRequest)(nil), "app.warehouse_service.api.GetImportBillRequest")
+	proto.RegisterType((*GetImportBillResponse)(nil), "app.warehouse_service.api.GetImportBillResponse")
 }
 
 func init() {
@@ -223,32 +293,36 @@ func init() {
 }
 
 var fileDescriptor_c3cfa98a0a61d9eb = []byte{
-	// 401 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x92, 0xc1, 0x6e, 0xda, 0x40,
-	0x10, 0x86, 0xbb, 0x40, 0x5b, 0xd8, 0x56, 0x55, 0xb5, 0xb4, 0x2a, 0x98, 0x62, 0x21, 0x73, 0x41,
-	0xad, 0x64, 0xab, 0xf4, 0x54, 0x2e, 0x95, 0x68, 0x2f, 0xbe, 0x9a, 0x43, 0xa5, 0x5e, 0xd0, 0xe0,
-	0xdd, 0x9a, 0x95, 0xc0, 0xbb, 0x78, 0xd7, 0x54, 0xbe, 0xf6, 0x15, 0x7a, 0xc9, 0x1b, 0xe4, 0x25,
-	0x72, 0x8d, 0x94, 0x63, 0xa4, 0xbc, 0x40, 0x44, 0xf2, 0x20, 0x91, 0xd7, 0x38, 0x89, 0x12, 0xc2,
-	0x81, 0x83, 0xb5, 0xff, 0xfc, 0xde, 0xd9, 0x6f, 0x66, 0x34, 0xb8, 0x0f, 0x52, 0x7a, 0x7f, 0x21,
-	0x61, 0x73, 0x91, 0x2a, 0x36, 0x55, 0x2c, 0x59, 0xf3, 0x90, 0x79, 0x20, 0x79, 0xfe, 0xb9, 0x32,
-	0x11, 0x5a, 0x90, 0xae, 0xfa, 0xc3, 0x5c, 0x90, 0xd2, 0x7d, 0x74, 0xd1, 0x05, 0xc9, 0xad, 0x0f,
-	0x6b, 0x58, 0x70, 0x0a, 0x9a, 0x79, 0xa5, 0x28, 0xf2, 0xac, 0xf7, 0x91, 0x10, 0xd1, 0x82, 0x79,
-	0x89, 0x0c, 0xbd, 0x50, 0xd0, 0x87, 0x76, 0x0e, 0x99, 0x6b, 0x2d, 0xb7, 0xf6, 0xc7, 0x7b, 0x36,
-	0xc4, 0xb1, 0xd0, 0xa0, 0xb9, 0x88, 0xd5, 0xf6, 0xef, 0xbb, 0x48, 0x44, 0xc2, 0x48, 0x2f, 0x57,
-	0x85, 0xeb, 0x64, 0xd8, 0xfa, 0x91, 0x30, 0xd0, 0xcc, 0x5f, 0x4a, 0x91, 0xe8, 0x80, 0xad, 0x52,
-	0xa6, 0xca, 0x83, 0x74, 0x31, 0x96, 0x89, 0xa0, 0x69, 0xa8, 0xa7, 0x9c, 0xb6, 0x50, 0x0f, 0x0d,
-	0xaa, 0x41, 0x63, 0xeb, 0xf8, 0x94, 0x58, 0xb8, 0xbe, 0x4a, 0x21, 0xd6, 0x5c, 0x67, 0xad, 0x4a,
-	0x0f, 0x0d, 0x2a, 0xc1, 0x6d, 0x4c, 0x7a, 0xf8, 0x35, 0x84, 0x39, 0x7f, 0x3a, 0xcb, 0xf2, 0xe4,
-	0xaa, 0x49, 0xc6, 0x85, 0x37, 0xce, 0x7c, 0xea, 0x9c, 0x22, 0xdc, 0xd9, 0xc9, 0x56, 0x52, 0xc4,
-	0x8a, 0x11, 0x82, 0x6b, 0x79, 0xcf, 0x06, 0xfb, 0x3c, 0x30, 0x9a, 0xb4, 0xf0, 0xcb, 0x25, 0x53,
-	0x0a, 0x22, 0x66, 0x80, 0x8d, 0xa0, 0x0c, 0xc9, 0x04, 0xd7, 0x28, 0x68, 0x30, 0x9c, 0x57, 0xc3,
-	0xef, 0xee, 0xde, 0x89, 0xbb, 0x7b, 0xb8, 0xee, 0x4f, 0xd0, 0x10, 0x98, 0xc7, 0xac, 0x3e, 0xae,
-	0xe5, 0x11, 0xe9, 0xe0, 0x06, 0x37, 0x77, 0xef, 0xc6, 0x50, 0x2f, 0x0c, 0x9f, 0x0e, 0x4f, 0x10,
-	0x7e, 0xfb, 0xab, 0xa4, 0x4c, 0x0a, 0x08, 0x39, 0x46, 0xb8, 0xb9, 0x03, 0x42, 0xbe, 0x1d, 0x52,
-	0x98, 0x39, 0xac, 0xd1, 0xe1, 0x3d, 0x39, 0xed, 0x7f, 0x17, 0xd7, 0xff, 0x2b, 0x4d, 0xe7, 0x8d,
-	0x59, 0x8e, 0xf5, 0x17, 0xaf, 0xa8, 0x7e, 0x84, 0x3e, 0x8d, 0x3f, 0x9f, 0x6d, 0x6c, 0x74, 0xbe,
-	0xb1, 0xd1, 0xe5, 0xc6, 0x46, 0x47, 0x57, 0xf6, 0xb3, 0xdf, 0xed, 0x27, 0x57, 0x7a, 0xf6, 0xc2,
-	0x6c, 0xcd, 0xd7, 0x9b, 0x00, 0x00, 0x00, 0xff, 0xff, 0xe8, 0xe0, 0x1c, 0xdf, 0xf6, 0x02, 0x00,
+	// 465 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x53, 0x4d, 0x6b, 0x13, 0x41,
+	0x18, 0xee, 0x6c, 0xa3, 0x6d, 0x5e, 0x3f, 0x08, 0x63, 0x6b, 0x93, 0xa0, 0x21, 0x8c, 0x3d, 0x14,
+	0x85, 0x1d, 0x4d, 0x05, 0x41, 0x3c, 0xad, 0x82, 0x06, 0x6f, 0xeb, 0x41, 0xf0, 0x12, 0xde, 0xee,
+	0x0c, 0xdb, 0x81, 0x74, 0x67, 0xba, 0x33, 0x89, 0xe4, 0xea, 0xd1, 0x8b, 0x07, 0x51, 0xfc, 0x29,
+	0xfe, 0x04, 0x8f, 0x82, 0x7f, 0x40, 0xa2, 0xbf, 0xc2, 0x93, 0xec, 0x6c, 0x52, 0x6d, 0xe2, 0x4a,
+	0x9b, 0xc3, 0xc2, 0x3b, 0xcf, 0xcc, 0xb3, 0xcf, 0xc7, 0xee, 0xc0, 0x2d, 0x34, 0x86, 0xbf, 0xc6,
+	0x5c, 0x1e, 0xea, 0x91, 0x95, 0x03, 0x2b, 0xf3, 0xb1, 0x4a, 0x24, 0x47, 0xa3, 0x8a, 0x27, 0x34,
+	0xb9, 0x76, 0x9a, 0xb6, 0xd0, 0x98, 0x70, 0xe9, 0x50, 0x88, 0x46, 0xb5, 0x77, 0xc6, 0x38, 0x54,
+	0x02, 0x9d, 0xe4, 0xf3, 0xa1, 0xe4, 0xb4, 0xb7, 0x53, 0xad, 0xd3, 0xa1, 0xe4, 0xb9, 0x49, 0x78,
+	0xa2, 0xc5, 0x22, 0x5c, 0x08, 0x1c, 0x3a, 0x67, 0x66, 0xf0, 0x8d, 0xbf, 0x60, 0xcc, 0x32, 0xed,
+	0xd0, 0x29, 0x9d, 0xd9, 0xd9, 0xee, 0x56, 0xaa, 0x53, 0xed, 0x47, 0x5e, 0x4c, 0x33, 0x74, 0xb7,
+	0xda, 0xba, 0x40, 0x87, 0xe5, 0x29, 0x36, 0x86, 0x9d, 0xc7, 0xb9, 0x44, 0x27, 0xfb, 0x47, 0x46,
+	0xe7, 0x2e, 0x52, 0xc3, 0x61, 0x2c, 0x8f, 0x47, 0xd2, 0x3a, 0x7a, 0x13, 0xc0, 0xe4, 0x5a, 0x8c,
+	0x12, 0x37, 0x50, 0xa2, 0x49, 0xba, 0x64, 0x6f, 0x3d, 0xae, 0xcf, 0x90, 0xbe, 0xa0, 0x6d, 0xd8,
+	0x3c, 0x1e, 0x61, 0xe6, 0x94, 0x9b, 0x34, 0x83, 0x2e, 0xd9, 0x0b, 0xe2, 0x93, 0x35, 0xed, 0xc2,
+	0x65, 0x4c, 0x0a, 0x8b, 0x83, 0x83, 0x49, 0x41, 0x5e, 0xf7, 0x64, 0x28, 0xb1, 0x68, 0xd2, 0x17,
+	0xec, 0x03, 0x81, 0xe6, 0xb2, 0xb0, 0x35, 0x3a, 0xb3, 0x92, 0x52, 0xa8, 0x15, 0x9d, 0x78, 0xcd,
+	0x0b, 0xb1, 0x9f, 0x69, 0x13, 0x36, 0x8e, 0xa4, 0xb5, 0x98, 0x4a, 0xaf, 0x56, 0x8f, 0xe7, 0x4b,
+	0xfa, 0x1c, 0x6a, 0x45, 0x20, 0x2f, 0x72, 0xa9, 0xf7, 0x20, 0xac, 0xfc, 0x1a, 0x61, 0x95, 0xe0,
+	0x13, 0x74, 0x18, 0xfb, 0x97, 0xb0, 0x47, 0xb0, 0xf5, 0x54, 0xba, 0xe5, 0x32, 0x76, 0xa1, 0xae,
+	0x3c, 0x78, 0xd2, 0x45, 0xb4, 0xf1, 0x2b, 0xaa, 0xb1, 0xa0, 0xbb, 0x16, 0x6f, 0x96, 0x3b, 0x7d,
+	0xc1, 0xde, 0x11, 0xd8, 0x5e, 0xa0, 0xaf, 0x14, 0xe9, 0xd9, 0xa9, 0x48, 0xf7, 0xff, 0x13, 0xe9,
+	0x9f, 0x6a, 0x7f, 0xf2, 0xf4, 0x3e, 0x07, 0xd0, 0x78, 0x39, 0x67, 0xbe, 0x28, 0x89, 0xf4, 0x23,
+	0x81, 0xc6, 0x62, 0x17, 0xb4, 0x77, 0xae, 0xe2, 0x7c, 0x2b, 0xed, 0xfd, 0x15, 0xca, 0x66, 0xad,
+	0x37, 0xdf, 0x7e, 0xbe, 0x0f, 0xae, 0xb1, 0xab, 0xfe, 0x5f, 0x1c, 0xdf, 0xe3, 0x65, 0x7d, 0x0f,
+	0xc9, 0x6d, 0xfa, 0x96, 0xc0, 0x95, 0x53, 0x89, 0x28, 0x3f, 0x7b, 0xf6, 0xd2, 0xd2, 0xdd, 0xf3,
+	0x96, 0xc5, 0xae, 0x7b, 0x3f, 0x0d, 0xba, 0xe0, 0x27, 0xba, 0xf3, 0x65, 0xda, 0x21, 0x5f, 0xa7,
+	0x1d, 0xf2, 0x7d, 0xda, 0x21, 0x9f, 0x7e, 0x74, 0xd6, 0x5e, 0xb5, 0x2a, 0xaf, 0xd4, 0xc1, 0x45,
+	0x7f, 0x9d, 0xf6, 0x7f, 0x07, 0x00, 0x00, 0xff, 0xff, 0x32, 0x8c, 0xe9, 0x4b, 0x31, 0x04, 0x00,
 	0x00,
 }
 
@@ -264,8 +338,10 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type WarehouseServiceClient interface {
-	// CreateImportRequest
-	CreateImportRequest(ctx context.Context, in *CreateImportRequestRequest, opts ...grpc.CallOption) (*CreateImportRequestResponse, error)
+	// CreateImportBill
+	CreateImportBill(ctx context.Context, in *CreateImportBillRequest, opts ...grpc.CallOption) (*CreateImportBillResponse, error)
+	// GetImportBill
+	GetImportBill(ctx context.Context, in *GetImportBillRequest, opts ...grpc.CallOption) (*GetImportBillResponse, error)
 }
 
 type warehouseServiceClient struct {
@@ -276,9 +352,18 @@ func NewWarehouseServiceClient(cc *grpc.ClientConn) WarehouseServiceClient {
 	return &warehouseServiceClient{cc}
 }
 
-func (c *warehouseServiceClient) CreateImportRequest(ctx context.Context, in *CreateImportRequestRequest, opts ...grpc.CallOption) (*CreateImportRequestResponse, error) {
-	out := new(CreateImportRequestResponse)
-	err := c.cc.Invoke(ctx, "/sfe.app.warehouse_service.api.WarehouseService/CreateImportRequest", in, out, opts...)
+func (c *warehouseServiceClient) CreateImportBill(ctx context.Context, in *CreateImportBillRequest, opts ...grpc.CallOption) (*CreateImportBillResponse, error) {
+	out := new(CreateImportBillResponse)
+	err := c.cc.Invoke(ctx, "/app.warehouse_service.api.WarehouseService/CreateImportBill", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *warehouseServiceClient) GetImportBill(ctx context.Context, in *GetImportBillRequest, opts ...grpc.CallOption) (*GetImportBillResponse, error) {
+	out := new(GetImportBillResponse)
+	err := c.cc.Invoke(ctx, "/app.warehouse_service.api.WarehouseService/GetImportBill", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -287,54 +372,81 @@ func (c *warehouseServiceClient) CreateImportRequest(ctx context.Context, in *Cr
 
 // WarehouseServiceServer is the server API for WarehouseService service.
 type WarehouseServiceServer interface {
-	// CreateImportRequest
-	CreateImportRequest(context.Context, *CreateImportRequestRequest) (*CreateImportRequestResponse, error)
+	// CreateImportBill
+	CreateImportBill(context.Context, *CreateImportBillRequest) (*CreateImportBillResponse, error)
+	// GetImportBill
+	GetImportBill(context.Context, *GetImportBillRequest) (*GetImportBillResponse, error)
 }
 
 // UnimplementedWarehouseServiceServer can be embedded to have forward compatible implementations.
 type UnimplementedWarehouseServiceServer struct {
 }
 
-func (*UnimplementedWarehouseServiceServer) CreateImportRequest(ctx context.Context, req *CreateImportRequestRequest) (*CreateImportRequestResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateImportRequest not implemented")
+func (*UnimplementedWarehouseServiceServer) CreateImportBill(ctx context.Context, req *CreateImportBillRequest) (*CreateImportBillResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateImportBill not implemented")
+}
+func (*UnimplementedWarehouseServiceServer) GetImportBill(ctx context.Context, req *GetImportBillRequest) (*GetImportBillResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetImportBill not implemented")
 }
 
 func RegisterWarehouseServiceServer(s *grpc.Server, srv WarehouseServiceServer) {
 	s.RegisterService(&_WarehouseService_serviceDesc, srv)
 }
 
-func _WarehouseService_CreateImportRequest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateImportRequestRequest)
+func _WarehouseService_CreateImportBill_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateImportBillRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(WarehouseServiceServer).CreateImportRequest(ctx, in)
+		return srv.(WarehouseServiceServer).CreateImportBill(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/sfe.app.warehouse_service.api.WarehouseService/CreateImportRequest",
+		FullMethod: "/app.warehouse_service.api.WarehouseService/CreateImportBill",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(WarehouseServiceServer).CreateImportRequest(ctx, req.(*CreateImportRequestRequest))
+		return srv.(WarehouseServiceServer).CreateImportBill(ctx, req.(*CreateImportBillRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _WarehouseService_GetImportBill_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetImportBillRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WarehouseServiceServer).GetImportBill(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/app.warehouse_service.api.WarehouseService/GetImportBill",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WarehouseServiceServer).GetImportBill(ctx, req.(*GetImportBillRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 var _WarehouseService_serviceDesc = grpc.ServiceDesc{
-	ServiceName: "sfe.app.warehouse_service.api.WarehouseService",
+	ServiceName: "app.warehouse_service.api.WarehouseService",
 	HandlerType: (*WarehouseServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "CreateImportRequest",
-			Handler:    _WarehouseService_CreateImportRequest_Handler,
+			MethodName: "CreateImportBill",
+			Handler:    _WarehouseService_CreateImportBill_Handler,
+		},
+		{
+			MethodName: "GetImportBill",
+			Handler:    _WarehouseService_GetImportBill_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "app/warehouse_service/api/api.proto",
 }
 
-func (m *CreateImportRequestRequest) Marshal() (dAtA []byte, err error) {
+func (m *CreateImportBillRequest) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -344,12 +456,12 @@ func (m *CreateImportRequestRequest) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *CreateImportRequestRequest) MarshalTo(dAtA []byte) (int, error) {
+func (m *CreateImportBillRequest) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *CreateImportRequestRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *CreateImportBillRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -377,7 +489,7 @@ func (m *CreateImportRequestRequest) MarshalToSizedBuffer(dAtA []byte) (int, err
 	return len(dAtA) - i, nil
 }
 
-func (m *CreateImportRequestResponse) Marshal() (dAtA []byte, err error) {
+func (m *CreateImportBillResponse) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -387,12 +499,12 @@ func (m *CreateImportRequestResponse) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *CreateImportRequestResponse) MarshalTo(dAtA []byte) (int, error) {
+func (m *CreateImportBillResponse) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *CreateImportRequestResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *CreateImportBillResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -428,7 +540,7 @@ func (m *CreateImportRequestResponse) MarshalToSizedBuffer(dAtA []byte) (int, er
 	return len(dAtA) - i, nil
 }
 
-func (m *CreateImportRequestResponse_Data) Marshal() (dAtA []byte, err error) {
+func (m *GetImportBillRequest) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -438,12 +550,12 @@ func (m *CreateImportRequestResponse_Data) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *CreateImportRequestResponse_Data) MarshalTo(dAtA []byte) (int, error) {
+func (m *GetImportBillRequest) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *CreateImportRequestResponse_Data) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *GetImportBillRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -454,6 +566,57 @@ func (m *CreateImportRequestResponse_Data) MarshalToSizedBuffer(dAtA []byte) (in
 	}
 	if m.ImportId != 0 {
 		i = encodeVarintApi(dAtA, i, uint64(m.ImportId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *GetImportBillResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *GetImportBillResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *GetImportBillResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
+	}
+	if m.Data != nil {
+		{
+			size, err := m.Data.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintApi(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.Message) > 0 {
+		i -= len(m.Message)
+		copy(dAtA[i:], m.Message)
+		i = encodeVarintApi(dAtA, i, uint64(len(m.Message)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.Code != 0 {
+		i = encodeVarintApi(dAtA, i, uint64(m.Code))
 		i--
 		dAtA[i] = 0x8
 	}
@@ -471,7 +634,7 @@ func encodeVarintApi(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-func (m *CreateImportRequestRequest) Size() (n int) {
+func (m *CreateImportBillRequest) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -492,7 +655,7 @@ func (m *CreateImportRequestRequest) Size() (n int) {
 	return n
 }
 
-func (m *CreateImportRequestResponse) Size() (n int) {
+func (m *CreateImportBillResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -515,7 +678,7 @@ func (m *CreateImportRequestResponse) Size() (n int) {
 	return n
 }
 
-func (m *CreateImportRequestResponse_Data) Size() (n int) {
+func (m *GetImportBillRequest) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -530,13 +693,36 @@ func (m *CreateImportRequestResponse_Data) Size() (n int) {
 	return n
 }
 
+func (m *GetImportBillResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Code != 0 {
+		n += 1 + sovApi(uint64(m.Code))
+	}
+	l = len(m.Message)
+	if l > 0 {
+		n += 1 + l + sovApi(uint64(l))
+	}
+	if m.Data != nil {
+		l = m.Data.Size()
+		n += 1 + l + sovApi(uint64(l))
+	}
+	if m.XXX_unrecognized != nil {
+		n += len(m.XXX_unrecognized)
+	}
+	return n
+}
+
 func sovApi(x uint64) (n int) {
 	return (math_bits.Len64(x|1) + 6) / 7
 }
 func sozApi(x uint64) (n int) {
 	return sovApi(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-func (m *CreateImportRequestRequest) Unmarshal(dAtA []byte) error {
+func (m *CreateImportBillRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -559,10 +745,10 @@ func (m *CreateImportRequestRequest) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: CreateImportRequestRequest: wiretype end group for non-group")
+			return fmt.Errorf("proto: CreateImportBillRequest: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: CreateImportRequestRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: CreateImportBillRequest: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -639,7 +825,7 @@ func (m *CreateImportRequestRequest) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *CreateImportRequestResponse) Unmarshal(dAtA []byte) error {
+func (m *CreateImportBillResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -662,10 +848,10 @@ func (m *CreateImportRequestResponse) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: CreateImportRequestResponse: wiretype end group for non-group")
+			return fmt.Errorf("proto: CreateImportBillResponse: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: CreateImportRequestResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: CreateImportBillResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -749,7 +935,7 @@ func (m *CreateImportRequestResponse) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Data == nil {
-				m.Data = &CreateImportRequestResponse_Data{}
+				m.Data = &CreateImportBillResponseData{}
 			}
 			if err := m.Data.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -780,7 +966,7 @@ func (m *CreateImportRequestResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *CreateImportRequestResponse_Data) Unmarshal(dAtA []byte) error {
+func (m *GetImportBillRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -803,10 +989,10 @@ func (m *CreateImportRequestResponse_Data) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: Data: wiretype end group for non-group")
+			return fmt.Errorf("proto: GetImportBillRequest: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: Data: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: GetImportBillRequest: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -828,6 +1014,147 @@ func (m *CreateImportRequestResponse_Data) Unmarshal(dAtA []byte) error {
 					break
 				}
 			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipApi(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if skippy < 0 {
+				return ErrInvalidLengthApi
+			}
+			if (iNdEx + skippy) < 0 {
+				return ErrInvalidLengthApi
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *GetImportBillResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowApi
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: GetImportBillResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: GetImportBillResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Code", wireType)
+			}
+			m.Code = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowApi
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Code |= int32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Message", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowApi
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthApi
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthApi
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Message = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Data", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowApi
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthApi
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthApi
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Data == nil {
+				m.Data = &GetImportBillResponseData{}
+			}
+			if err := m.Data.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipApi(dAtA[iNdEx:])
