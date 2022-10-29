@@ -1,11 +1,10 @@
 syntax = "proto3";
-package sfe.app.warehouse_service.api;
-option go_package = "github.com/DragonPow/Server-for-Ecommerce/app/warehouse_service/api";
+package warehouse;
+option go_package = "app/warehouse_service/api";
 import "validate/validate.proto";
 import "google/rpc/code.proto";
+import "google/api/http.proto";
 import "google/api/annotations.proto";
-import "google/protobuf/wrappers.proto";
-import "google/protobuf/timestamp.proto";
 import "gogoproto/gogo.proto";
 //-------------------------end generated header---------------------------//
 
