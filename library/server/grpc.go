@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"fmt"
 	"google.golang.org/grpc"
 	"log"
@@ -50,7 +51,7 @@ func (s *grpcServer) Serve() error {
 	if err != nil {
 		return fmt.Errorf("Grpc fail create Listener, %v\n", err)
 	}
-	log.Println("Starting grpc server")
+	log.Printf("Starting grpc server, %v", l.Addr())
 	err = s.server.Serve(l)
 	if err != nil {
 		log.Println(err)
@@ -59,6 +60,6 @@ func (s *grpcServer) Serve() error {
 	return nil
 }
 
-func (s *grpcServer) Shutdown() {
+func (s *grpcServer) Shutdown(ctx context.Context) {
 	s.server.GracefulStop()
 }

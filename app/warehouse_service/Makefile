@@ -23,4 +23,6 @@ test:
 .PHONY = run generate-sqlc migrate migrate-up test
 
 proto:
-	cd ../../.. && tekit-protoc -buf=false -linter=false ./app/warehouse/warehouse_service/api
+	protoc -I./api --go_out=./api --go_opt=paths=source_relative \
+        --go-grpc_out=./api --go-grpc_opt=paths=source_relative \
+        api/api.proto

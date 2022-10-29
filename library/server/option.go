@@ -24,3 +24,24 @@ func WithServiceServer(servers ...ServiceServer) Option {
 		config.ServiceServers = append(config.ServiceServers, servers...)
 	}
 }
+
+func WithGatewayAddrListen(l Listen) Option {
+	return func(c *Config) {
+		c.Gateway.Addr = l
+	}
+}
+
+func WithGrpcAddr(host string, port int) Option {
+	return func(c *Config) {
+		c.Grpc.Addr = Listen{
+			Host: host,
+			Port: port,
+		}
+	}
+}
+
+func WithGrpcAddrListen(l Listen) Option {
+	return func(c *Config) {
+		c.Grpc.Addr = l
+	}
+}
