@@ -1,5 +1,5 @@
 syntax = "proto3";
-package warehouse;
+package sfe.app.warehouse_service.api;
 option go_package = "app/warehouse_service/api";
 import "validate/validate.proto";
 import "google/rpc/code.proto";
@@ -10,18 +10,34 @@ import "gogoproto/gogo.proto";
 
 // WarehouseService
 service WarehouseService {
-  // Test
-  rpc Test(TestRequest) returns (TestResponse) {
+  // CreateImportRequest
+  rpc CreateImportRequest(CreateImportRequestRequest) returns (CreateImportRequestResponse) {
     option (google.api.http) = {
-      get: "/api/v1/cell"
+      post: "/api/v1/import"
+      body: "*"
     };
   }
 }
 
-message TestRequest {
-
+message CreateImportRequestRequest {
+  // ProductId
+  int64 product_id = 1;
+  // Quantity
+  float quantity = 2;
+  // ActionById
+  int64 action_by_id = 3;
 }
 
-message  TestResponse {
-
+message  CreateImportRequestResponse {
+  // Data
+  message Data {
+    // ImportId
+    int64 import_id = 1;
+  }
+  // Code
+  int32 code = 1;
+  // Message
+  string message = 2;
+  // Data
+  Data data = 3;
 }

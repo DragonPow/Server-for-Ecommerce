@@ -26,10 +26,14 @@ test:
 .PHONY = run generate-sqlc migrate migrate-up test
 
 proto:
-	cd ../.. && protoc --proto_path=app/warehouse_service/api \
-		--validate_out=lang=go:. --gofast_out=. --grpc-gateway_out=. \
+	cd ../.. && protoc \
+		-I . \
 		-I vendor \
 		-I third_party/envoyproxy \
 		-I third_party/gogoprotobuf \
 		-I third_party/googleapis \
+		--gofast_out=plugins=grpc,Mgoogle/protobuf/wrappers.proto=github.com/gogo/protobuf/types:. \
+		--validate_out=lang=go:. \
+		--grpc-gateway_out=allow_repeated_fields_in_body=true:. \
+		--ecode_out=. \
         app/warehouse_service/api/api.proto
