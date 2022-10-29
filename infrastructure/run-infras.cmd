@@ -4,8 +4,8 @@ title 'Run ktpm-server-infrastructure'
 cd ../
 
 :: compose up
-docker-compose -f docker-compose.dev.yml -p ktpm-server-infra down
-docker-compose -f docker-compose.dev.yml -p ktpm-server-infra up -d
+docker-compose -f docker-compose.dev.yaml -p ktpm-server-infra down
+docker-compose -f docker-compose.dev.yaml -p ktpm-server-infra up -d
 
 :: post-action
 @echo off
