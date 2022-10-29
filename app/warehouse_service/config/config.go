@@ -4,13 +4,16 @@ import (
 	"bytes"
 	"encoding/json"
 	"github.com/DragonPow/Server-for-Ecommerce/library/config"
+	"github.com/DragonPow/Server-for-Ecommerce/library/database"
 	"github.com/spf13/viper"
 	"log"
 	"strings"
 )
 
 type Config struct {
-	Server config.ServerConfig `json:"server" mapstructure:"server"`
+	Server             config.ServerConfig `json:"server" mapstructure:"server"`
+	MigrationFolder    string              `json:"migration_folder" mapstructure:"migration_folder"`
+	WarehouseServiceDB database.DBConfig   `json:"warehouse_service_db" mapstructure:"warehouse_service_db"`
 }
 
 // Load system env config
@@ -49,6 +52,8 @@ func Load() (*Config, error) {
 
 func loadDefaultConfig() *Config {
 	return &Config{
-		Server: config.DefaultServerConfig(),
+		Server:             config.DefaultServerConfig(),
+		MigrationFolder:    "file://app/warehouse/warehouse_service/sql/migrations",
+		WarehouseServiceDB: database.PostgresSQLDefaultConfig(),
 	}
 }
