@@ -1,0 +1,42 @@
+syntax = "proto3";
+package app.order_service.api;
+option go_package = "app/order_service/api";
+import "validate/validate.proto";
+import "google/rpc/code.proto";
+import "google/api/http.proto";
+import "google/api/annotations.proto";
+import "gogoproto/gogo.proto";
+import "app/order_service/api/data.proto";
+
+//-------------------------end generated header---------------------------//
+
+// OrderService
+service OrderService {
+  // GetOrderDetail
+  rpc GetOrderDetail(GetOrderDetailRequest) returns (GetOrderDetailResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/import"
+      body: "*"
+    };
+  }
+}
+
+// GetOrderDetailRequest
+message GetOrderDetailRequest {
+  // ProductId
+  int64 product_id = 1;
+  // Quantity
+  float quantity = 2;
+  // ActionById
+  int64 action_by_id = 3;
+}
+
+// GetOrderDetailResponse
+message GetOrderDetailResponse {
+  // Code
+  int32 code = 1;
+  // Message
+  string message = 2;
+  // Data
+  GetOrderDetailResponseData data = 3;
+}
