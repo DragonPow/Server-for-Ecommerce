@@ -87,7 +87,7 @@ create table if not exists order_shipping_detail
             on delete cascade,
     order_detail_id int8 not null
         constraint order_shipping_detail_order_detail_id_fkey
-            references order_shipping
+            references order_bill_detail
             on delete cascade,
     product_id int8 not null
         constraint order_shipping_detail_product_id_fkey
