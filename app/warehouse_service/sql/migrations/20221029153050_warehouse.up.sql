@@ -22,7 +22,5 @@ create table if not exists import_bill_detail
             references import_bill
             on delete cascade,
     product_id int8 not null,
-    quantity double precision not null default 0,
-    create_date timestamp,
-    write_date timestamp
+    quantity double precision not null default 0
 );

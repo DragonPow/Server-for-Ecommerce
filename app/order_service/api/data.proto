@@ -1,0 +1,8 @@
+syntax = "proto3";
+package app.order_service.api;
+option go_package = "app/order_service/api";
+
+// GetOrderDetailResponseData
+message GetOrderDetailResponseData {
+
+}
