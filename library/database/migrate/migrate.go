@@ -5,7 +5,6 @@ import (
 	log "github.com/DragonPow/Server-for-Ecommerce/library/log"
 	migrateV4 "github.com/golang-migrate/migrate/v4"
 	"github.com/urfave/cli/v2"
-	"go.uber.org/zap"
 	"io/ioutil"
 	"strconv"
 	"strings"
@@ -52,7 +51,7 @@ func CliCommand(sourceURL string, databaseURL string) []*cli.Command {
 					logger.Error(err, "rev should be a number")
 				}
 
-				logger.Info("migration down", zap.Int("down", -down))
+				logger.Info("migration down", "down", -down)
 				if err := m.Steps(-down); err != nil {
 					logger.Error(err, "Migrate down fail")
 				}
@@ -71,9 +70,9 @@ func CliCommand(sourceURL string, databaseURL string) []*cli.Command {
 				up := fmt.Sprintf("%s/%s_%s.up.sql", folder, ver, name)
 				down := fmt.Sprintf("%s/%s_%s.down.sql", folder, ver, name)
 
-				logger.Info("create migration", zap.String("name", name))
-				logger.Info("up script", zap.String("up", up))
-				logger.Info("down script", zap.String("down", up))
+				logger.Info("create migration", "name", name)
+				logger.Info("up script", "up", up)
+				logger.Info("down script", "down", up)
 
 				if err := ioutil.WriteFile(up, []byte{}, 0600); err != nil {
 					logger.Error(err, "Create migration up error")
