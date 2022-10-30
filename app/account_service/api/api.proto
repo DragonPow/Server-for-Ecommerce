@@ -1,0 +1,36 @@
+syntax = "proto3";
+package app.account_service.api;
+option go_package = "app/account_service/api";
+import "validate/validate.proto";
+import "google/rpc/code.proto";
+import "google/api/http.proto";
+import "google/api/annotations.proto";
+import "gogoproto/gogo.proto";
+import "app/account_service/api/data.proto";
+
+//-------------------------end generated header---------------------------//
+
+// AccountService
+service AccountService {
+  // GetUsers
+  rpc GetUsers(GetUsersRequest) returns (GetUsersResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/user"
+    };
+  }
+}
+
+
+// GetUsersRequest
+message GetUsersRequest {
+}
+
+// GetUsersResponse
+message GetUsersResponse {
+  // Code
+  int32 code = 1;
+  // Message
+  string message = 2;
+  // Data
+  GetUsersResponseData data = 3;
+}

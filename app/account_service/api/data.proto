@@ -1,0 +1,8 @@
+syntax = "proto3";
+package app.account_service.api;
+option go_package = "app/account_service/api";
+
+// GetUsersResponseData
+message GetUsersResponseData {
+
+}
