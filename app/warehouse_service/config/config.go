@@ -14,6 +14,8 @@ type Config struct {
 	Server             config.ServerConfig `json:"server" mapstructure:"server"`
 	MigrationFolder    string              `json:"migration_folder" mapstructure:"migration_folder"`
 	WarehouseServiceDB database.DBConfig   `json:"warehouse_service_db" mapstructure:"warehouse_service_db"`
+	OrderServiceAddr   string              `json:"order_service_addr" mapstructure:"order_service_addr"`
+	AccountServiceAddr string              `json:"account_service_addr" mapstructure:"account_service_addr"`
 }
 
 // Load system env config
@@ -55,5 +57,7 @@ func loadDefaultConfig() *Config {
 		Server:             config.DefaultServerConfig(),
 		MigrationFolder:    "file://app/warehouse_service/sql/migrations",
 		WarehouseServiceDB: database.PostgresSQLDefaultConfig(),
+		OrderServiceAddr:   "order-service-api:443",
+		AccountServiceAddr: "account-service-api:443",
 	}
 }

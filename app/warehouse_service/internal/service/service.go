@@ -2,6 +2,8 @@ package service
 
 import (
 	"context"
+	accountApi "github.com/DragonPow/Server-for-Ecommerce/app/account_service/api"
+	orderApi "github.com/DragonPow/Server-for-Ecommerce/app/order_service/api"
 	"github.com/DragonPow/Server-for-Ecommerce/app/warehouse_service/api"
 	"github.com/DragonPow/Server-for-Ecommerce/app/warehouse_service/config"
 	"github.com/DragonPow/Server-for-Ecommerce/app/warehouse_service/internal/store"
@@ -12,9 +14,11 @@ import (
 )
 
 type Service struct {
-	cfg     *config.Config
-	log     logr.Logger
-	storeDb store.StoreQuerier
+	cfg           *config.Config
+	log           logr.Logger
+	storeDb       store.StoreQuerier
+	orderClient   orderApi.OrderServiceClient
+	accountClient accountApi.AccountServiceClient
 	api.UnimplementedWarehouseServiceServer
 }
 
@@ -22,11 +26,15 @@ func NewService(
 	cfg *config.Config,
 	log logr.Logger,
 	storeDb store.StoreQuerier,
+	orderClient orderApi.OrderServiceClient,
+	accountClient accountApi.AccountServiceClient,
 ) *Service {
 	return &Service{
-		cfg:     cfg,
-		log:     log,
-		storeDb: storeDb,
+		cfg:           cfg,
+		log:           log,
+		storeDb:       storeDb,
+		orderClient:   orderClient,
+		accountClient: accountClient,
 	}
 }
 

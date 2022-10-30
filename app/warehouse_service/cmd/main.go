@@ -1,6 +1,9 @@
 package main
 
 import (
+	"context"
+	accountApi "github.com/DragonPow/Server-for-Ecommerce/app/account_service/api"
+	orderApi "github.com/DragonPow/Server-for-Ecommerce/app/order_service/api"
 	"github.com/DragonPow/Server-for-Ecommerce/app/warehouse_service/config"
 	"github.com/DragonPow/Server-for-Ecommerce/app/warehouse_service/internal/service"
 	"github.com/DragonPow/Server-for-Ecommerce/app/warehouse_service/internal/store"
@@ -10,6 +13,7 @@ import (
 	"github.com/go-logr/logr"
 	"github.com/jmoiron/sqlx"
 	"github.com/urfave/cli/v2"
+	"google.golang.org/grpc"
 	"os"
 )
 
@@ -82,10 +86,15 @@ func newService(cfg *config.Config) (*service.Service, error) {
 	}
 	store := store.NewStore(db, logger)
 
-	// TODO: add another service here and pass to NewService
-	// ...
+	// Order Client
+	orderClientConnect, err := grpc.DialContext(context.Background(), cfg.OrderServiceAddr, grpc.WithInsecure())
+	orderClient := orderApi.NewOrderServiceClient(orderClientConnect)
 
-	return service.NewService(cfg, logger, store), nil
+	// AccountClient
+	accountClientConnect, err := grpc.DialContext(context.Background(), cfg.AccountServiceAddr, grpc.WithInsecure())
+	accountClient := accountApi.NewAccountServiceClient(accountClientConnect)
+
+	return service.NewService(cfg, logger, store, orderClient, accountClient), nil
 }
 
 func newDB(dsn string) (*sqlx.DB, error) {
