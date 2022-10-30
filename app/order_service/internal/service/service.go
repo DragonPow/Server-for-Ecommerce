@@ -31,6 +31,7 @@ func NewService(
 }
 
 func (s *Service) Close(ctx context.Context) {
+	s.storeDb.Close()
 }
 
 // RegisterWithServer implementing service server interface
