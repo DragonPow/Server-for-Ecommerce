@@ -18,11 +18,19 @@ service AccountService {
       get: "/api/v1/user"
     };
   }
+  // Login
+  rpc Login(LoginRequest) returns (LoginResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/login"
+    };
+  }
 }
 
 
 // GetUsersRequest
 message GetUsersRequest {
+  // Ids
+  string ids = 1 [(validate.rules).string.min_len = 1];
 }
 
 // GetUsersResponse
@@ -33,4 +41,22 @@ message GetUsersResponse {
   string message = 2;
   // Data
   GetUsersResponseData data = 3;
+}
+
+// LoginRequest
+message LoginRequest {
+  // Username
+  string username = 1 [(validate.rules).string.min_len = 1];
+  // Password
+  string password = 2 [(validate.rules).string.min_len = 1];
+}
+
+// LoginResponse
+message LoginResponse {
+  // Code
+  int32 code = 1;
+  // Message
+  string message = 2;
+  // Data
+  LoginResponseData data = 3;
 }

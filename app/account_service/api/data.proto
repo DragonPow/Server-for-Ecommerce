@@ -4,5 +4,33 @@ option go_package = "app/account_service/api";
 
 // GetUsersResponseData
 message GetUsersResponseData {
+  // TotalItems
+  int32 total_items = 1;
+  repeated GetUsersResponseItem items = 2;
+}
 
+// GetUsersResponseItem
+message GetUsersResponseItem {
+  // UserId
+  int64 user_id = 1;
+  // Username
+  string username = 2;
+  // Name
+  string name = 3;
+  // Phone
+  string phone = 4;
+  // Address
+  string address = 5;
+}
+
+// LoginResponseData
+message LoginResponseData {
+  // Token
+  string token = 1;
+  // AccountId
+  int64 account_id = 2;
+  // Username
+  string username = 3;
+  // Name
+  string name = 4;
 }

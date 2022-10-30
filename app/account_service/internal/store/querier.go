@@ -10,6 +10,8 @@ import (
 
 type Querier interface {
 	GetUserByUserNameAndPassword(ctx context.Context, arg GetUserByUserNameAndPasswordParams) (Account, error)
+	getAccountByIds(ctx context.Context, ids []int64) ([]getAccountByIdsRow, error)
+	getCustomerByIds(ctx context.Context, ids []int64) ([]CustomerInfo, error)
 }
 
 var _ Querier = (*Queries)(nil)

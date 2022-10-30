@@ -27,6 +27,12 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getUserByUserNameAndPasswordStmt, err = db.PrepareContext(ctx, getUserByUserNameAndPassword); err != nil {
 		return nil, fmt.Errorf("error preparing query GetUserByUserNameAndPassword: %w", err)
 	}
+	if q.getAccountByIdsStmt, err = db.PrepareContext(ctx, getAccountByIds); err != nil {
+		return nil, fmt.Errorf("error preparing query getAccountByIds: %w", err)
+	}
+	if q.getCustomerByIdsStmt, err = db.PrepareContext(ctx, getCustomerByIds); err != nil {
+		return nil, fmt.Errorf("error preparing query getCustomerByIds: %w", err)
+	}
 	return &q, nil
 }
 
@@ -35,6 +41,16 @@ func (q *Queries) Close() error {
 	if q.getUserByUserNameAndPasswordStmt != nil {
 		if cerr := q.getUserByUserNameAndPasswordStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getUserByUserNameAndPasswordStmt: %w", cerr)
+		}
+	}
+	if q.getAccountByIdsStmt != nil {
+		if cerr := q.getAccountByIdsStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getAccountByIdsStmt: %w", cerr)
+		}
+	}
+	if q.getCustomerByIdsStmt != nil {
+		if cerr := q.getCustomerByIdsStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getCustomerByIdsStmt: %w", cerr)
 		}
 	}
 	return err
@@ -77,6 +93,8 @@ type Queries struct {
 	db                               DBTX
 	tx                               *sql.Tx
 	getUserByUserNameAndPasswordStmt *sql.Stmt
+	getAccountByIdsStmt              *sql.Stmt
+	getCustomerByIdsStmt             *sql.Stmt
 }
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
@@ -84,5 +102,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		db:                               tx,
 		tx:                               tx,
 		getUserByUserNameAndPasswordStmt: q.getUserByUserNameAndPasswordStmt,
+		getAccountByIdsStmt:              q.getAccountByIdsStmt,
+		getCustomerByIdsStmt:             q.getCustomerByIdsStmt,
 	}
 }

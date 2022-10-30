@@ -7,6 +7,9 @@ package store
 
 import (
 	"context"
+	"time"
+
+	"github.com/lib/pq"
 )
 
 const getUserByUserNameAndPassword = `-- name: GetUserByUserNameAndPassword :one
@@ -33,4 +36,82 @@ func (q *Queries) GetUserByUserNameAndPassword(ctx context.Context, arg GetUserB
 		&i.WriteDate,
 	)
 	return i, err
+}
+
+const getAccountByIds = `-- name: getAccountByIds :many
+SELECT id, username, create_date, write_date
+FROM account
+WHERE id = ANY($1::int8[])
+`
+
+type getAccountByIdsRow struct {
+	ID         int64     `json:"id"`
+	Username   string    `json:"username"`
+	CreateDate time.Time `json:"create_date"`
+	WriteDate  time.Time `json:"write_date"`
+}
+
+func (q *Queries) getAccountByIds(ctx context.Context, ids []int64) ([]getAccountByIdsRow, error) {
+	rows, err := q.query(ctx, q.getAccountByIdsStmt, getAccountByIds, pq.Array(ids))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []getAccountByIdsRow{}
+	for rows.Next() {
+		var i getAccountByIdsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Username,
+			&i.CreateDate,
+			&i.WriteDate,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getCustomerByIds = `-- name: getCustomerByIds :many
+SELECT id, account_id, name, phone, address, create_date, write_date
+FROM customer_info
+WHERE id = ANY($1::int8[])
+`
+
+func (q *Queries) getCustomerByIds(ctx context.Context, ids []int64) ([]CustomerInfo, error) {
+	rows, err := q.query(ctx, q.getCustomerByIdsStmt, getCustomerByIds, pq.Array(ids))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []CustomerInfo{}
+	for rows.Next() {
+		var i CustomerInfo
+		if err := rows.Scan(
+			&i.ID,
+			&i.AccountID,
+			&i.Name,
+			&i.Phone,
+			&i.Address,
+			&i.CreateDate,
+			&i.WriteDate,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }

@@ -1,8 +1,8 @@
 SERVER:
   GRPC:
-    PORT: 9443
+    PORT: 9444
   HTTP:
-    PORT: 8080
+    PORT: 8081
 
 MIGRATION_FOLDER: file://sql/migrations
 

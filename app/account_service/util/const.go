@@ -1,8 +1,11 @@
 package util
 
 const (
-	ZeroLength       = 0
-	ZeroId     int64 = 0
+	ZeroLength        = 0
+	ZeroId      int64 = 0
+	EmptyString       = ""
+	Base10Int   int   = 10
+	Bit64Size   int   = 64
 )
 
 const (
