@@ -1,0 +1,15 @@
+SERVER:
+  GRPC:
+    PORT: 9490
+  HTTP:
+    PORT: 9090
+
+MIGRATION_FOLDER: file://internal/database/migrations
+
+PRODUCT_SERVICE_DB:
+  HOST: 127.0.0.1
+  PORT: 5432
+  USERNAME: vungocthach
+  PASSWORD: 111200
+  DATABASE: ecommerce_product
+  OPTIONS: ?sslmode=disable
