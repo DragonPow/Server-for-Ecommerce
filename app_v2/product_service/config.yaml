@@ -11,5 +11,5 @@ PRODUCT_SERVICE_DB:
   PORT: 10101
   USERNAME: postgres
   PASSWORD: postgres123
-  DATABASE: ecommerce_product
+  DATABASE: product
   OPTIONS: ?sslmode=disable
