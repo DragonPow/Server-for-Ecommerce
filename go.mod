@@ -20,6 +20,7 @@ require (
 	github.com/jmoiron/sqlx v1.3.1
 	github.com/lib/pq v1.10.2
 	github.com/spf13/viper v1.13.0
+	github.com/tabbed/pqtype v0.1.1
 	github.com/urfave/cli/v2 v2.20.3
 	go.uber.org/zap v1.19.0
 	google.golang.org/genproto v0.0.0-20220822174746-9e6da59bd2fc
