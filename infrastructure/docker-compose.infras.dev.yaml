@@ -1,21 +1,6 @@
 version: '3.8'
 
 services:
-  # postgres warehouse database
-  warehouse-database:
-    image: postgres:alpine
-    container_name: ktpm-warehouse-database
-    restart: on-failure
-    environment:
-      - POSTGRES_PASSWORD=postgres123
-      - POSTGRES_DB=warehouse
-    ports:
-      - 5433:5432
-    networks:
-      - ktpm-server-infra
-    volumes:
-      - warehouse-data:/var/lib/postgresql/data
-
   # postgres account database
   account-database:
     image: postgres:alpine
@@ -25,31 +10,30 @@ services:
       - POSTGRES_PASSWORD=postgres123
       - POSTGRES_DB=account
     ports:
-      - 5434:5432
+      - 10100:5432
     networks:
       - ktpm-server-infra
     volumes:
       - account-data:/var/lib/postgresql/data
 
   # postgres order database
-  order-database:
+  product-database:
     image: postgres:alpine
-    container_name: ktpm-order-database
+    container_name: ktpm-product-database
     restart: on-failure
     environment:
       - POSTGRES_PASSWORD=postgres123
-      - POSTGRES_DB=order
+      - POSTGRES_DB=product
     ports:
-      - 5435:5432
+      - 10101:5432
     networks:
       - ktpm-server-infra
     volumes:
-      - order-data:/var/lib/postgresql/data
+      - product-data:/var/lib/postgresql/data
 
 volumes:
-  warehouse-data:
   account-data:
-  order-data:
+  product-data:
 
 
 networks:
