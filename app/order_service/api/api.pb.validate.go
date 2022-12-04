@@ -43,10 +43,6 @@ func (m *GetOrderDetailRequest) Validate() error {
 
 	// no validation rules for ProductId
 
-	// no validation rules for Quantity
-
-	// no validation rules for ActionById
-
 	return nil
 }
 

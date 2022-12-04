@@ -41,6 +41,75 @@ func (m *GetOrderDetailResponseData) Validate() error {
 		return nil
 	}
 
+	// no validation rules for Id
+
+	// no validation rules for Name
+
+	// no validation rules for Description
+
+	// no validation rules for DefaultPrice
+
+	// no validation rules for RemainQuantity
+
+	// no validation rules for SoldQuantity
+
+	// no validation rules for Rating
+
+	// no validation rules for NumberRating
+
+	if v, ok := interface{}(m.GetSeller()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return GetOrderDetailResponseDataValidationError{
+				field:  "Seller",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	// no validation rules for Category
+
+	// no validation rules for Uom
+
+	for idx, item := range m.GetVariants() {
+		_, _ = idx, item
+
+		if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return GetOrderDetailResponseDataValidationError{
+					field:  fmt.Sprintf("Variants[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if v, ok := interface{}(m.GetCreateDate()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return GetOrderDetailResponseDataValidationError{
+				field:  "CreateDate",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	// no validation rules for CreateUser
+
+	if v, ok := interface{}(m.GetWriteDate()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return GetOrderDetailResponseDataValidationError{
+				field:  "WriteDate",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	// no validation rules for WriteUser
+
 	return nil
 }
 
@@ -99,3 +168,141 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = GetOrderDetailResponseDataValidationError{}
+
+// Validate checks the field values on Seller with the rules defined in the
+// proto definition for this message. If any rules are violated, an error is returned.
+func (m *Seller) Validate() error {
+	if m == nil {
+		return nil
+	}
+
+	// no validation rules for Id
+
+	// no validation rules for Name
+
+	// no validation rules for LogoUrl
+
+	return nil
+}
+
+// SellerValidationError is the validation error returned by Seller.Validate if
+// the designated constraints aren't met.
+type SellerValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e SellerValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e SellerValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e SellerValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e SellerValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e SellerValidationError) ErrorName() string { return "SellerValidationError" }
+
+// Error satisfies the builtin error interface
+func (e SellerValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sSeller.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = SellerValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = SellerValidationError{}
+
+// Validate checks the field values on Variant with the rules defined in the
+// proto definition for this message. If any rules are violated, an error is returned.
+func (m *Variant) Validate() error {
+	if m == nil {
+		return nil
+	}
+
+	// no validation rules for Key
+
+	// no validation rules for Value
+
+	return nil
+}
+
+// VariantValidationError is the validation error returned by Variant.Validate
+// if the designated constraints aren't met.
+type VariantValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e VariantValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e VariantValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e VariantValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e VariantValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e VariantValidationError) ErrorName() string { return "VariantValidationError" }
+
+// Error satisfies the builtin error interface
+func (e VariantValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sVariant.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = VariantValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = VariantValidationError{}

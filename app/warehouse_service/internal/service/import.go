@@ -2,14 +2,12 @@ package service
 
 import (
 	"context"
-	accountApi "github.com/DragonPow/Server-for-Ecommerce/app/account_service/api"
 	"github.com/DragonPow/Server-for-Ecommerce/app/warehouse_service/api"
 	"github.com/DragonPow/Server-for-Ecommerce/app/warehouse_service/internal/store"
 	"github.com/DragonPow/Server-for-Ecommerce/app/warehouse_service/util"
 	"github.com/DragonPow/Server-for-Ecommerce/library/slice"
 	"google.golang.org/grpc/codes"
 	"strconv"
-	"strings"
 )
 
 func (s *Service) CreateImportBill(ctx context.Context, request *api.CreateImportBillRequest) (*api.CreateImportBillResponse, error) {
@@ -48,25 +46,25 @@ func (s Service) GetImportBill(ctx context.Context, request *api.GetImportBillRe
 		uids = append(uids, strconv.FormatInt(importBill.WriteUid.Int64, util.Base10Int))
 	}
 	// Get LastActionByName and CreateByName
-	if len(uids) > util.ZeroLength {
-		userRes, err := s.accountClient.GetUsers(ctx, &accountApi.GetUsersRequest{Ids: strings.Join(slice.Uniq(uids), ",")})
-		if err != nil {
-			logger.Error(err, "Call GetUsers fail")
-			return util.Response(err, defaultResponse)
-		}
-		if userRes.Data != nil && len(userRes.Data.Items) > util.ZeroLength {
-			for _, user := range userRes.Data.Items {
-				// Set create by
-				if user.UserId == importBill.CreateUid.Int64 {
-					createByName = user.Name
-				}
-				// Set write by
-				if user.UserId == importBill.WriteUid.Int64 {
-					lastActionByName = user.Name
-				}
-			}
-		}
-	}
+	//if len(uids) > util.ZeroLength {
+	//	userRes, err := s.accountClient.GetUsers(ctx, &accountApi.GetUsersRequest{Ids: strings.Join(slice.Uniq(uids), ",")})
+	//	if err != nil {
+	//		logger.Error(err, "Call GetUsers fail")
+	//		return util.Response(err, defaultResponse)
+	//	}
+	//	if userRes.Data != nil && len(userRes.Data.Items) > util.ZeroLength {
+	//		for _, user := range userRes.Data.Items {
+	//			// Set create by
+	//			if user.UserId == importBill.CreateUid.Int64 {
+	//				createByName = user.Name
+	//			}
+	//			// Set write by
+	//			if user.UserId == importBill.WriteUid.Int64 {
+	//				lastActionByName = user.Name
+	//			}
+	//		}
+	//	}
+	//}
 
 	// TODO: Call another service to get ProductName
 

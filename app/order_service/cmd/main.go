@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/DragonPow/Server-for-Ecommerce/app/order_service/config"
+	"github.com/DragonPow/Server-for-Ecommerce/app/order_service/internal/cache"
 	"github.com/DragonPow/Server-for-Ecommerce/app/order_service/internal/service"
 	"github.com/DragonPow/Server-for-Ecommerce/app/order_service/internal/store"
 	"github.com/DragonPow/Server-for-Ecommerce/library/database/migrate"
@@ -82,10 +83,17 @@ func newService(cfg *config.Config) (*service.Service, error) {
 	}
 	store := store.NewStore(db, logger)
 
+	cache := cache.New(
+		cfg.RedisConfig.Addr,
+		cfg.RedisConfig.Password,
+		cfg.RedisConfig.ExpiredDefault,
+		logger,
+	)
+
 	// TODO: add another service here and pass to NewService
 	// ...
 
-	return service.NewService(cfg, logger, store), nil
+	return service.NewService(cfg, logger, store, cache), nil
 }
 
 func newDB(dsn string) (*sqlx.DB, error) {

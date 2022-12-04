@@ -1,8 +1,59 @@
 syntax = "proto3";
 package app.order_service.api;
 option go_package = "app/order_service/api";
+import "google/protobuf/timestamp.proto";
+
 
 // GetOrderDetailResponseData
 message GetOrderDetailResponseData {
+  // Id
+  int64 id = 1;
+  // Name
+  string name = 2;
+  // Description
+  string description = 3;
+  // DefaultPrice
+  double default_price = 4;
+  // RemainQuantity
+  double remain_quantity = 5;
+  // SoldQuantity
+  double sold_quantity = 6;
+  // Rating
+  double rating = 7;
+  // NumberRating
+  double number_rating = 8;
+  // Seller
+  Seller seller = 9;
+  // Category
+  string category = 10;
+  // Uom
+  string uom = 11;
+  // Variants
+  repeated Variant variants = 12;
+  // CreateDate
+  google.protobuf.Timestamp create_date = 13;
+  // CreateUser
+  string create_user = 14;
+  // WriteDate
+  google.protobuf.Timestamp write_date = 15;
+  // WriteUser
+  string write_user = 16;
+}
 
+// Seller
+message Seller {
+  // Id
+  int64 id = 1;
+  // Name
+  string name = 2;
+  // LogoUrl
+  string logo_url = 3;
+}
+
+// Variant
+message Variant {
+  // Key
+  string key = 1;
+  // Value
+  string value = 2;
 }

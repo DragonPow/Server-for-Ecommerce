@@ -25,10 +25,6 @@ service OrderService {
 message GetOrderDetailRequest {
   // ProductId
   int64 product_id = 1;
-  // Quantity
-  float quantity = 2;
-  // ActionById
-  int64 action_by_id = 3;
 }
 
 // GetOrderDetailResponse

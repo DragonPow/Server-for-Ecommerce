@@ -11,8 +11,8 @@ MIGRATION_FOLDER: file://sql/migrations
 
 WAREHOUSE_SERVICE_DB:
   HOST: 127.0.0.1
-  PORT: 5432
-  USERNAME: vungocthach
-  PASSWORD: 111200
-  DATABASE: ecommerce_warehouse
+  PORT: 8878
+  USERNAME: postgres
+  PASSWORD:
+  DATABASE: warehouse
   OPTIONS: ?sslmode=disable

@@ -12,7 +12,11 @@ create table if not exists seller
     phone varchar,
     address varchar,
     logo_url varchar,
-    manager_id int8 not null
+    manager_id int8 not null,
+    create_uid int8,
+    create_date timestamp not null default now(),
+    write_uid int8,
+    write_date timestamp not null default now()
 );
 
 create table if not exists uom

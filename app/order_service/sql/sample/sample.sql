@@ -1,7 +1,10 @@
-INSERT INTO product_template(id,name,default_price,uom_name,inventory_quantity,create_uid,create_date,write_uid,write_date) VALUES
-(1,'Laptop Acer Nitro 5',20000000,'Cái',2,1,now(),1,now()),
-(2,'Chuột Gaming DareU',1500000,'Cái',2,1,now(),1,now()),
-(3,'Dụng cụ vệ sinh máy tính',20000,'Bộ',2,1,now(),1,now());
+INSERT INTO product_template(id,name,description,default_price,uom_id,remain_quantity,sold_quantity,rating,number_rating,create_uid,create_date,write_uid,write_date,vartiants,seller_id,category_id) VALUES
+(1,'Laptop Acer Nitro 5',null,20000000,1,2,0,4,1,1,now(),1,now(),null,1,2),
+(2,'Chuột Gaming DareU',null,1500000,1,2,0,5,5,1,now(),1,now(),null,1,2),
+(3,'Dụng cụ vệ sinh máy tính',null,20000,2,2,0,0,0,1,now(),1,now(),null,1,2),
+(4,'Rau cải trắng',null,15000,1,0,0,4,1,1,now(),1,now(),null,1,2),
+(5,'Cà rốt Mỹ',null,1500000,1,0,0,5,5,1,now(),1,now(),null,1,2),
+(6,'Thuốc trị bách bệnh',null,20000,2,0,0,0,0,1,now(),1,now(),null,1,2);
 
 INSERT INTO product(id,template_id,name,origin_price,sale_price,state,create_uid,create_date,write_uid,write_date) VALUES
 (1,1,'AN5-M7882021',18000000,18000000,'available',1,now(),1,now()),

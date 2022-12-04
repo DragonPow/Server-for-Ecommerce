@@ -14,6 +14,13 @@ type Config struct {
 	Server          config.ServerConfig `json:"server" mapstructure:"server"`
 	MigrationFolder string              `json:"migration_folder" mapstructure:"migration_folder"`
 	OrderServiceDB  database.DBConfig   `json:"order_service_db" mapstructure:"order_service_db"`
+	RedisConfig     RedisConfig         `json:"redis_config" mapstructure:"redis_config"`
+}
+
+type RedisConfig struct {
+	Addr           string `json:"addr" mapstructure:"addr"`
+	Password       string `json:"password" mapstructure:"password"`
+	ExpiredDefault uint32 `json:"expired_default" mapstructure:"expired_default"`
 }
 
 // Load system env config
@@ -55,5 +62,10 @@ func loadDefaultConfig() *Config {
 		Server:          config.DefaultServerConfig(),
 		MigrationFolder: "file://app/order_service/sql/migrations",
 		OrderServiceDB:  database.PostgresSQLDefaultConfig(),
+		RedisConfig: RedisConfig{
+			Addr:           "localhost:6379",
+			Password:       "",
+			ExpiredDefault: 0,
+		},
 	}
 }

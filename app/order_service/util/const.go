@@ -3,6 +3,7 @@ package util
 const (
 	ZeroLength       = 0
 	ZeroId     int64 = 0
+	Base10Int        = 10
 )
 
 const (

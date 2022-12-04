@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/DragonPow/Server-for-Ecommerce/app/order_service/api"
 	"github.com/DragonPow/Server-for-Ecommerce/app/order_service/config"
+	"github.com/DragonPow/Server-for-Ecommerce/app/order_service/internal/cache"
 	"github.com/DragonPow/Server-for-Ecommerce/app/order_service/internal/store"
 	"github.com/go-logr/logr"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
@@ -16,17 +17,20 @@ type Service struct {
 	log     logr.Logger
 	storeDb store.StoreQuerier
 	api.UnimplementedOrderServiceServer
+	cache cache.Cache
 }
 
 func NewService(
 	cfg *config.Config,
 	log logr.Logger,
 	storeDb store.StoreQuerier,
+	cache cache.Cache,
 ) *Service {
 	return &Service{
 		cfg:     cfg,
 		log:     log,
 		storeDb: storeDb,
+		cache:   cache,
 	}
 }
 
