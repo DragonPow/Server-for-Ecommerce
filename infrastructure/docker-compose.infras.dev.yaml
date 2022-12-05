@@ -2,41 +2,43 @@ version: '3.8'
 
 services:
   # postgres account database
-  account-database:
+  account-db:
     image: postgres:alpine
-    container_name: ktpm-account-database
+    container_name: ktpm-account-db
     restart: on-failure
     environment:
       - POSTGRES_PASSWORD=postgres123
       - POSTGRES_DB=account
     ports:
-      - 10100:5432
+      - "10100:5432"
     networks:
-      - ktpm-server-infra
+      - ktpm-infras
     volumes:
       - account-data:/var/lib/postgresql/data
 
   # postgres order database
-  product-database:
+  product-db:
     image: postgres:alpine
-    container_name: ktpm-product-database
+    container_name: ktpm-product-db
     restart: on-failure
     environment:
       - POSTGRES_PASSWORD=postgres123
       - POSTGRES_DB=product
     ports:
-      - 10101:5432
+      - "10101:5432"
     networks:
-      - ktpm-server-infra
+      - ktpm-infras
     volumes:
       - product-data:/var/lib/postgresql/data
 
 volumes:
   account-data:
+    name: ktpm-account-data
+    external: true
   product-data:
+    name: ktpm-product-data
+    external: true
 
 
 networks:
-  ktpm-server-infra:
-
-
+  ktpm-infras:
