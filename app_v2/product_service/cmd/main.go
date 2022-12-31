@@ -60,7 +60,7 @@ func serverAction(context *cli.Context) error {
 	}
 	s, err := server.New(
 		server.WithGatewayAddrListen(cfg.Server.HTTP),
-		server.WithGrpcAddrListen(cfg.Server.GRPC),
+		// server.WithGrpcAddrListen(cfg.Server.GRPC),
 		server.WithServiceServer(serviceInstance),
 	)
 	if err != nil {

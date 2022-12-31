@@ -2,6 +2,8 @@ package service
 
 import (
 	"context"
+
+	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/api"
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/config"
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/internal/database/store"
 	"github.com/DragonPow/Server-for-Ecommerce/library/cache"
@@ -42,5 +44,9 @@ func (s *Service) RegisterWithServer(server *grpc.Server) {
 
 // RegisterWithHandler implementing service server interface
 func (s *Service) RegisterWithHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
+	err := api.NewHttpHandler(s)
+	if err != nil {
+		return err
+	}
 	return nil
 }

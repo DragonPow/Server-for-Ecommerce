@@ -4,9 +4,10 @@ import (
 	"bytes"
 	"compress/gzip"
 	"encoding/json"
+	"io/ioutil"
 )
 
-func Marshal[T any](value T) ([]byte, error) {
+func Marshal(value any) ([]byte, error) {
 	buf := bytes.Buffer{}
 	g := gzip.NewWriter(&buf)
 	defer g.Close()
@@ -22,19 +23,19 @@ func Marshal[T any](value T) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func UnMarshal[T any](value []byte, result any) error {
-	reader := bytes.Buffer{}
-	g, err := gzip.NewReader(&reader)
+func Unmarshal(value []byte, result any) error {
+	reader := bytes.NewBuffer(value)
+	g, err := gzip.NewReader(reader)
 	if err != nil {
 		return err
 	}
 	defer g.Close()
 
-	_, err = g.Read(value)
+	data, err := ioutil.ReadAll(g)
 	if err != nil {
 		return err
 	}
-	if err = json.Unmarshal(reader.Bytes(), &result); err != nil {
+	if err = json.Unmarshal(data, &result); err != nil {
 		return err
 	}
 	return nil

@@ -45,3 +45,9 @@ func WithGrpcAddrListen(l Listen) Option {
 		c.Grpc.Addr = l
 	}
 }
+
+func WithGatewayServerHandler(handlers ...HTTPServerHandler) Option {
+	return func(c *Config) {
+		c.Gateway.ServerHandlers = append(c.Gateway.ServerHandlers, handlers...)
+	}
+}
