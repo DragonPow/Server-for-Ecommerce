@@ -12,68 +12,27 @@ import (
 )
 
 type Category struct {
-	ID   int64  `json:"id"`
-	Name string `json:"name"`
-}
-
-type OrderBill struct {
-	ID             int64           `json:"id"`
-	CustomerID     int64           `json:"customer_id"`
-	PaymentMethod  string          `json:"payment_method"`
-	ContactName    sql.NullString  `json:"contact_name"`
-	ContactPhone   sql.NullString  `json:"contact_phone"`
-	ContactAddress sql.NullString  `json:"contact_address"`
-	TotalPrice     sql.NullFloat64 `json:"total_price"`
-	ShipCost       sql.NullFloat64 `json:"ship_cost"`
-	State          string          `json:"state"`
-	Note           sql.NullString  `json:"note"`
-	CreateUid      sql.NullInt64   `json:"create_uid"`
-	CreateDate     sql.NullTime    `json:"create_date"`
-	WriteUid       sql.NullInt64   `json:"write_uid"`
-	WriteDate      sql.NullTime    `json:"write_date"`
-}
-
-type OrderBillDetail struct {
-	ID                int64           `json:"id"`
-	OrderID           int64           `json:"order_id"`
-	ProductTemplateID int64           `json:"product_template_id"`
-	Quantity          sql.NullFloat64 `json:"quantity"`
-	UnitPrice         sql.NullFloat64 `json:"unit_price"`
-	TotalPrice        sql.NullFloat64 `json:"total_price"`
-}
-
-type OrderShipping struct {
-	ID              int64          `json:"id"`
-	OrderID         int64          `json:"order_id"`
-	State           string         `json:"state"`
-	ShippingName    sql.NullString `json:"shipping_name"`
-	ShippingPhone   sql.NullString `json:"shipping_phone"`
-	ShippingAddress sql.NullString `json:"shipping_address"`
-	CreateUid       sql.NullInt64  `json:"create_uid"`
-	CreateDate      sql.NullTime   `json:"create_date"`
-	WriteUid        sql.NullInt64  `json:"write_uid"`
-	WriteDate       sql.NullTime   `json:"write_date"`
-}
-
-type OrderShippingDetail struct {
-	ID            int64           `json:"id"`
-	ShippingID    int64           `json:"shipping_id"`
-	OrderDetailID int64           `json:"order_detail_id"`
-	ProductID     int64           `json:"product_id"`
-	Quantity      sql.NullFloat64 `json:"quantity"`
+	ID          int64          `json:"id"`
+	Name        string         `json:"name"`
+	Description sql.NullString `json:"description"`
+	CreateUid   sql.NullInt64  `json:"create_uid"`
+	CreateDate  time.Time      `json:"create_date"`
+	WriteUid    sql.NullInt64  `json:"write_uid"`
+	WriteTime   sql.NullInt64  `json:"write_time"`
 }
 
 type Product struct {
-	ID          int64         `json:"id"`
-	TemplateID  int64         `json:"template_id"`
-	Name        string        `json:"name"`
-	OriginPrice float64       `json:"origin_price"`
-	SalePrice   float64       `json:"sale_price"`
-	State       string        `json:"state"`
-	CreateUid   sql.NullInt64 `json:"create_uid"`
-	CreateDate  sql.NullTime  `json:"create_date"`
-	WriteUid    sql.NullInt64 `json:"write_uid"`
-	WriteDate   sql.NullTime  `json:"write_date"`
+	ID          int64                 `json:"id"`
+	TemplateID  sql.NullInt64         `json:"template_id"`
+	Name        string                `json:"name"`
+	OriginPrice float64               `json:"origin_price"`
+	SalePrice   float64               `json:"sale_price"`
+	State       string                `json:"state"`
+	Variants    pqtype.NullRawMessage `json:"variants"`
+	CreateUid   sql.NullInt64         `json:"create_uid"`
+	CreateDate  time.Time             `json:"create_date"`
+	WriteUid    sql.NullInt64         `json:"write_uid"`
+	WriteTime   sql.NullInt64         `json:"write_time"`
 }
 
 type ProductTemplate struct {
@@ -88,11 +47,11 @@ type ProductTemplate struct {
 	CreateUid      sql.NullInt64         `json:"create_uid"`
 	CreateDate     time.Time             `json:"create_date"`
 	WriteUid       sql.NullInt64         `json:"write_uid"`
-	WriteDate      time.Time             `json:"write_date"`
+	WriteTime      sql.NullInt64         `json:"write_time"`
 	Variants       pqtype.NullRawMessage `json:"variants"`
-	SellerID       int64                 `json:"seller_id"`
-	CategoryID     int64                 `json:"category_id"`
-	UomID          int64                 `json:"uom_id"`
+	SellerID       sql.NullInt64         `json:"seller_id"`
+	CategoryID     sql.NullInt64         `json:"category_id"`
+	UomID          sql.NullInt64         `json:"uom_id"`
 }
 
 type Seller struct {
@@ -106,7 +65,7 @@ type Seller struct {
 	CreateUid   sql.NullInt64  `json:"create_uid"`
 	CreateDate  time.Time      `json:"create_date"`
 	WriteUid    sql.NullInt64  `json:"write_uid"`
-	WriteDate   time.Time      `json:"write_date"`
+	WriteTime   sql.NullInt64  `json:"write_time"`
 }
 
 type Uom struct {

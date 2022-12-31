@@ -290,6 +290,16 @@ func (m *GetImportBillItemDetail) Validate() error {
 
 	// no validation rules for Quantity
 
+	if v, ok := interface{}(m.GetCreatedDate()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return GetImportBillItemDetailValidationError{
+				field:  "CreatedDate",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
 	return nil
 }
 

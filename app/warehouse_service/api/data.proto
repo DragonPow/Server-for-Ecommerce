@@ -1,6 +1,7 @@
 syntax = "proto3";
 package app.warehouse_service.api;
 option go_package = "app/warehouse_service/api";
+import "google/protobuf/timestamp.proto";
 
 message CreateImportBillResponseData {
   // ImportId
@@ -38,4 +39,6 @@ message GetImportBillItemDetail {
   string uom_name = 3;
   // Quantity
   double quantity = 4;
+  // CreatedDate
+  google.protobuf.Timestamp created_date = 5;
 }

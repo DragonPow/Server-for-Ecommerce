@@ -12,7 +12,7 @@ import (
 )
 
 const getProducts = `-- name: getProducts :many
-SELECT id, template_id, name, origin_price, sale_price, state, create_uid, create_date, write_uid, write_date
+SELECT id, template_id, name, origin_price, sale_price, state, variants, create_uid, create_date, write_uid, write_time
 FROM product
 WHERE
     CASE WHEN array_length($1::int8[], 1) > 0 THEN id = ANY($1::int8[]) ELSE TRUE END
@@ -40,10 +40,11 @@ func (q *Queries) getProducts(ctx context.Context, arg getProductsParams) ([]Pro
 			&i.OriginPrice,
 			&i.SalePrice,
 			&i.State,
+			&i.Variants,
 			&i.CreateUid,
 			&i.CreateDate,
 			&i.WriteUid,
-			&i.WriteDate,
+			&i.WriteTime,
 		); err != nil {
 			return nil, err
 		}

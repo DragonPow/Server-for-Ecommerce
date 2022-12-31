@@ -3,7 +3,6 @@ package app.order_service.api;
 option go_package = "app/order_service/api";
 import "google/protobuf/timestamp.proto";
 
-
 // GetOrderDetailResponseData
 message GetOrderDetailResponseData {
   // Id
