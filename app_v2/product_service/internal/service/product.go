@@ -2,41 +2,50 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/api"
+	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/util"
 )
 
 func (s *Service) GetDetailProduct(ctx context.Context, req *api.GetDetailProductRequest) (res *api.GetDetailProductResponse, err error) {
 	// Get from memory
 	// Get from database
+	products, err := s.storeDb.GetProductDetails(ctx, []int64{req.Id})
+	if err != nil {
+		return nil, err
+	}
+	if len(products) == util.ZeroLength {
+		return nil, fmt.Errorf("not found product with id = %v", req.Id)
+	}
+	product := products[0]
 	return &api.GetDetailProductResponse{
 		Code:    0,
 		Message: "OK",
 		Data: api.ProductDetail{
-			Id:                  100,
-			Name:                "Máy tính xách tay ACER Nitro 5",
-			OriginPrice:         30000000,
-			SalePrice:           45000000,
-			Variants:            `{"màu":"đỏ/đen", "cân nặng":"15kg", "đơn vị giao hàng":"Giao hàng tiết kiệm","bảo hành":"12 tháng"}`,
-			CreatedBy:           "Thạch Vũ Ngọc",
-			CreatedDate:         "2011-10-05T14:48:00.000Z",
-			UpdatedBy:           "Thạch Vũ Ngọc",
-			UpdatedDate:         "2011-10-05T14:48:00.000Z",
-			Decription:          "Máy tính chuyên dụng chơi game văn phòng hoặc sử dụng cho sinh viên làm bài tập, chơi game",
-			TemplateId:          1,
-			TemplateName:        "",
-			TemplateDescription: "",
-			SoldQuantity:        7000,
-			RemainQuantity:      1024,
-			Rating:              3.5,
-			NumberRating:        4000,
-			SellerId:            1,
-			SellerName:          "Công ty trách nhiệm hữu hạn 1 thành viên",
-			SellerLogo:          "",
-			SellerAddress:       "Q1, TP.HCM",
-			CategoryId:          1,
-			CategoryName:        "Máy tính",
-			UomId:               1,
-			UomName:             "Cái",
+			Id:                  product.ID,
+			Name:                product.Name,
+			OriginPrice:         product.OriginPrice,
+			SalePrice:           product.SalePrice,
+			Variants:            string(product.Variants.RawMessage),
+			CreatedBy:           "",
+			CreatedDate:         util.ParseTimeToString(product.CreateDate),
+			UpdatedBy:           "",
+			UpdatedDate:         util.ParseUnixTimeToString(product.WriteTime),
+			TemplateId:          product.TemplateID.Int64,
+			TemplateName:        product.TemplateName,
+			TemplateDescription: product.TemplateDescription.String,
+			SoldQuantity:        product.SoldQuantity,
+			RemainQuantity:      product.RemainQuantity,
+			Rating:              product.Rating,
+			NumberRating:        int32(product.NumberRating),
+			SellerId:            product.SellerID,
+			SellerName:          product.SellerName,
+			SellerLogo:          product.SellerLogo.String,
+			SellerAddress:       product.SellerAddress.String,
+			CategoryId:          product.CategoryID,
+			CategoryName:        product.CategoryName,
+			UomId:               product.UomID,
+			UomName:             product.UomName,
 		},
 	}, nil
 }

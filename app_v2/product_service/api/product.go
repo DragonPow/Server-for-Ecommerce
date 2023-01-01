@@ -36,7 +36,6 @@ type ProductDetail struct {
 	CreatedDate string  `json:"created_date"`
 	UpdatedBy   string  `json:"updated_by"`
 	UpdatedDate string  `json:"updated_date"`
-	Decription  string  `json:"decription"`
 
 	TemplateId          int64   `json:"template_id"`
 	TemplateName        string  `json:"template_name"`

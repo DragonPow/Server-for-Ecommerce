@@ -9,7 +9,13 @@ import (
 )
 
 type Querier interface {
-	getProducts(ctx context.Context, arg getProductsParams) ([]Product, error)
+	GetCategories(ctx context.Context, ids []int64) ([]Category, error)
+	GetProductDetails(ctx context.Context, ids []int64) ([]GetProductDetailsRow, error)
+	GetProductTemplates(ctx context.Context, ids []int64) ([]ProductTemplate, error)
+	GetProducts(ctx context.Context, ids []int64) ([]Product, error)
+	GetSellers(ctx context.Context, ids []int64) ([]Seller, error)
+	GetUoms(ctx context.Context, ids []int64) ([]Uom, error)
+	getProductTemplates(ctx context.Context, ids []int64) ([]ProductTemplate, error)
 }
 
 var _ Querier = (*Queries)(nil)

@@ -7,25 +7,195 @@ package store
 
 import (
 	"context"
+	"database/sql"
+	"time"
 
 	"github.com/lib/pq"
+	"github.com/tabbed/pqtype"
 )
 
-const getProducts = `-- name: getProducts :many
-SELECT id, template_id, name, origin_price, sale_price, state, variants, create_uid, create_date, write_uid, write_time
-FROM product
-WHERE
-    CASE WHEN array_length($1::int8[], 1) > 0 THEN id = ANY($1::int8[]) ELSE TRUE END
-AND CASE WHEN $2::int8 > 0 THEN template_id = $2::int8 ELSE TRUE END
+const getCategories = `-- name: GetCategories :many
+SELECT id, name, description, create_uid, create_date, write_uid, write_time
+FROM category
+WHERE CASE WHEN array_length($1::int8[], 1) > 0 THEN id = ANY($1::int8[]) ELSE TRUE END
 `
 
-type getProductsParams struct {
-	Ids               []int64 `json:"ids"`
-	ProductTemplateID int64   `json:"product_template_id"`
+func (q *Queries) GetCategories(ctx context.Context, ids []int64) ([]Category, error) {
+	rows, err := q.query(ctx, q.getCategoriesStmt, getCategories, pq.Array(ids))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Category{}
+	for rows.Next() {
+		var i Category
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Description,
+			&i.CreateUid,
+			&i.CreateDate,
+			&i.WriteUid,
+			&i.WriteTime,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
-func (q *Queries) getProducts(ctx context.Context, arg getProductsParams) ([]Product, error) {
-	rows, err := q.query(ctx, q.getProductsStmt, getProducts, pq.Array(arg.Ids), arg.ProductTemplateID)
+const getProductDetails = `-- name: GetProductDetails :many
+SELECT p.id, p.template_id, p.name, p.origin_price, p.sale_price, p.state, p.variants, p.create_uid, p.create_date, p.write_uid, p.write_time,
+       c.id category_id, c.name category_name,
+       u.id uom_id, u.name uom_name,
+       s.id seller_id, s.name seller_name, s.logo_url seller_logo, s.address seller_address,
+       pt.name template_name, pt.rating, pt.number_rating, pt.description template_description, pt.remain_quantity, pt.sold_quantity
+FROM product p
+JOIN product_template pt on pt.id = p.template_id
+JOIN category c on c.id = pt.category_id
+JOIN uom u on u.id = pt.uom_id
+JOIN seller s on s.id = pt.seller_id
+WHERE CASE WHEN array_length($1::int8[], 1) > 0 THEN id = ANY($1::int8[]) ELSE TRUE END
+`
+
+type GetProductDetailsRow struct {
+	ID                  int64                 `json:"id"`
+	TemplateID          sql.NullInt64         `json:"template_id"`
+	Name                string                `json:"name"`
+	OriginPrice         float64               `json:"origin_price"`
+	SalePrice           float64               `json:"sale_price"`
+	State               string                `json:"state"`
+	Variants            pqtype.NullRawMessage `json:"variants"`
+	CreateUid           sql.NullInt64         `json:"create_uid"`
+	CreateDate          time.Time             `json:"create_date"`
+	WriteUid            sql.NullInt64         `json:"write_uid"`
+	WriteTime           sql.NullInt64         `json:"write_time"`
+	CategoryID          int64                 `json:"category_id"`
+	CategoryName        string                `json:"category_name"`
+	UomID               int64                 `json:"uom_id"`
+	UomName             string                `json:"uom_name"`
+	SellerID            int64                 `json:"seller_id"`
+	SellerName          string                `json:"seller_name"`
+	SellerLogo          sql.NullString        `json:"seller_logo"`
+	SellerAddress       sql.NullString        `json:"seller_address"`
+	TemplateName        string                `json:"template_name"`
+	Rating              float64               `json:"rating"`
+	NumberRating        int64                 `json:"number_rating"`
+	TemplateDescription sql.NullString        `json:"template_description"`
+	RemainQuantity      float64               `json:"remain_quantity"`
+	SoldQuantity        float64               `json:"sold_quantity"`
+}
+
+func (q *Queries) GetProductDetails(ctx context.Context, ids []int64) ([]GetProductDetailsRow, error) {
+	rows, err := q.query(ctx, q.getProductDetailsStmt, getProductDetails, pq.Array(ids))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetProductDetailsRow{}
+	for rows.Next() {
+		var i GetProductDetailsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.TemplateID,
+			&i.Name,
+			&i.OriginPrice,
+			&i.SalePrice,
+			&i.State,
+			&i.Variants,
+			&i.CreateUid,
+			&i.CreateDate,
+			&i.WriteUid,
+			&i.WriteTime,
+			&i.CategoryID,
+			&i.CategoryName,
+			&i.UomID,
+			&i.UomName,
+			&i.SellerID,
+			&i.SellerName,
+			&i.SellerLogo,
+			&i.SellerAddress,
+			&i.TemplateName,
+			&i.Rating,
+			&i.NumberRating,
+			&i.TemplateDescription,
+			&i.RemainQuantity,
+			&i.SoldQuantity,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getProductTemplates = `-- name: GetProductTemplates :many
+SELECT id, name, description, default_price, remain_quantity, sold_quantity, rating, number_rating, create_uid, create_date, write_uid, write_time, variants, seller_id, category_id, uom_id
+FROM product_template
+WHERE CASE WHEN array_length($1::int8[], 1) > 0 THEN id = ANY($1::int8[]) ELSE TRUE END
+`
+
+func (q *Queries) GetProductTemplates(ctx context.Context, ids []int64) ([]ProductTemplate, error) {
+	rows, err := q.query(ctx, q.getProductTemplatesStmt, getProductTemplates, pq.Array(ids))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ProductTemplate{}
+	for rows.Next() {
+		var i ProductTemplate
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Description,
+			&i.DefaultPrice,
+			&i.RemainQuantity,
+			&i.SoldQuantity,
+			&i.Rating,
+			&i.NumberRating,
+			&i.CreateUid,
+			&i.CreateDate,
+			&i.WriteUid,
+			&i.WriteTime,
+			&i.Variants,
+			&i.SellerID,
+			&i.CategoryID,
+			&i.UomID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getProducts = `-- name: GetProducts :many
+SELECT id, template_id, name, origin_price, sale_price, state, variants, create_uid, create_date, write_uid, write_time
+FROM product
+WHERE CASE WHEN array_length($1::int8[], 1) > 0 THEN id = ANY($1::int8[]) ELSE TRUE END
+`
+
+func (q *Queries) GetProducts(ctx context.Context, ids []int64) ([]Product, error) {
+	rows, err := q.query(ctx, q.getProductsStmt, getProducts, pq.Array(ids))
 	if err != nil {
 		return nil, err
 	}
@@ -45,6 +215,122 @@ func (q *Queries) getProducts(ctx context.Context, arg getProductsParams) ([]Pro
 			&i.CreateDate,
 			&i.WriteUid,
 			&i.WriteTime,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getSellers = `-- name: GetSellers :many
+SELECT id, name, description, phone, address, logo_url, manager_id, create_uid, create_date, write_uid, write_time
+FROM seller
+WHERE CASE WHEN array_length($1::int8[], 1) > 0 THEN id = ANY($1::int8[]) ELSE TRUE END
+`
+
+func (q *Queries) GetSellers(ctx context.Context, ids []int64) ([]Seller, error) {
+	rows, err := q.query(ctx, q.getSellersStmt, getSellers, pq.Array(ids))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Seller{}
+	for rows.Next() {
+		var i Seller
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Description,
+			&i.Phone,
+			&i.Address,
+			&i.LogoUrl,
+			&i.ManagerID,
+			&i.CreateUid,
+			&i.CreateDate,
+			&i.WriteUid,
+			&i.WriteTime,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getUoms = `-- name: GetUoms :many
+SELECT id, name, seller_id
+FROM uom
+WHERE CASE WHEN array_length($1::int8[], 1) > 0 THEN id = ANY($1::int8[]) ELSE TRUE END
+`
+
+func (q *Queries) GetUoms(ctx context.Context, ids []int64) ([]Uom, error) {
+	rows, err := q.query(ctx, q.getUomsStmt, getUoms, pq.Array(ids))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Uom{}
+	for rows.Next() {
+		var i Uom
+		if err := rows.Scan(&i.ID, &i.Name, &i.SellerID); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getProductTemplates = `-- name: getProductTemplates :many
+SELECT id, name, description, default_price, remain_quantity, sold_quantity, rating, number_rating, create_uid, create_date, write_uid, write_time, variants, seller_id, category_id, uom_id
+FROM product_template
+WHERE CASE WHEN array_length($1::int8[], 1) > 0 THEN id = ANY($1::int8[]) ELSE TRUE END
+`
+
+func (q *Queries) getProductTemplates(ctx context.Context, ids []int64) ([]ProductTemplate, error) {
+	rows, err := q.query(ctx, q.getProductTemplatesStmt, getProductTemplates, pq.Array(ids))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ProductTemplate{}
+	for rows.Next() {
+		var i ProductTemplate
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Description,
+			&i.DefaultPrice,
+			&i.RemainQuantity,
+			&i.SoldQuantity,
+			&i.Rating,
+			&i.NumberRating,
+			&i.CreateUid,
+			&i.CreateDate,
+			&i.WriteUid,
+			&i.WriteTime,
+			&i.Variants,
+			&i.SellerID,
+			&i.CategoryID,
+			&i.UomID,
 		); err != nil {
 			return nil, err
 		}

@@ -24,17 +24,65 @@ func New(db DBTX) *Queries {
 func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	q := Queries{db: db}
 	var err error
+	if q.getCategoriesStmt, err = db.PrepareContext(ctx, getCategories); err != nil {
+		return nil, fmt.Errorf("error preparing query GetCategories: %w", err)
+	}
+	if q.getProductDetailsStmt, err = db.PrepareContext(ctx, getProductDetails); err != nil {
+		return nil, fmt.Errorf("error preparing query GetProductDetails: %w", err)
+	}
+	if q.getProductTemplatesStmt, err = db.PrepareContext(ctx, getProductTemplates); err != nil {
+		return nil, fmt.Errorf("error preparing query GetProductTemplates: %w", err)
+	}
 	if q.getProductsStmt, err = db.PrepareContext(ctx, getProducts); err != nil {
-		return nil, fmt.Errorf("error preparing query getProducts: %w", err)
+		return nil, fmt.Errorf("error preparing query GetProducts: %w", err)
+	}
+	if q.getSellersStmt, err = db.PrepareContext(ctx, getSellers); err != nil {
+		return nil, fmt.Errorf("error preparing query GetSellers: %w", err)
+	}
+	if q.getUomsStmt, err = db.PrepareContext(ctx, getUoms); err != nil {
+		return nil, fmt.Errorf("error preparing query GetUoms: %w", err)
+	}
+	if q.getProductTemplatesStmt, err = db.PrepareContext(ctx, getProductTemplates); err != nil {
+		return nil, fmt.Errorf("error preparing query getProductTemplates: %w", err)
 	}
 	return &q, nil
 }
 
 func (q *Queries) Close() error {
 	var err error
+	if q.getCategoriesStmt != nil {
+		if cerr := q.getCategoriesStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getCategoriesStmt: %w", cerr)
+		}
+	}
+	if q.getProductDetailsStmt != nil {
+		if cerr := q.getProductDetailsStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getProductDetailsStmt: %w", cerr)
+		}
+	}
+	if q.getProductTemplatesStmt != nil {
+		if cerr := q.getProductTemplatesStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getProductTemplatesStmt: %w", cerr)
+		}
+	}
 	if q.getProductsStmt != nil {
 		if cerr := q.getProductsStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getProductsStmt: %w", cerr)
+		}
+	}
+	if q.getSellersStmt != nil {
+		if cerr := q.getSellersStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getSellersStmt: %w", cerr)
+		}
+	}
+	if q.getUomsStmt != nil {
+		if cerr := q.getUomsStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getUomsStmt: %w", cerr)
+		}
+	}
+	if q.getProductTemplatesStmt != nil {
+		if cerr := q.getProductTemplatesStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getProductTemplatesStmt: %w", cerr)
 		}
 	}
 	return err
@@ -74,15 +122,27 @@ func (q *Queries) queryRow(ctx context.Context, stmt *sql.Stmt, query string, ar
 }
 
 type Queries struct {
-	db              DBTX
-	tx              *sql.Tx
-	getProductsStmt *sql.Stmt
+	db                      DBTX
+	tx                      *sql.Tx
+	getCategoriesStmt       *sql.Stmt
+	getProductDetailsStmt   *sql.Stmt
+	getProductTemplatesStmt *sql.Stmt
+	getProductsStmt         *sql.Stmt
+	getSellersStmt          *sql.Stmt
+	getUomsStmt             *sql.Stmt
+	getProductTemplatesStmt *sql.Stmt
 }
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	return &Queries{
-		db:              tx,
-		tx:              tx,
-		getProductsStmt: q.getProductsStmt,
+		db:                      tx,
+		tx:                      tx,
+		getCategoriesStmt:       q.getCategoriesStmt,
+		getProductDetailsStmt:   q.getProductDetailsStmt,
+		getProductTemplatesStmt: q.getProductTemplatesStmt,
+		getProductsStmt:         q.getProductsStmt,
+		getSellersStmt:          q.getSellersStmt,
+		getUomsStmt:             q.getUomsStmt,
+		getProductTemplatesStmt: q.getProductTemplatesStmt,
 	}
 }
