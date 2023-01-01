@@ -9,9 +9,9 @@ import (
 )
 
 type redisCache struct {
-	client                *redis.Client
-	expirationMilliSecond uint32
-	log                   logr.Logger
+	client           *redis.Client
+	expirationSecond time.Duration
+	log              logr.Logger
 }
 
 func New(addr string, password string, expiration uint32, log logr.Logger) cache.Cache {
@@ -22,9 +22,9 @@ func New(addr string, password string, expiration uint32, log logr.Logger) cache
 	})
 
 	return &redisCache{
-		client:                rdb,
-		expirationMilliSecond: expiration,
-		log:                   log,
+		client:           rdb,
+		expirationSecond: time.Duration(expiration) * time.Second,
+		log:              log,
 	}
 }
 
@@ -37,11 +37,7 @@ func (c *redisCache) Get(ctx context.Context, key string) (string, bool) {
 }
 
 func (c *redisCache) Set(ctx context.Context, key string, value interface{}) error {
-	code, err := cache.Marshal(value)
-	if err != nil {
-		return err
-	}
-	return c.client.Set(ctx, key, code, time.Duration(c.expirationMilliSecond)*time.Millisecond).Err()
+	return c.client.Set(ctx, key, value, c.expirationSecond).Err()
 }
 
 func (c *redisCache) GetList(ctx context.Context, keys []string) ([]interface{}, error) {

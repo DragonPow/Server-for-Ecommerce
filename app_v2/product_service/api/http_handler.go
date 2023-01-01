@@ -2,11 +2,12 @@ package api
 
 import (
 	"context"
+	"encoding/json"
+	"github.com/DragonPow/Server-for-Ecommerce/library/encode/gzip"
 	"net/http"
 	"strconv"
 
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/util"
-	"github.com/DragonPow/Server-for-Ecommerce/library/cache"
 	"github.com/gorilla/mux"
 )
 
@@ -22,32 +23,40 @@ type HttpServer interface {
 	GetListProduct(ctx context.Context, req *GetListProductRequest) (res *GetListProductResponse, err error)
 }
 
-func NewHttpHandler(s HttpServer) error {
+func NewHttpHandler(httpPattern string, s HttpServer) *mux.Router {
 	r := mux.NewRouter()
+	r.HandleFunc(httpPattern+"/", func(w http.ResponseWriter, r *http.Request) {
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+		_, err := w.Write([]byte("Hello world"))
+		if err != nil {
+			HTTPError(ctx, w, r, err)
+			return
+		}
+	}).Methods(GET)
+	r.HandleFunc(httpPattern+"/products/{id}", getDetailProductHandler(s)).Methods(GET)
+	r.HandleFunc(httpPattern+"/products", getListProductHandler).Methods(GET)
 
-	r.HandleFunc("/products/{id}", getDetailProductHandler(s)).Methods(GET)
-	r.HandleFunc("/products", getListProductHandler).Methods(GET)
-
-	return nil
+	return r
 }
 
-func getDetailProductHandler(m *http.ServeMux, s HttpServer) func(http.ResponseWriter, *http.Request) {
+func getDetailProductHandler(s HttpServer) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 		productId, err := strconv.ParseInt(mux.Vars(r)["id"], util.Base10Int, util.BitSize64)
 		if err != nil {
-			HTTPError(ctx, m, w, r, err)
+			HTTPError(ctx, w, r, err)
 			return
 		}
 		resp, err := s.GetDetailProduct(ctx, &GetDetailProductRequest{
 			Id: productId,
 		})
 		if err != nil {
-			HTTPError(ctx, m, w, r, err)
+			HTTPError(ctx, w, r, err)
 			return
 		}
-		ForwardResponseMessage(ctx, mux, cache.Marshal(), w, r, resp)
+		ForwardResponseMessage(ctx, gzip.NewGzipEncoder(), w, r, resp)
 	}
 }
 
@@ -60,22 +69,25 @@ type Marshaler interface {
 }
 
 // ForwardResponseMessage forwards the message "resp" from gRPC server to REST client.
-func ForwardResponseMessage(ctx context.Context, mux *http.ServeMux, marshaler Marshaler, w http.ResponseWriter, req *http.Request, resp any) {
-	contentType := ""
-	w.Header().Set("Content-Type", contentType)
+func ForwardResponseMessage(ctx context.Context, marshaler Marshaler, w http.ResponseWriter, req *http.Request, resp any) {
+	contentType := "application/json"
+	//acceptEncoding := "gzip"
 
-	buf, err := marshaler.Marshal(resp)
+	w.Header().Set("Content-Type", contentType)
+	//w.Header().Set("Content-Encoding", acceptEncoding)
+
+	buf, err := json.Marshal(resp)
 	if err != nil {
-		HTTPError(ctx, mux, w, req, err)
+		HTTPError(ctx, w, req, err)
 		return
 	}
 
 	if _, err = w.Write(buf); err != nil {
-		HTTPError(ctx, mux, w, req, err)
+		HTTPError(ctx, w, req, err)
 		return
 	}
 }
 
-func HTTPError(ctx context.Context, mux *http.ServeMux, w http.ResponseWriter, req *http.Request, err error) {
+func HTTPError(ctx context.Context, w http.ResponseWriter, req *http.Request, err error) {
 	panic("unimplemented")
 }

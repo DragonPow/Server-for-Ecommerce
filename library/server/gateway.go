@@ -48,11 +48,12 @@ func createDefaultGatewayConfig() *gatewayConfig {
 func newGatewayServer(c *gatewayConfig, conn *grpc.ClientConn, servers []ServiceServer) (*gatewayServer, error) {
 	mux := runtime.NewServeMux(c.MuxOptions...)
 	httpMux := http.NewServeMux()
+	httpPattern := "/http"
 
 	for _, handler := range c.ServerHandlers {
 		handler(httpMux)
 	}
-	httpMux.Handle("/", mux)
+	//httpMux.Handle("/grpc/", mux)
 
 	server := &http.Server{
 		Addr:    c.Addr.String(),
@@ -67,6 +68,11 @@ func newGatewayServer(c *gatewayConfig, conn *grpc.ClientConn, servers []Service
 		if err != nil {
 			return nil, fmt.Errorf("Fail to register handler, %v\n", err)
 		}
+		handler, err := server.RegisterWithHttpHandler(httpPattern)
+		if err != nil {
+			return nil, fmt.Errorf("Fail to register http handler, %v\n", err)
+		}
+		httpMux.Handle(httpPattern+"/", handler)
 	}
 
 	return &gatewayServer{

@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"net/http"
 
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/api"
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/config"
@@ -30,7 +31,7 @@ func NewService(
 		cfg:     cfg,
 		log:     log,
 		storeDb: storeDb,
-		cache:   cache,
+		//cache:   cache,
 	}
 }
 
@@ -42,11 +43,11 @@ func (s *Service) Close(ctx context.Context) {
 func (s *Service) RegisterWithServer(server *grpc.Server) {
 }
 
+func (s *Service) RegisterWithHttpHandler(httpPattern string) (http.Handler, error) {
+	return api.NewHttpHandler(httpPattern, s), nil
+}
+
 // RegisterWithHandler implementing service server interface
 func (s *Service) RegisterWithHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
-	err := api.NewHttpHandler(s)
-	if err != nil {
-		return err
-	}
 	return nil
 }

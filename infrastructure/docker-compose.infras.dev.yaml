@@ -16,7 +16,7 @@ services:
     volumes:
       - account-data:/var/lib/postgresql/data
 
-  # postgres order database
+  # postgres product database
   product-db:
     image: postgres:alpine
     container_name: ktpm-product-db
@@ -33,11 +33,7 @@ services:
 
 volumes:
   account-data:
-    name: ktpm-account-data
-    external: true
   product-data:
-    name: ktpm-product-data
-    external: true
 
 
 networks:

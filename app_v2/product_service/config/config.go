@@ -15,12 +15,19 @@ type Config struct {
 	MigrationFolder  string              `json:"migration_folder" mapstructure:"migration_folder"`
 	ProductServiceDB database.DBConfig   `json:"product_service_db" mapstructure:"product_service_db"`
 	RedisConfig      RedisConfig         `json:"redis_config" mapstructure:"redis_config"`
+	KafkaConfig      KafkaConfig         `json:"kafka_config" mapstructure:"kafka_config"`
 }
 
 type RedisConfig struct {
 	Addr           string `json:"addr" mapstructure:"addr"`
 	Password       string `json:"password" mapstructure:"password"`
 	ExpiredDefault uint32 `json:"expired_default" mapstructure:"expired_default"`
+}
+
+type KafkaConfig struct {
+	Topic         string   `json:"topic" mapstructure:"topic"`
+	Connections   []string `json:"connections" mapstructure:"connections"`
+	ConsumerGroup string   `json:"consumer_group" mapstructure:"consumer_group"`
 }
 
 // Load system env config
