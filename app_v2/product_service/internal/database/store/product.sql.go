@@ -52,7 +52,7 @@ func (q *Queries) GetCategories(ctx context.Context, ids []int64) ([]Category, e
 }
 
 const getProductDetails = `-- name: GetProductDetails :many
-SELECT p.id, p.template_id, p.name, p.origin_price, p.sale_price, p.state, p.variants, p.create_uid, p.create_date, p.write_uid, p.write_time,
+SELECT p.id, p.template_id, p.name, p.origin_price, p.sale_price, p.state, p.variants, p.create_uid, p.create_date, p.write_uid, p.write_date,
        c.id category_id, c.name category_name,
        u.id uom_id, u.name uom_name,
        s.id seller_id, s.name seller_name, s.logo_url seller_logo, s.address seller_address,
@@ -76,7 +76,7 @@ type GetProductDetailsRow struct {
 	CreateUid           sql.NullInt64         `json:"create_uid"`
 	CreateDate          time.Time             `json:"create_date"`
 	WriteUid            sql.NullInt64         `json:"write_uid"`
-	WriteTime           sql.NullInt64         `json:"write_time"`
+	WriteDate           time.Time             `json:"write_date"`
 	CategoryID          int64                 `json:"category_id"`
 	CategoryName        string                `json:"category_name"`
 	UomID               int64                 `json:"uom_id"`
@@ -113,7 +113,7 @@ func (q *Queries) GetProductDetails(ctx context.Context, ids []int64) ([]GetProd
 			&i.CreateUid,
 			&i.CreateDate,
 			&i.WriteUid,
-			&i.WriteTime,
+			&i.WriteDate,
 			&i.CategoryID,
 			&i.CategoryName,
 			&i.UomID,
@@ -143,7 +143,7 @@ func (q *Queries) GetProductDetails(ctx context.Context, ids []int64) ([]GetProd
 }
 
 const getProductTemplates = `-- name: GetProductTemplates :many
-SELECT id, name, description, default_price, remain_quantity, sold_quantity, rating, number_rating, create_uid, create_date, write_uid, write_time, variants, seller_id, category_id, uom_id
+SELECT id, name, description, default_price, remain_quantity, sold_quantity, rating, number_rating, create_uid, create_date, write_uid, write_date, variants, seller_id, category_id, uom_id
 FROM product_template
 WHERE CASE WHEN array_length($1::int8[], 1) > 0 THEN id = ANY($1::int8[]) ELSE TRUE END
 `
@@ -169,7 +169,7 @@ func (q *Queries) GetProductTemplates(ctx context.Context, ids []int64) ([]Produ
 			&i.CreateUid,
 			&i.CreateDate,
 			&i.WriteUid,
-			&i.WriteTime,
+			&i.WriteDate,
 			&i.Variants,
 			&i.SellerID,
 			&i.CategoryID,
@@ -189,7 +189,7 @@ func (q *Queries) GetProductTemplates(ctx context.Context, ids []int64) ([]Produ
 }
 
 const getProducts = `-- name: GetProducts :many
-SELECT id, template_id, name, origin_price, sale_price, state, variants, create_uid, create_date, write_uid, write_time
+SELECT id, template_id, name, origin_price, sale_price, state, variants, create_uid, create_date, write_uid, write_date
 FROM product
 WHERE CASE WHEN array_length($1::int8[], 1) > 0 THEN id = ANY($1::int8[]) ELSE TRUE END
 `
@@ -214,7 +214,7 @@ func (q *Queries) GetProducts(ctx context.Context, ids []int64) ([]Product, erro
 			&i.CreateUid,
 			&i.CreateDate,
 			&i.WriteUid,
-			&i.WriteTime,
+			&i.WriteDate,
 		); err != nil {
 			return nil, err
 		}
@@ -286,52 +286,6 @@ func (q *Queries) GetUoms(ctx context.Context, ids []int64) ([]Uom, error) {
 	for rows.Next() {
 		var i Uom
 		if err := rows.Scan(&i.ID, &i.Name, &i.SellerID); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const getProductTemplates = `-- name: getProductTemplates :many
-SELECT id, name, description, default_price, remain_quantity, sold_quantity, rating, number_rating, create_uid, create_date, write_uid, write_time, variants, seller_id, category_id, uom_id
-FROM product_template
-WHERE CASE WHEN array_length($1::int8[], 1) > 0 THEN id = ANY($1::int8[]) ELSE TRUE END
-`
-
-func (q *Queries) getProductTemplates(ctx context.Context, ids []int64) ([]ProductTemplate, error) {
-	rows, err := q.query(ctx, q.getProductTemplatesStmt, getProductTemplates, pq.Array(ids))
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []ProductTemplate{}
-	for rows.Next() {
-		var i ProductTemplate
-		if err := rows.Scan(
-			&i.ID,
-			&i.Name,
-			&i.Description,
-			&i.DefaultPrice,
-			&i.RemainQuantity,
-			&i.SoldQuantity,
-			&i.Rating,
-			&i.NumberRating,
-			&i.CreateUid,
-			&i.CreateDate,
-			&i.WriteUid,
-			&i.WriteTime,
-			&i.Variants,
-			&i.SellerID,
-			&i.CategoryID,
-			&i.UomID,
-		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

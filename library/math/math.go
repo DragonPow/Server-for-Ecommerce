@@ -28,3 +28,21 @@ func RoundFloat(val, roundingFactor float64) float64 {
 	pow10Precision := math.Pow10(int(precision))
 	return math.Round(val*pow10Precision) / pow10Precision
 }
+
+func ToMap[T, U any, K comparable](slice []T, f func(item T) (K, U)) map[K]U {
+	result := make(map[K]U)
+	for _, i := range slice {
+		k, v := f(i)
+		result[k] = v
+	}
+	return result
+}
+
+func Convert[T, U any](slice []T, f func(item T) U) []U {
+	result := make([]U, len(slice))
+	for _, i := range slice {
+		v := f(i)
+		result = append(result, v)
+	}
+	return result
+}

@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/config"
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/internal/database/store"
+	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/internal/mem_cache"
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/internal/service"
 	redisCache "github.com/DragonPow/Server-for-Ecommerce/library/cache/redis"
 	"github.com/DragonPow/Server-for-Ecommerce/library/database/migrate"
@@ -68,6 +69,13 @@ func serverAction(context *cli.Context) error {
 		return err
 	}
 
+	go func() {
+		err := serviceInstance.Consume()
+		if err != nil {
+			logger.Error(err, "Consume error")
+		}
+	}()
+
 	if err := s.Serve(); err != nil {
 		logger.Error(err, "Error start server")
 		return err
@@ -83,6 +91,7 @@ func newService(cfg *config.Config) (*service.Service, error) {
 	}
 	store := store.NewStore(db, logger)
 
+	// Redis cache
 	cache := redisCache.New(
 		cfg.RedisConfig.Addr,
 		cfg.RedisConfig.Password,
@@ -90,10 +99,10 @@ func newService(cfg *config.Config) (*service.Service, error) {
 		logger,
 	)
 
-	// TODO: add another service here and pass to NewService
-	// ...
+	// Memory cache
+	memCache := mem_cache.NewCache(cfg.MemCacheConfig.MaxTimeMiss)
 
-	return service.NewService(cfg, logger, store, cache), nil
+	return service.NewService(cfg, logger, store, cache, memCache), nil
 }
 
 func newDB(dsn string) (*sqlx.DB, error) {

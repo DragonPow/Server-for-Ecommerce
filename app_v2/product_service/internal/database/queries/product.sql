@@ -21,11 +21,6 @@ SELECT *
 FROM product_template
 WHERE CASE WHEN array_length(@ids::int8[], 1) > 0 THEN id = ANY(@ids::int8[]) ELSE TRUE END;
 
--- name: getProductTemplates :many
-SELECT *
-FROM product_template
-WHERE CASE WHEN array_length(@ids::int8[], 1) > 0 THEN id = ANY(@ids::int8[]) ELSE TRUE END;
-
 -- name: GetCategories :many
 SELECT *
 FROM category

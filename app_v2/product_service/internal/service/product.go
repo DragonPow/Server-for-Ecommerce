@@ -9,6 +9,9 @@ import (
 
 func (s *Service) GetDetailProduct(ctx context.Context, req *api.GetDetailProductRequest) (res *api.GetDetailProductResponse, err error) {
 	// Get from memory
+
+	// Get from redis
+
 	// Get from database
 	products, err := s.storeDb.GetProductDetails(ctx, []int64{req.Id})
 	if err != nil {
@@ -30,7 +33,7 @@ func (s *Service) GetDetailProduct(ctx context.Context, req *api.GetDetailProduc
 			CreatedBy:           "",
 			CreatedDate:         util.ParseTimeToString(product.CreateDate),
 			UpdatedBy:           "",
-			UpdatedDate:         util.ParseUnixTimeToString(product.WriteTime),
+			UpdatedDate:         util.ParseTimeToString(product.WriteDate),
 			TemplateId:          product.TemplateID.Int64,
 			TemplateName:        product.TemplateName,
 			TemplateDescription: product.TemplateDescription.String,

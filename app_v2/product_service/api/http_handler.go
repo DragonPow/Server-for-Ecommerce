@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/DragonPow/Server-for-Ecommerce/library/encode/gzip"
+	"google.golang.org/grpc/codes"
 	"net/http"
 	"strconv"
 
@@ -89,5 +90,10 @@ func ForwardResponseMessage(ctx context.Context, marshaler Marshaler, w http.Res
 }
 
 func HTTPError(ctx context.Context, w http.ResponseWriter, req *http.Request, err error) {
-	panic("unimplemented")
+	w.WriteHeader(http.StatusInternalServerError)
+	v := make(map[string]any)
+	v["code"] = codes.Internal
+	v["message"] = err.Error()
+	b, _ := json.Marshal(v)
+	w.Write(b)
 }

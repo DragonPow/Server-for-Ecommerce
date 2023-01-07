@@ -32,7 +32,7 @@ type Product struct {
 	CreateUid   sql.NullInt64         `json:"create_uid"`
 	CreateDate  time.Time             `json:"create_date"`
 	WriteUid    sql.NullInt64         `json:"write_uid"`
-	WriteTime   sql.NullInt64         `json:"write_time"`
+	WriteDate   time.Time             `json:"write_date"`
 }
 
 type ProductTemplate struct {
@@ -47,7 +47,7 @@ type ProductTemplate struct {
 	CreateUid      sql.NullInt64         `json:"create_uid"`
 	CreateDate     time.Time             `json:"create_date"`
 	WriteUid       sql.NullInt64         `json:"write_uid"`
-	WriteTime      sql.NullInt64         `json:"write_time"`
+	WriteDate      time.Time             `json:"write_date"`
 	Variants       pqtype.NullRawMessage `json:"variants"`
 	SellerID       sql.NullInt64         `json:"seller_id"`
 	CategoryID     sql.NullInt64         `json:"category_id"`

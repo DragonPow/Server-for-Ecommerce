@@ -15,7 +15,6 @@ type Querier interface {
 	GetProducts(ctx context.Context, ids []int64) ([]Product, error)
 	GetSellers(ctx context.Context, ids []int64) ([]Seller, error)
 	GetUoms(ctx context.Context, ids []int64) ([]Uom, error)
-	getProductTemplates(ctx context.Context, ids []int64) ([]ProductTemplate, error)
 }
 
 var _ Querier = (*Queries)(nil)

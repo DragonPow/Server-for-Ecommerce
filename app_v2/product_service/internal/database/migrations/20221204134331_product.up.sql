@@ -48,7 +48,7 @@ create table if not exists product_template
     create_uid int8,
     create_date timestamp not null default now(),
     write_uid int8,
-    write_time int8,
+    write_date timestamp not null default now(),
     variants json,
     seller_id int8
         constraint product_template_seller_id_fkey
@@ -79,5 +79,5 @@ create table if not exists product
     create_uid int8,
     create_date timestamp not null default now(),
     write_uid int8,
-    write_time int8
+    write_date timestamp not null default now()
 );

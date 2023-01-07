@@ -16,6 +16,7 @@ type Config struct {
 	ProductServiceDB database.DBConfig   `json:"product_service_db" mapstructure:"product_service_db"`
 	RedisConfig      RedisConfig         `json:"redis_config" mapstructure:"redis_config"`
 	KafkaConfig      KafkaConfig         `json:"kafka_config" mapstructure:"kafka_config"`
+	MemCacheConfig   MemConfig           `json:"mem_cache_config" mapstructure:"mem_cache_config"`
 }
 
 type RedisConfig struct {
@@ -25,9 +26,17 @@ type RedisConfig struct {
 }
 
 type KafkaConfig struct {
-	Topic         string   `json:"topic" mapstructure:"topic"`
-	Connections   []string `json:"connections" mapstructure:"connections"`
-	ConsumerGroup string   `json:"consumer_group" mapstructure:"consumer_group"`
+	UpdateDbConsumer Consumer `json:"consumers" mapstructure:"consumers"`
+}
+
+type MemConfig struct {
+	MaxTimeMiss int `json:"max_time_miss" mapstructure:"max_time_miss"`
+}
+
+type Consumer struct {
+	Topic       string   `json:"topic" mapstructure:"topic"`
+	Connections []string `json:"connections" mapstructure:"connections"`
+	Group       string   `json:"group" mapstructure:"group"`
 }
 
 // Load system env config
@@ -73,6 +82,16 @@ func loadDefaultConfig() *Config {
 			Addr:           "localhost:6379",
 			Password:       "",
 			ExpiredDefault: 0,
+		},
+		KafkaConfig: KafkaConfig{
+			UpdateDbConsumer: Consumer{
+				Topic:       "update_database",
+				Connections: []string{"localhost:9092"},
+				Group:       "update_db_consumer",
+			},
+		},
+		MemCacheConfig: MemConfig{
+			MaxTimeMiss: 3,
 		},
 	}
 }

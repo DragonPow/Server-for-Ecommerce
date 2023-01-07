@@ -42,9 +42,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getUomsStmt, err = db.PrepareContext(ctx, getUoms); err != nil {
 		return nil, fmt.Errorf("error preparing query GetUoms: %w", err)
 	}
-	if q.getProductTemplatesStmt, err = db.PrepareContext(ctx, getProductTemplates); err != nil {
-		return nil, fmt.Errorf("error preparing query getProductTemplates: %w", err)
-	}
 	return &q, nil
 }
 
@@ -78,11 +75,6 @@ func (q *Queries) Close() error {
 	if q.getUomsStmt != nil {
 		if cerr := q.getUomsStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getUomsStmt: %w", cerr)
-		}
-	}
-	if q.getProductTemplatesStmt != nil {
-		if cerr := q.getProductTemplatesStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getProductTemplatesStmt: %w", cerr)
 		}
 	}
 	return err
@@ -130,7 +122,6 @@ type Queries struct {
 	getProductsStmt         *sql.Stmt
 	getSellersStmt          *sql.Stmt
 	getUomsStmt             *sql.Stmt
-	getProductTemplatesStmt *sql.Stmt
 }
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
@@ -143,6 +134,5 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getProductsStmt:         q.getProductsStmt,
 		getSellersStmt:          q.getSellersStmt,
 		getUomsStmt:             q.getUomsStmt,
-		getProductTemplatesStmt: q.getProductTemplatesStmt,
 	}
 }

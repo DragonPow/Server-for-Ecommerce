@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/internal/mem_cache"
 	"net/http"
 
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/api"
@@ -14,11 +15,12 @@ import (
 )
 
 type Service struct {
-	cfg     *config.Config
-	log     logr.Logger
-	storeDb store.StoreQuerier
+	cfg      *config.Config
+	log      logr.Logger
+	storeDb  store.StoreQuerier
+	cache    cache.Cache
+	memCache mem_cache.MemCache
 	//api.UnimplementedOrderServiceServer
-	cache cache.Cache
 }
 
 func NewService(
@@ -26,12 +28,14 @@ func NewService(
 	log logr.Logger,
 	storeDb store.StoreQuerier,
 	cache cache.Cache,
+	memCache mem_cache.MemCache,
 ) *Service {
 	return &Service{
-		cfg:     cfg,
-		log:     log,
-		storeDb: storeDb,
-		//cache:   cache,
+		cfg:      cfg,
+		log:      log,
+		storeDb:  storeDb,
+		cache:    cache,
+		memCache: memCache,
 	}
 }
 
