@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"github.com/DragonPow/Server-for-Ecommerce/library/encode/gzip"
+	"github.com/DragonPow/Server-for-Ecommerce/library/server"
 	"net/http"
 	"strconv"
 
@@ -29,7 +30,7 @@ func NewHttpHandler(httpPattern string, s HttpServer) *mux.Router {
 		defer cancel()
 		_, err := w.Write([]byte("Hello world"))
 		if err != nil {
-			HTTPError(w, r, err)
+			server.HTTPError(w, r, err)
 			return
 		}
 	}).Methods(GET)
@@ -45,17 +46,17 @@ func getDetailProductHandler(s HttpServer) func(http.ResponseWriter, *http.Reque
 		defer cancel()
 		productId, err := strconv.ParseInt(mux.Vars(r)["id"], util.Base10Int, util.BitSize64)
 		if err != nil {
-			HTTPError(w, r, err)
+			server.HTTPError(w, r, err)
 			return
 		}
 		resp, err := s.GetDetailProduct(ctx, &GetDetailProductRequest{
 			Id: productId,
 		})
 		if err != nil {
-			HTTPError(w, r, err)
+			server.HTTPError(w, r, err)
 			return
 		}
-		ForwardResponseMessage(ctx, gzip.NewGzipEncoder(), w, r, resp)
+		server.ForwardResponseMessage(ctx, gzip.NewGzipEncoder(), w, r, resp)
 	}
 }
 

@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"github.com/DragonPow/Server-for-Ecommerce/library/server"
 	"github.com/gorilla/mux"
 	"net/http"
 	"time"
@@ -45,7 +46,7 @@ func NewHttpHandler(httpPattern string, s HttpServer) http.Handler {
 		defer cancel()
 		_, err := w.Write([]byte("Hello world"))
 		if err != nil {
-			HTTPError(w, r, err)
+			server.HTTPError(w, r, err)
 			return
 		}
 	}).Methods(GET)
