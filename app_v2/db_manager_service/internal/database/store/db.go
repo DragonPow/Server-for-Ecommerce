@@ -24,17 +24,89 @@ func New(db DBTX) *Queries {
 func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	q := Queries{db: db}
 	var err error
+	if q.createCategoryStmt, err = db.PrepareContext(ctx, createCategory); err != nil {
+		return nil, fmt.Errorf("error preparing query CreateCategory: %w", err)
+	}
+	if q.createProductStmt, err = db.PrepareContext(ctx, createProduct); err != nil {
+		return nil, fmt.Errorf("error preparing query CreateProduct: %w", err)
+	}
+	if q.createProductTemplateStmt, err = db.PrepareContext(ctx, createProductTemplate); err != nil {
+		return nil, fmt.Errorf("error preparing query CreateProductTemplate: %w", err)
+	}
+	if q.createSellerStmt, err = db.PrepareContext(ctx, createSeller); err != nil {
+		return nil, fmt.Errorf("error preparing query CreateSeller: %w", err)
+	}
 	if q.createUomStmt, err = db.PrepareContext(ctx, createUom); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateUom: %w", err)
+	}
+	if q.updateCategoryStmt, err = db.PrepareContext(ctx, updateCategory); err != nil {
+		return nil, fmt.Errorf("error preparing query UpdateCategory: %w", err)
+	}
+	if q.updateProductStmt, err = db.PrepareContext(ctx, updateProduct); err != nil {
+		return nil, fmt.Errorf("error preparing query UpdateProduct: %w", err)
+	}
+	if q.updateProductTemplateStmt, err = db.PrepareContext(ctx, updateProductTemplate); err != nil {
+		return nil, fmt.Errorf("error preparing query UpdateProductTemplate: %w", err)
+	}
+	if q.updateSellerStmt, err = db.PrepareContext(ctx, updateSeller); err != nil {
+		return nil, fmt.Errorf("error preparing query UpdateSeller: %w", err)
+	}
+	if q.updateUomStmt, err = db.PrepareContext(ctx, updateUom); err != nil {
+		return nil, fmt.Errorf("error preparing query UpdateUom: %w", err)
 	}
 	return &q, nil
 }
 
 func (q *Queries) Close() error {
 	var err error
+	if q.createCategoryStmt != nil {
+		if cerr := q.createCategoryStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing createCategoryStmt: %w", cerr)
+		}
+	}
+	if q.createProductStmt != nil {
+		if cerr := q.createProductStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing createProductStmt: %w", cerr)
+		}
+	}
+	if q.createProductTemplateStmt != nil {
+		if cerr := q.createProductTemplateStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing createProductTemplateStmt: %w", cerr)
+		}
+	}
+	if q.createSellerStmt != nil {
+		if cerr := q.createSellerStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing createSellerStmt: %w", cerr)
+		}
+	}
 	if q.createUomStmt != nil {
 		if cerr := q.createUomStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing createUomStmt: %w", cerr)
+		}
+	}
+	if q.updateCategoryStmt != nil {
+		if cerr := q.updateCategoryStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updateCategoryStmt: %w", cerr)
+		}
+	}
+	if q.updateProductStmt != nil {
+		if cerr := q.updateProductStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updateProductStmt: %w", cerr)
+		}
+	}
+	if q.updateProductTemplateStmt != nil {
+		if cerr := q.updateProductTemplateStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updateProductTemplateStmt: %w", cerr)
+		}
+	}
+	if q.updateSellerStmt != nil {
+		if cerr := q.updateSellerStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updateSellerStmt: %w", cerr)
+		}
+	}
+	if q.updateUomStmt != nil {
+		if cerr := q.updateUomStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updateUomStmt: %w", cerr)
 		}
 	}
 	return err
@@ -74,15 +146,33 @@ func (q *Queries) queryRow(ctx context.Context, stmt *sql.Stmt, query string, ar
 }
 
 type Queries struct {
-	db            DBTX
-	tx            *sql.Tx
-	createUomStmt *sql.Stmt
+	db                        DBTX
+	tx                        *sql.Tx
+	createCategoryStmt        *sql.Stmt
+	createProductStmt         *sql.Stmt
+	createProductTemplateStmt *sql.Stmt
+	createSellerStmt          *sql.Stmt
+	createUomStmt             *sql.Stmt
+	updateCategoryStmt        *sql.Stmt
+	updateProductStmt         *sql.Stmt
+	updateProductTemplateStmt *sql.Stmt
+	updateSellerStmt          *sql.Stmt
+	updateUomStmt             *sql.Stmt
 }
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	return &Queries{
-		db:            tx,
-		tx:            tx,
-		createUomStmt: q.createUomStmt,
+		db:                        tx,
+		tx:                        tx,
+		createCategoryStmt:        q.createCategoryStmt,
+		createProductStmt:         q.createProductStmt,
+		createProductTemplateStmt: q.createProductTemplateStmt,
+		createSellerStmt:          q.createSellerStmt,
+		createUomStmt:             q.createUomStmt,
+		updateCategoryStmt:        q.updateCategoryStmt,
+		updateProductStmt:         q.updateProductStmt,
+		updateProductTemplateStmt: q.updateProductTemplateStmt,
+		updateSellerStmt:          q.updateSellerStmt,
+		updateUomStmt:             q.updateUomStmt,
 	}
 }

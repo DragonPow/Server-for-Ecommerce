@@ -4,9 +4,9 @@ create table if not exists category
     name varchar not null,
     description varchar,
     create_uid int8,
-    create_date timestamp not null default now(),
     write_uid int8,
-    write_time int8
+    create_date timestamp not null default now(),
+    write_date timestamp not null default now()
 );
 
 create table if not exists seller
@@ -19,9 +19,9 @@ create table if not exists seller
     logo_url varchar,
     manager_id int8 not null,
     create_uid int8,
-    create_date timestamp not null default now(),
     write_uid int8,
-    write_time int8
+    create_date timestamp not null default now(),
+    write_date timestamp not null default now()
 );
 
 create table if not exists uom
@@ -32,6 +32,10 @@ create table if not exists uom
         constraint uom_seller_id_fkey
             references seller
             on delete cascade,
+    create_uid int8,
+    write_uid int8,
+    create_date timestamp not null default now(),
+    write_date timestamp not null default now(),
     constraint name_seller_id_unique unique(name, seller_id)
 );
 

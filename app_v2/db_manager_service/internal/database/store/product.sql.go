@@ -8,42 +8,178 @@ package store
 import (
 	"context"
 	"database/sql"
-	"time"
+
+	"github.com/tabbed/pqtype"
 )
 
-const createUom = `-- name: CreateUom :one
-INSERT INTO seller
-(name, description, phone, address, logo_url, manager_id, create_uid, create_date, write_uid, write_time) VALUES
-($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id
+const createProduct = `-- name: CreateProduct :one
+INSERT INTO product(template_id, name, origin_price, sale_price, state, variants,
+                    create_uid, create_date, write_uid, write_date)
+VALUES ($1, $2, $3, $4, $5, $6,
+        case when $7::int8 > 0 then $7::int8 else 1 end,
+        case when $7::int8 > 0 then $7::int8 else 1 end,
+        now() AT TIME ZONE 'utc',
+        now() AT TIME ZONE 'utc') RETURNING id
 `
 
-type CreateUomParams struct {
-	Name        string         `json:"name"`
-	Description sql.NullString `json:"description"`
-	Phone       sql.NullString `json:"phone"`
-	Address     sql.NullString `json:"address"`
-	LogoUrl     sql.NullString `json:"logo_url"`
-	ManagerID   int64          `json:"manager_id"`
-	CreateUid   sql.NullInt64  `json:"create_uid"`
-	CreateDate  time.Time      `json:"create_date"`
-	WriteUid    sql.NullInt64  `json:"write_uid"`
-	WriteTime   sql.NullInt64  `json:"write_time"`
+type CreateProductParams struct {
+	TemplateID  sql.NullInt64         `json:"template_id"`
+	Name        string                `json:"name"`
+	OriginPrice float64               `json:"origin_price"`
+	SalePrice   float64               `json:"sale_price"`
+	State       string                `json:"state"`
+	Variants    pqtype.NullRawMessage `json:"variants"`
+	CreateUid   int64                 `json:"create_uid"`
 }
 
-func (q *Queries) CreateUom(ctx context.Context, arg CreateUomParams) (int64, error) {
-	row := q.queryRow(ctx, q.createUomStmt, createUom,
+func (q *Queries) CreateProduct(ctx context.Context, arg CreateProductParams) (int64, error) {
+	row := q.queryRow(ctx, q.createProductStmt, createProduct,
+		arg.TemplateID,
 		arg.Name,
-		arg.Description,
-		arg.Phone,
-		arg.Address,
-		arg.LogoUrl,
-		arg.ManagerID,
+		arg.OriginPrice,
+		arg.SalePrice,
+		arg.State,
+		arg.Variants,
 		arg.CreateUid,
-		arg.CreateDate,
-		arg.WriteUid,
-		arg.WriteTime,
 	)
 	var id int64
 	err := row.Scan(&id)
 	return id, err
+}
+
+const createProductTemplate = `-- name: CreateProductTemplate :one
+INSERT INTO product_template(name, description, default_price, remain_quantity, sold_quantity, rating, number_rating,
+                             variants, seller_id, category_id, uom_id,
+                             create_uid, write_uid, create_date, write_date)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11,
+        case when $12::int8 > 0 then $12::int8 else 1 end,
+        case when $12::int8 > 0 then $12::int8 else 1 end,
+        now() AT TIME ZONE 'utc',
+        now() AT TIME ZONE 'utc') RETURNING id
+`
+
+type CreateProductTemplateParams struct {
+	Name           string                `json:"name"`
+	Description    sql.NullString        `json:"description"`
+	DefaultPrice   float64               `json:"default_price"`
+	RemainQuantity float64               `json:"remain_quantity"`
+	SoldQuantity   float64               `json:"sold_quantity"`
+	Rating         float64               `json:"rating"`
+	NumberRating   int64                 `json:"number_rating"`
+	Variants       pqtype.NullRawMessage `json:"variants"`
+	SellerID       sql.NullInt64         `json:"seller_id"`
+	CategoryID     sql.NullInt64         `json:"category_id"`
+	UomID          sql.NullInt64         `json:"uom_id"`
+	CreateUid      int64                 `json:"create_uid"`
+}
+
+func (q *Queries) CreateProductTemplate(ctx context.Context, arg CreateProductTemplateParams) (int64, error) {
+	row := q.queryRow(ctx, q.createProductTemplateStmt, createProductTemplate,
+		arg.Name,
+		arg.Description,
+		arg.DefaultPrice,
+		arg.RemainQuantity,
+		arg.SoldQuantity,
+		arg.Rating,
+		arg.NumberRating,
+		arg.Variants,
+		arg.SellerID,
+		arg.CategoryID,
+		arg.UomID,
+		arg.CreateUid,
+	)
+	var id int64
+	err := row.Scan(&id)
+	return id, err
+}
+
+const updateProduct = `-- name: UpdateProduct :exec
+UPDATE product
+SET template_id  = $1,
+    name         = $2,
+    origin_price = $3,
+    sale_price   = $4,
+    state        = $5,
+    variants     = $6,
+    write_uid    = case when $7::int8 > 0 then $7::int8 else 1 end,
+    write_date   = now() AT TIME ZONE 'utc'
+WHERE id = $8::int8
+`
+
+type UpdateProductParams struct {
+	TemplateID  sql.NullInt64         `json:"template_id"`
+	Name        string                `json:"name"`
+	OriginPrice float64               `json:"origin_price"`
+	SalePrice   float64               `json:"sale_price"`
+	State       string                `json:"state"`
+	Variants    pqtype.NullRawMessage `json:"variants"`
+	CreateUid   int64                 `json:"create_uid"`
+	ID          int64                 `json:"id"`
+}
+
+func (q *Queries) UpdateProduct(ctx context.Context, arg UpdateProductParams) error {
+	_, err := q.exec(ctx, q.updateProductStmt, updateProduct,
+		arg.TemplateID,
+		arg.Name,
+		arg.OriginPrice,
+		arg.SalePrice,
+		arg.State,
+		arg.Variants,
+		arg.CreateUid,
+		arg.ID,
+	)
+	return err
+}
+
+const updateProductTemplate = `-- name: UpdateProductTemplate :exec
+UPDATE product_template
+SET name            = $1,
+    description     = $2,
+    default_price   = $3,
+    remain_quantity = $4,
+    sold_quantity   = $5,
+    rating          = $6,
+    number_rating   = $7,
+    variants        = $8,
+    seller_id       = $9,
+    category_id     = $10,
+    uom_id          = $11,
+    write_uid       = case when $12::int8 > 0 then $12::int8 else 1 end,
+    write_date      = now() AT TIME ZONE 'utc'
+WHERE id = $13::int8
+`
+
+type UpdateProductTemplateParams struct {
+	Name           string                `json:"name"`
+	Description    sql.NullString        `json:"description"`
+	DefaultPrice   float64               `json:"default_price"`
+	RemainQuantity float64               `json:"remain_quantity"`
+	SoldQuantity   float64               `json:"sold_quantity"`
+	Rating         float64               `json:"rating"`
+	NumberRating   int64                 `json:"number_rating"`
+	Variants       pqtype.NullRawMessage `json:"variants"`
+	SellerID       sql.NullInt64         `json:"seller_id"`
+	CategoryID     sql.NullInt64         `json:"category_id"`
+	UomID          sql.NullInt64         `json:"uom_id"`
+	CreateUid      int64                 `json:"create_uid"`
+	ID             int64                 `json:"id"`
+}
+
+func (q *Queries) UpdateProductTemplate(ctx context.Context, arg UpdateProductTemplateParams) error {
+	_, err := q.exec(ctx, q.updateProductTemplateStmt, updateProductTemplate,
+		arg.Name,
+		arg.Description,
+		arg.DefaultPrice,
+		arg.RemainQuantity,
+		arg.SoldQuantity,
+		arg.Rating,
+		arg.NumberRating,
+		arg.Variants,
+		arg.SellerID,
+		arg.CategoryID,
+		arg.UomID,
+		arg.CreateUid,
+		arg.ID,
+	)
+	return err
 }

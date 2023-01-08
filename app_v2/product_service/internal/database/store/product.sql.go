@@ -15,7 +15,7 @@ import (
 )
 
 const getCategories = `-- name: GetCategories :many
-SELECT id, name, description, create_uid, create_date, write_uid, write_time
+SELECT id, name, description, create_uid, write_uid, create_date, write_date
 FROM category
 WHERE CASE WHEN array_length($1::int8[], 1) > 0 THEN id = ANY($1::int8[]) ELSE TRUE END
 `
@@ -34,9 +34,9 @@ func (q *Queries) GetCategories(ctx context.Context, ids []int64) ([]Category, e
 			&i.Name,
 			&i.Description,
 			&i.CreateUid,
-			&i.CreateDate,
 			&i.WriteUid,
-			&i.WriteTime,
+			&i.CreateDate,
+			&i.WriteDate,
 		); err != nil {
 			return nil, err
 		}
@@ -230,7 +230,7 @@ func (q *Queries) GetProducts(ctx context.Context, ids []int64) ([]Product, erro
 }
 
 const getSellers = `-- name: GetSellers :many
-SELECT id, name, description, phone, address, logo_url, manager_id, create_uid, create_date, write_uid, write_time
+SELECT id, name, description, phone, address, logo_url, manager_id, create_uid, write_uid, create_date, write_date
 FROM seller
 WHERE CASE WHEN array_length($1::int8[], 1) > 0 THEN id = ANY($1::int8[]) ELSE TRUE END
 `
@@ -253,9 +253,9 @@ func (q *Queries) GetSellers(ctx context.Context, ids []int64) ([]Seller, error)
 			&i.LogoUrl,
 			&i.ManagerID,
 			&i.CreateUid,
-			&i.CreateDate,
 			&i.WriteUid,
-			&i.WriteTime,
+			&i.CreateDate,
+			&i.WriteDate,
 		); err != nil {
 			return nil, err
 		}
@@ -271,7 +271,7 @@ func (q *Queries) GetSellers(ctx context.Context, ids []int64) ([]Seller, error)
 }
 
 const getUoms = `-- name: GetUoms :many
-SELECT id, name, seller_id
+SELECT id, name, seller_id, create_uid, write_uid, create_date, write_date
 FROM uom
 WHERE CASE WHEN array_length($1::int8[], 1) > 0 THEN id = ANY($1::int8[]) ELSE TRUE END
 `
@@ -285,7 +285,15 @@ func (q *Queries) GetUoms(ctx context.Context, ids []int64) ([]Uom, error) {
 	items := []Uom{}
 	for rows.Next() {
 		var i Uom
-		if err := rows.Scan(&i.ID, &i.Name, &i.SellerID); err != nil {
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.SellerID,
+			&i.CreateUid,
+			&i.WriteUid,
+			&i.CreateDate,
+			&i.WriteDate,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

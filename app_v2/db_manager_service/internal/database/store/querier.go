@@ -9,7 +9,16 @@ import (
 )
 
 type Querier interface {
+	CreateCategory(ctx context.Context, arg CreateCategoryParams) (int64, error)
+	CreateProduct(ctx context.Context, arg CreateProductParams) (int64, error)
+	CreateProductTemplate(ctx context.Context, arg CreateProductTemplateParams) (int64, error)
+	CreateSeller(ctx context.Context, arg CreateSellerParams) (int64, error)
 	CreateUom(ctx context.Context, arg CreateUomParams) (int64, error)
+	UpdateCategory(ctx context.Context, arg UpdateCategoryParams) error
+	UpdateProduct(ctx context.Context, arg UpdateProductParams) error
+	UpdateProductTemplate(ctx context.Context, arg UpdateProductTemplateParams) error
+	UpdateSeller(ctx context.Context, arg UpdateSellerParams) error
+	UpdateUom(ctx context.Context, arg UpdateUomParams) error
 }
 
 var _ Querier = (*Queries)(nil)

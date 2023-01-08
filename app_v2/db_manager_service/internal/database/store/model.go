@@ -11,14 +11,32 @@ import (
 	"github.com/tabbed/pqtype"
 )
 
+type Account struct {
+	ID         int64     `json:"id"`
+	Username   string    `json:"username"`
+	Password   string    `json:"password"`
+	CreateDate time.Time `json:"create_date"`
+	WriteDate  time.Time `json:"write_date"`
+}
+
 type Category struct {
 	ID          int64          `json:"id"`
 	Name        string         `json:"name"`
 	Description sql.NullString `json:"description"`
 	CreateUid   sql.NullInt64  `json:"create_uid"`
-	CreateDate  time.Time      `json:"create_date"`
 	WriteUid    sql.NullInt64  `json:"write_uid"`
-	WriteTime   sql.NullInt64  `json:"write_time"`
+	CreateDate  time.Time      `json:"create_date"`
+	WriteDate   time.Time      `json:"write_date"`
+}
+
+type CustomerInfo struct {
+	ID         int64          `json:"id"`
+	AccountID  int64          `json:"account_id"`
+	Name       string         `json:"name"`
+	Phone      sql.NullString `json:"phone"`
+	Address    sql.NullString `json:"address"`
+	CreateDate time.Time      `json:"create_date"`
+	WriteDate  time.Time      `json:"write_date"`
 }
 
 type Product struct {
@@ -63,13 +81,17 @@ type Seller struct {
 	LogoUrl     sql.NullString `json:"logo_url"`
 	ManagerID   int64          `json:"manager_id"`
 	CreateUid   sql.NullInt64  `json:"create_uid"`
-	CreateDate  time.Time      `json:"create_date"`
 	WriteUid    sql.NullInt64  `json:"write_uid"`
-	WriteTime   sql.NullInt64  `json:"write_time"`
+	CreateDate  time.Time      `json:"create_date"`
+	WriteDate   time.Time      `json:"write_date"`
 }
 
 type Uom struct {
-	ID       int64  `json:"id"`
-	Name     string `json:"name"`
-	SellerID int64  `json:"seller_id"`
+	ID         int64         `json:"id"`
+	Name       string        `json:"name"`
+	SellerID   int64         `json:"seller_id"`
+	CreateUid  sql.NullInt64 `json:"create_uid"`
+	WriteUid   sql.NullInt64 `json:"write_uid"`
+	CreateDate time.Time     `json:"create_date"`
+	WriteDate  time.Time     `json:"write_date"`
 }

@@ -1,13 +1,38 @@
+create table if not exists account
+(
+    id bigserial primary key,
+    username varchar not null
+        constraint account_username_uniq
+        unique,
+    password varchar not null ,
+    create_date timestamp not null default now(),
+    write_date timestamp not null default now()
+);
+
+create table if not exists customer_info
+(
+    id bigserial primary key,
+    account_id int8 not null
+        constraint customer_info_account_id_fkey
+            references account
+            on delete cascade,
+    name varchar not null ,
+    phone varchar,
+    address varchar,
+    create_date timestamp not null default now(),
+    write_date timestamp not null default now()
+);
+
 create table if not exists category
 (
     id bigserial primary key,
     name varchar not null,
     description varchar,
     create_uid int8,
-    create_date timestamp not null default now(),
     write_uid int8,
-    write_time int8
-    );
+    create_date timestamp not null default now(),
+    write_date timestamp not null default now()
+);
 
 create table if not exists seller
 (
@@ -19,21 +44,25 @@ create table if not exists seller
     logo_url varchar,
     manager_id int8 not null,
     create_uid int8,
-    create_date timestamp not null default now(),
     write_uid int8,
-    write_time int8
-    );
+    create_date timestamp not null default now(),
+    write_date timestamp not null default now()
+);
 
 create table if not exists uom
 (
     id bigserial primary key,
     name varchar not null,
     seller_id int8 not null
-    constraint uom_seller_id_fkey
-    references seller
-    on delete cascade,
+        constraint uom_seller_id_fkey
+            references seller
+            on delete cascade,
+    create_uid int8,
+    write_uid int8,
+    create_date timestamp not null default now(),
+    write_date timestamp not null default now(),
     constraint name_seller_id_unique unique(name, seller_id)
-    );
+);
 
 create table if not exists product_template
 (
@@ -51,18 +80,18 @@ create table if not exists product_template
     write_date timestamp not null default now(),
     variants json,
     seller_id int8
-    constraint product_template_seller_id_fkey
-    references seller
-    on delete set null,
+        constraint product_template_seller_id_fkey
+            references seller
+            on delete set null,
     category_id int8
-    constraint product_template_category_id_fkey
-    references category
-    on delete set null,
+        constraint product_template_category_id_fkey
+            references category
+            on delete set null,
     uom_id int8
-    constraint product_template_uom_id_fkey
-    references uom
-    on delete set null
-    );
+        constraint product_template_uom_id_fkey
+            references uom
+            on delete set null
+);
 
 create table if not exists product
 (
@@ -80,4 +109,4 @@ create table if not exists product
     create_date timestamp not null default now(),
     write_uid int8,
     write_date timestamp not null default now()
-    );
+);
