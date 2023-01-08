@@ -1,6 +1,9 @@
 # It's necessary to set this because some environments don't link sh -> bash.
 SHELL := /bin/bash
 
+# Docker compose dev env context
+DOCKER_DEV_CONTEXT := ./infrastructure/docker-compose.dev.yaml
+
 GO_TOOLS = 	google.golang.org/protobuf/cmd/protoc-gen-go@v1.28 \
 			google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2 \
 			github.com/gogo/protobuf/protoc-gen-gofast@v1.3.1 \
@@ -75,3 +78,10 @@ proto:
     		--grpc-gateway_out=allow_repeated_fields_in_body=true:. \
     		--ecode_out=. \
             $(path)/*.proto
+
+docker-up:
+	cd ./infrastructure/scripts/bash && bash start.sh
+
+docker-down:
+	cd ./infrastructure/scripts/bash && bash stop.sh
+

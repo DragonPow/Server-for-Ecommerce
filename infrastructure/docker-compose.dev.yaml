@@ -1,0 +1,136 @@
+version: '3.8'
+
+volumes:
+  account-postgresql-data:
+  product-postgresql-data:
+  redis-data:
+  zookeeper-data:
+  kafka-data:
+
+
+networks:
+  infrastructure_nw:
+
+
+services:
+  ## POSTGRESQL
+
+  # postgres account database
+  account-db:
+    image: bitnami/postgresql:12-debian-11
+    ports:
+      - "10100:5432"
+    networks:
+      - infrastructure_nw
+    restart: on-failure
+    environment:
+      - POSTGRESQL_USERNAME=postgres
+      - POSTGRESQL_PASSWORD=postgres123
+      - POSTGRESQL_DATABASE=account
+    volumes:
+      - account-postgresql-data:/bitnami/postgresql
+
+  # postgresql product master db
+  product-master-db:
+    image: bitnami/postgresql:12-debian-11
+    ports:
+      - "10101:5432"
+    networks:
+      - infrastructure_nw
+    restart: on-failure
+    environment:
+      - POSTGRESQL_REPLICATION_MODE=master
+      - POSTGRESQL_REPLICATION_USER=product_repl_postgres
+      - POSTGRESQL_REPLICATION_PASSWORD=repl_postgres@123
+      - POSTGRESQL_USERNAME=postgres
+      - POSTGRESQL_PASSWORD=postgres123
+      - POSTGRESQL_DATABASE=product
+    volumes:
+      - product-postgresql-data:/bitnami/postgresql
+
+  # postgresql product slave db
+  product-slave-db:
+    image: bitnami/postgresql:12-debian-11
+    networks:
+      - infrastructure_nw
+    ports:
+      - "10102:5432"
+    restart: on-failure
+    depends_on:
+      - product-master-db
+    environment:
+      - POSTGRESQL_REPLICATION_MODE=slave
+      - POSTGRESQL_REPLICATION_USER=product_repl_postgres
+      - POSTGRESQL_REPLICATION_PASSWORD=repl_postgres@123
+      - POSTGRESQL_MASTER_HOST=product-master-db
+      - POSTGRESQL_MASTER_PORT_NUMBER=5432
+      - POSTGRESQL_PASSWORD=postgres123
+
+  ## REDIS
+
+  # redis-master
+  redis-node-master:
+    image: bitnami/redis:7.0-debian-11
+    networks:
+      - infrastructure_nw
+    ports:
+      - "6379:6379"
+    restart: on-failure
+    environment:
+      - REDIS_REPLICATION_MODE=master
+      - REDIS_PASSWORD=redis@123
+    volumes:
+      - redis-data:/bitnami/redis/data
+
+  # redis-slave
+  redis-node-slave:
+    image: bitnami/redis:7.0-debian-11
+    networks:
+      - infrastructure_nw
+    ports:
+      - "6379"
+    restart: on-failure
+    depends_on:
+      - redis-node-master
+    environment:
+      - REDIS_REPLICATION_MODE=slave
+      - REDIS_MASTER_HOST=redis-node-master
+      - REDIS_MASTER_PORT=6379
+      - REDIS_MASTER_PASSWORD=redis@123
+      - REDIS_PASSWORD=redis@123
+
+  ## Kafka
+
+  # zookepper
+  zookeeper:
+    image: bitnami/zookeeper:3.6-debian-11
+    networks:
+      - infrastructure_nw
+    ports:
+      - "2181:2181"
+    restart: on-failure
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    volumes:
+      - zookeeper-data:/bitnami/zookeeper
+
+  # kafka
+  kafka:
+    image: bitnami/kafka:3.3-debian-11
+    networks:
+      - infrastructure_nw
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+    restart: on-failure
+    depends_on:
+      - zookeeper
+    environment:
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - KAFKA_CFG_LISTENERS=CLIENT://:9092,EXTERNAL://:9093
+      - KAFKA_CFG_ADVERTISED_LISTENERS=CLIENT://kafka:9092,EXTERNAL://localhost:9093
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=CLIENT
+    volumes:
+      - kafka-data:/bitnami/kafka
