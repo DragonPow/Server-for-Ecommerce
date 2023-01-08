@@ -31,7 +31,7 @@ func NewService(
 }
 
 func (s *Service) Close(ctx context.Context) {
-	//s.storeDb.Close()
+	s.storeDb.Close()
 }
 
 // RegisterWithServer implementing service server interface
@@ -45,4 +45,8 @@ func (s *Service) RegisterWithHttpHandler(httpPattern string) (http.Handler, err
 // RegisterWithHandler implementing service server interface
 func (s *Service) RegisterWithHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
 	return nil
+}
+
+func (s *Service) GetTimeOutHttpInSecond() int {
+	return s.cfg.TimeOutHttpInSecond
 }

@@ -11,9 +11,10 @@ import (
 )
 
 type Config struct {
-	Server           config.ServerConfig `json:"server" mapstructure:"server"`
-	MigrationFolder  string              `json:"migration_folder" mapstructure:"migration_folder"`
-	ProductServiceDB database.DBConfig   `json:"product_service_db" mapstructure:"product_service_db"`
+	Server              config.ServerConfig `json:"server" mapstructure:"server"`
+	MigrationFolder     string              `json:"migration_folder" mapstructure:"migration_folder"`
+	ProductServiceDB    database.DBConfig   `json:"product_service_db" mapstructure:"product_service_db"`
+	TimeOutHttpInSecond int                 `json:"time_out_http_in_second" mapstructure:"time_out_http_in_second"`
 }
 
 type RedisConfig struct {
@@ -72,8 +73,9 @@ func Load() (*Config, error) {
 
 func loadDefaultConfig() *Config {
 	return &Config{
-		Server:           config.DefaultServerConfig(),
-		MigrationFolder:  "file://app_v2/product_service/internal/database/migrations",
-		ProductServiceDB: database.PostgresSQLDefaultConfig(),
+		Server:              config.DefaultServerConfig(),
+		MigrationFolder:     "file://app_v2/product_service/internal/database/migrations",
+		ProductServiceDB:    database.PostgresSQLDefaultConfig(),
+		TimeOutHttpInSecond: 60,
 	}
 }

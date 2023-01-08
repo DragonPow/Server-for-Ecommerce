@@ -33,6 +33,168 @@ var (
 	_ = anypb.Any{}
 )
 
+// Validate checks the field values on AddProductTemplateRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, an error is returned.
+func (m *AddProductTemplateRequest) Validate() error {
+	if m == nil {
+		return nil
+	}
+
+	// no validation rules for Name
+
+	// no validation rules for OriginPrice
+
+	// no validation rules for SalePrice
+
+	// no validation rules for Variants
+
+	// no validation rules for TemplateId
+
+	// no validation rules for CategoryId
+
+	// no validation rules for UomId
+
+	return nil
+}
+
+// AddProductTemplateRequestValidationError is the validation error returned by
+// AddProductTemplateRequest.Validate if the designated constraints aren't met.
+type AddProductTemplateRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e AddProductTemplateRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e AddProductTemplateRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e AddProductTemplateRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e AddProductTemplateRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e AddProductTemplateRequestValidationError) ErrorName() string {
+	return "AddProductTemplateRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e AddProductTemplateRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sAddProductTemplateRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = AddProductTemplateRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = AddProductTemplateRequestValidationError{}
+
+// Validate checks the field values on AddProductTemplateResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, an error is returned.
+func (m *AddProductTemplateResponse) Validate() error {
+	if m == nil {
+		return nil
+	}
+
+	// no validation rules for Code
+
+	// no validation rules for Message
+
+	if v, ok := interface{}(m.GetData()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return AddProductTemplateResponseValidationError{
+				field:  "Data",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	return nil
+}
+
+// AddProductTemplateResponseValidationError is the validation error returned
+// by AddProductTemplateResponse.Validate if the designated constraints aren't met.
+type AddProductTemplateResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e AddProductTemplateResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e AddProductTemplateResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e AddProductTemplateResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e AddProductTemplateResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e AddProductTemplateResponseValidationError) ErrorName() string {
+	return "AddProductTemplateResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e AddProductTemplateResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sAddProductTemplateResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = AddProductTemplateResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = AddProductTemplateResponseValidationError{}
+
 // Validate checks the field values on AddProductRequest with the rules defined
 // in the proto definition for this message. If any rules are violated, an
 // error is returned.
@@ -42,6 +204,12 @@ func (m *AddProductRequest) Validate() error {
 	}
 
 	// no validation rules for Name
+
+	// no validation rules for OriginPrice
+
+	// no validation rules for SalePrice
+
+	// no validation rules for Variants
 
 	return nil
 }
@@ -464,6 +632,76 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = DeleteProductResponseValidationError{}
+
+// Validate checks the field values on AddProductTemplateResponse_Data with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, an error is returned.
+func (m *AddProductTemplateResponse_Data) Validate() error {
+	if m == nil {
+		return nil
+	}
+
+	// no validation rules for Id
+
+	return nil
+}
+
+// AddProductTemplateResponse_DataValidationError is the validation error
+// returned by AddProductTemplateResponse_Data.Validate if the designated
+// constraints aren't met.
+type AddProductTemplateResponse_DataValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e AddProductTemplateResponse_DataValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e AddProductTemplateResponse_DataValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e AddProductTemplateResponse_DataValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e AddProductTemplateResponse_DataValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e AddProductTemplateResponse_DataValidationError) ErrorName() string {
+	return "AddProductTemplateResponse_DataValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e AddProductTemplateResponse_DataValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sAddProductTemplateResponse_Data.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = AddProductTemplateResponse_DataValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = AddProductTemplateResponse_DataValidationError{}
 
 // Validate checks the field values on AddProductResponse_Data with the rules
 // defined in the proto definition for this message. If any rules are

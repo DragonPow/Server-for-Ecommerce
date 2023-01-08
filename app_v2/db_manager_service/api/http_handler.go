@@ -2,9 +2,11 @@ package api
 
 import (
 	"context"
+	"github.com/DragonPow/Server-for-Ecommerce/app_v2/db_manager_service/util"
 	"github.com/DragonPow/Server-for-Ecommerce/library/server"
 	"github.com/gorilla/mux"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -55,4 +57,12 @@ func NewHttpHandler(httpPattern string, s HttpServer) http.Handler {
 	router.RegisterProductHandler()
 
 	return router
+}
+
+func ParseIdFromRequest(w http.ResponseWriter, req *http.Request, fieldName string) (int64, error) {
+	productId, err := strconv.ParseInt(mux.Vars(req)[fieldName], util.Base10Int, util.BitSize64)
+	if err != nil {
+		return 0, err
+	}
+	return productId, nil
 }
