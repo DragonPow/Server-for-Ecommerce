@@ -1,0 +1,93 @@
+syntax = "proto3";
+package app_v2.db_manager_service.api;
+option go_package = "app_v2/db_manager_service/api";
+import "validate/validate.proto";
+import "google/rpc/code.proto";
+import "google/api/http.proto";
+import "google/api/annotations.proto";
+import "gogoproto/gogo.proto";
+
+// AddProductTemplateRequest
+message AddProductTemplateRequest {
+  // Name
+  string name = 1;
+  // OriginPrice
+  double origin_price = 2;
+  // SalePrice
+  double sale_price = 3;
+  // Variants
+  bytes variants = 4;
+  // TemplateId
+  int64 template_id = 6;
+  // CategoryId
+  int64 category_id = 7;
+  // UomId
+  int64 uom_id = 8;
+}
+
+// AddProductTemplateResponse
+message AddProductTemplateResponse {
+  // Data
+  message Data {
+    int64 id = 1;
+  }
+  // Code
+  uint32 code = 1;
+  // Message
+  string message = 2;
+  // Data
+  Data data = 3;
+}
+
+// AddProductRequest
+message AddProductRequest {
+  // Name
+  string name = 1;
+  double origin_price = 2;
+  double sale_price = 3;
+  bytes variants = 4;
+}
+
+// AddProductResponse
+message AddProductResponse {
+  // Data
+  message Data {
+    int64 id = 1;
+  }
+  // Code
+  uint32 code = 1;
+  // Message
+  string message = 2;
+  // Data
+  Data data = 3;
+}
+
+// UpdateProductRequest
+message UpdateProductRequest {
+  // Id
+  int64 id = 1;
+  // Variants
+  bytes variants = 2;
+}
+
+// UpdateProductResponse
+message UpdateProductResponse {
+  // Code
+  uint32 code = 1;
+  // Message
+  string message = 2;
+}
+
+// DeleteProductRequest
+message DeleteProductRequest {
+  // id
+  int64 id = 1;
+}
+
+// DeleteProductResponse
+message DeleteProductResponse {
+  // Code
+  uint32 code = 1;
+  // Message
+  string message = 2;
+}

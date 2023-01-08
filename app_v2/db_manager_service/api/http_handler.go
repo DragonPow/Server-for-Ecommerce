@@ -2,10 +2,9 @@ package api
 
 import (
 	"context"
-	"encoding/json"
 	"github.com/gorilla/mux"
-	"google.golang.org/grpc/codes"
 	"net/http"
+	"time"
 )
 
 const (
@@ -13,55 +12,46 @@ const (
 	POST   = "POST"
 	PUT    = "PUT"
 	DELETE = "DELETE"
+
+	productRouter  = "/products"
+	categoryRouter = "/categories"
+	uomRouter      = "/uoms"
+	sellerRouter   = "/sellers"
+	userRouter     = "/users"
 )
 
 type HttpServer interface {
+	GetTimeOutHttpInSecond() int
+	AddProduct(ctx context.Context, req *AddProductRequest) (res *AddProductResponse, err error)
+	UpdateProduct(ctx context.Context, req *UpdateProductRequest) (res *UpdateProductResponse, err error)
+	DeleteProduct(ctx context.Context, req *DeleteProductRequest) (res *DeleteProductResponse, err error)
 }
 
-func NewHttpHandler(httpPattern string, s HttpServer) *mux.Router {
-	r := mux.NewRouter()
-	r.HandleFunc(httpPattern+"/", func(w http.ResponseWriter, r *http.Request) {
-		ctx, cancel := context.WithCancel(context.Background())
+type myRouter struct {
+	*mux.Router
+	service          HttpServer
+	timeOutInSeconds time.Duration
+}
+
+func NewHttpHandler(httpPattern string, s HttpServer) http.Handler {
+	router := &myRouter{
+		Router:           mux.NewRouter().PathPrefix(httpPattern).Subrouter(),
+		service:          s,
+		timeOutInSeconds: time.Duration(s.GetTimeOutHttpInSecond()) * time.Second,
+	}
+
+	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		_, cancel := context.WithTimeout(context.Background(), router.timeOutInSeconds)
 		defer cancel()
 		_, err := w.Write([]byte("Hello world"))
 		if err != nil {
-			HTTPError(ctx, w, r, err)
+			HTTPError(w, r, err)
 			return
 		}
 	}).Methods(GET)
 
-	return r
-}
+	// Register some route
+	router.RegisterProductHandler()
 
-type Marshaler interface {
-	Marshal(v any) ([]byte, error)
-}
-
-// ForwardResponseMessage forwards the message "resp" from gRPC server to REST client.
-func ForwardResponseMessage(ctx context.Context, marshaler Marshaler, w http.ResponseWriter, req *http.Request, resp any) {
-	contentType := "application/json"
-	//acceptEncoding := "gzip"
-
-	w.Header().Set("Content-Type", contentType)
-	//w.Header().Set("Content-Encoding", acceptEncoding)
-
-	buf, err := json.Marshal(resp)
-	if err != nil {
-		HTTPError(ctx, w, req, err)
-		return
-	}
-
-	if _, err = w.Write(buf); err != nil {
-		HTTPError(ctx, w, req, err)
-		return
-	}
-}
-
-func HTTPError(ctx context.Context, w http.ResponseWriter, req *http.Request, err error) {
-	w.WriteHeader(http.StatusInternalServerError)
-	v := make(map[string]any)
-	v["code"] = codes.Internal
-	v["message"] = err.Error()
-	b, _ := json.Marshal(v)
-	w.Write(b)
+	return router
 }

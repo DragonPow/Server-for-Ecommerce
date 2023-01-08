@@ -9,7 +9,7 @@ JOIN product_template pt on pt.id = p.template_id
 JOIN category c on c.id = pt.category_id
 JOIN uom u on u.id = pt.uom_id
 JOIN seller s on s.id = pt.seller_id
-WHERE CASE WHEN array_length(@ids::int8[], 1) > 0 THEN id = ANY(@ids::int8[]) ELSE TRUE END;
+WHERE CASE WHEN array_length(@ids::int8[], 1) > 0 THEN p.id = ANY(@ids::int8[]) ELSE TRUE END;
 
 -- name: GetProducts :many
 SELECT *

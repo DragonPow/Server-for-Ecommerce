@@ -1,0 +1,152 @@
+syntax = "proto3";
+package app_v2.product_service.api;
+option go_package = "app_v2/product_service/api";
+import "validate/validate.proto";
+import "google/rpc/code.proto";
+import "google/api/http.proto";
+import "google/api/annotations.proto";
+import "gogoproto/gogo.proto";
+
+// GetDetailProductRequest
+message GetDetailProductRequest {
+  // Id
+  int64 id = 1;
+}
+
+// GetDetailProductResponse
+message GetDetailProductResponse {
+  // Code
+  uint32 code = 1;
+  // Message
+  string message = 2;
+  // Data
+  ProductDetail data = 3;
+}
+
+// GetListProductRequest
+message GetListProductRequest {
+  // Page
+  int64 page = 1;
+  // PageSize
+  int64 page_size = 2;
+}
+
+// GetListProductResponse
+message GetListProductResponse {
+  // Data
+  message Data {
+    // TotalItems
+    int64 total_items = 1;
+    // Page
+    int32 page = 2;
+    // PageSize
+    int32 page_size = 3;
+    // Items
+    repeated ProductOverview items = 4;
+  }
+  // Code
+  uint32 code = 1;
+  // Message
+  string message = 2;
+  // Data
+  Data data = 3;
+}
+
+// ProductDetail
+message ProductDetail {
+  // Id
+  int64 id = 1;
+  // Name
+  string name = 2;
+  // OriginPrice
+  double origin_price = 3;
+  // SalePrice
+  double sale_price = 4;
+  // Variants
+  string variants = 5;
+  // CreatedBy
+  string created_by = 6;
+  // CreatedDate
+  string created_date = 7;
+  // UpdatedBy
+  string updated_by = 8;
+  // UpdatedDate
+  string updated_date = 9;
+
+  // TemplateId
+  int64 template_id = 10;
+  // TemplateName
+  string template_name = 11;
+  // TemplateDescription
+  string template_description = 12;
+  // SoldQuantity
+  double sold_quantity = 13;
+  // RemainQuantity
+  double remain_quantity = 14;
+  // Rating
+  double rating = 15;
+  // NumberRating
+  int32 number_rating = 16;
+
+  // SellerId
+  int64 seller_id = 17;
+  // SellerName
+  string seller_name = 18;
+  // SellerLogo
+  string seller_logo = 19;
+  // SellerAddress
+  string seller_address = 20;
+
+  // CategoryId
+  int64 category_id = 21;
+  // CategoryName
+  string category_name = 22;
+
+  // UomId
+  int64 uom_id = 23;
+  // UomName
+  string uom_name = 24;
+}
+
+// ProductOverview
+message ProductOverview {
+  // Id
+  int64 id = 1;
+  // Name
+  string name = 2;
+  // OriginPrice
+  double origin_price = 3;
+  // SalePrice
+  double sale_price = 4;
+  // CreatedBy
+  string created_by = 5;
+  // CreatedDate
+  string created_date = 6;
+  // TemplateId
+  int64 template_id = 7;
+  // TemplateName
+  string template_name = 8;
+  // SoldQuantity
+  double sold_quantity = 9;
+  // RemainQuantity
+  double remain_quantity = 10;
+  // Rating
+  double Rating = 11;
+
+  // SellerId
+  int64 seller_id = 12;
+  // SellerName
+  string seller_name = 13;
+  // SellerLogo
+  string seller_logo = 14;
+
+  // CategoryId
+  int64 category_id = 15;
+  // CategoryName
+  string category_name = 16;
+
+  // UomId
+  int64 uom_id = 17;
+  // UomName
+  string uom_name = 18;
+}

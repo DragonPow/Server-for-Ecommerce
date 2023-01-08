@@ -24,7 +24,7 @@ func (s *Service) GetDetailProduct(ctx context.Context, req *api.GetDetailProduc
 	return &api.GetDetailProductResponse{
 		Code:    0,
 		Message: "OK",
-		Data: api.ProductDetail{
+		Data: &api.ProductDetail{
 			Id:                  product.ID,
 			Name:                product.Name,
 			OriginPrice:         product.OriginPrice,
