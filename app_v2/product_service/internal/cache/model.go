@@ -1,13 +1,12 @@
-package mem_cache
+package cache
 
 import (
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/internal/database/store"
-	"github.com/DragonPow/Server-for-Ecommerce/library/math"
 	"time"
 )
 
-// Const
-// ---------------------------------------------
+// Common function
+// -----------------------------------------------
 
 type TypeCache string
 
@@ -20,28 +19,6 @@ const (
 	TypeUom             TypeCache = "uom"
 )
 
-// Common function
-// -----------------------------------------------
-
-func funcConvertAny(i int64) any {
-	return i
-}
-
-func funcConvertModel[T ModelValue](v any) (int64, T) {
-	result := v.(T)
-	return result.GetId(), result
-}
-
-func funcConvertId(v any) int64 {
-	return v.(int64)
-}
-
-func ConvertMultipleResponse[T ModelValue](values []any, miss []any) (map[int64]T, []int64) {
-	list := math.ToMap(values, funcConvertModel[T])
-	missIds := math.Convert(miss, funcConvertId)
-	return list, missIds
-}
-
 // Model
 // ---------------------------------------------
 
@@ -50,6 +27,7 @@ type ModelValue interface {
 	GetId() int64
 }
 
+// User ...
 type User struct {
 	Id   int64  `json:"id"`
 	Name string `json:"name"`
@@ -63,6 +41,7 @@ func (u User) GetType() TypeCache {
 	return TypeUser
 }
 
+// Product ...
 type Product struct {
 	ID          int64     `json:"id"`
 	Name        string    `json:"name"`
@@ -110,6 +89,7 @@ func (p *Product) FromDb(model store.Product, categoryId, uomId, sellerId int64)
 	return
 }
 
+// ProductTemplate ...
 type ProductTemplate struct {
 	ID             int64     `json:"id"`
 	Name           string    `json:"name"`
@@ -161,6 +141,7 @@ func (p *ProductTemplate) FromDb(model store.ProductTemplate) {
 	return
 }
 
+// Seller ...
 type Seller struct {
 	ID      int64  `json:"id"`
 	Name    string `json:"name"`
@@ -184,6 +165,7 @@ func (s *Seller) FromDb(model store.Seller) {
 	return
 }
 
+// Uom ...
 type Uom struct {
 	ID   int64  `json:"id"`
 	Name string `json:"name"`
@@ -205,6 +187,7 @@ func (u *Uom) FromDb(model store.Uom) {
 	return
 }
 
+// Category ...
 type Category struct {
 	ID          int64  `json:"id"`
 	Name        string `json:"name"`

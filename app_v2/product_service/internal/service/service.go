@@ -2,7 +2,7 @@ package service
 
 import (
 	"context"
-	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/internal/mem_cache"
+	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/internal/cache/mem_cache"
 	"net/http"
 
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/api"

@@ -2,34 +2,20 @@ package mem_cache
 
 import (
 	"fmt"
-	"sync"
+	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/internal/cache"
+	"github.com/DragonPow/Server-for-Ecommerce/library/math"
 )
-
-type memCache struct {
-	sync.Map
-	mu              sync.RWMutex
-	maxNumberMiss   int
-	cacheMissNumber sync.Map
-}
-
-func NewCache(maxNumberMiss int) MemCache {
-	return &memCache{
-		Map:             sync.Map{},
-		maxNumberMiss:   maxNumberMiss,
-		cacheMissNumber: sync.Map{},
-	}
-}
 
 // parseKey:
 //   type: must be "product", "user",...
 //   key: must be ID or something else
 //
 //  Return storeKey with format "{type}/{key}". Ex: "product/1445"
-func (m *memCache) parseKey(t TypeCache, k any) (storeKey string) {
+func (m *memCache) parseKey(t cache.TypeCache, k any) (storeKey string) {
 	return fmt.Sprintf("%s/%v", t, k)
 }
 
-func (m *memCache) Store(typeObject TypeCache, key any, value any) {
+func (m *memCache) Store(typeObject cache.TypeCache, key any, value any) {
 	storeKey := m.parseKey(typeObject, key)
 	ok := m.mu.TryLock()
 	m.cacheMissNumber.Delete(storeKey)
@@ -39,12 +25,12 @@ func (m *memCache) Store(typeObject TypeCache, key any, value any) {
 	}
 }
 
-func (m *memCache) Load(t TypeCache, k any) (value any, ok bool) {
+func (m *memCache) Load(t cache.TypeCache, k any) (value any, ok bool) {
 	storeKey := m.parseKey(t, k)
 	return m.Map.Load(storeKey)
 }
 
-func (m *memCache) LoadMultiple(t TypeCache, keys []any) (values []any, missingKeys []any) {
+func (m *memCache) LoadMultiple(t cache.TypeCache, keys []any) (values []any, missingKeys []any) {
 	values = make([]any, len(keys))
 	missingKeys = make([]any, len(keys))
 	lockOk := m.mu.TryRLock()
@@ -81,4 +67,23 @@ func (m *memCache) IsMaxMiss(storeKey string) bool {
 	number++
 	m.cacheMissNumber.Store(storeKey, number)
 	return false
+}
+
+func funcConvertAny(i int64) any {
+	return i
+}
+
+func funcConvertModel[T cache.ModelValue](v any) (int64, T) {
+	result := v.(T)
+	return result.GetId(), result
+}
+
+func funcConvertId(v any) int64 {
+	return v.(int64)
+}
+
+func ConvertMultipleResponse[T cache.ModelValue](values []any, miss []any) (map[int64]T, []int64) {
+	list := math.ToMap(values, funcConvertModel[T])
+	missIds := math.Convert(miss, funcConvertId)
+	return list, missIds
 }
