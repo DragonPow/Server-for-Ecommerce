@@ -46,3 +46,12 @@ func Convert[T, U any](slice []T, f func(item T) U) []U {
 	}
 	return result
 }
+
+func ConvertMap[T, Z comparable, U, Y any](myMap map[T]U, f func(key T, value U) (Z, Y)) map[Z]Y {
+	result := make(map[Z]Y, len(myMap))
+	for k, v := range myMap {
+		newK, newV := f(k, v)
+		result[newK] = newV
+	}
+	return result
+}

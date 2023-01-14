@@ -3,7 +3,6 @@ package redis
 import (
 	"context"
 	"github.com/DragonPow/Server-for-Ecommerce/library/cache"
-	"github.com/go-logr/logr"
 	"github.com/go-redis/redis/v8"
 	"time"
 )
@@ -12,10 +11,9 @@ type Redis struct {
 	cache.Cache
 	client           *redis.Client
 	expirationSecond time.Duration
-	log              logr.Logger
 }
 
-func New(addr string, password string, expiration uint32, log logr.Logger) *Redis {
+func New(addr string, password string, expiration uint32) *Redis {
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     addr,
 		Password: password,
@@ -25,8 +23,11 @@ func New(addr string, password string, expiration uint32, log logr.Logger) *Redi
 	return &Redis{
 		client:           rdb,
 		expirationSecond: time.Duration(expiration) * time.Second,
-		log:              log,
 	}
+}
+
+func (c *Redis) Close() error {
+	return c.client.Close()
 }
 
 func (c *Redis) Get(ctx context.Context, key string) (string, bool) {
@@ -37,15 +38,25 @@ func (c *Redis) Get(ctx context.Context, key string) (string, bool) {
 	return result, true
 }
 
-func (c *Redis) Set(ctx context.Context, key string, value interface{}) error {
+func (c *Redis) Set(ctx context.Context, key string, value any) error {
 	return c.client.Set(ctx, key, value, c.expirationSecond).Err()
 }
 
-func (c *Redis) GetList(ctx context.Context, keys []string) ([]interface{}, error) {
+func (c *Redis) GetList(ctx context.Context, keys []string) ([]any, error) {
 	results, err := c.client.MGet(ctx, keys...).Result()
 	return results, err
 }
 
-func (c *Redis) SetList(ctx context.Context, values map[string]interface{}) error {
-	return c.client.MSet(ctx, values).Err()
+func (c *Redis) SetList(ctx context.Context, values map[string]any) error {
+	err := c.client.MSet(ctx, values).Err()
+	if err != nil {
+		return err
+	}
+	for k := range values {
+		err = c.client.Expire(ctx, k, c.expirationSecond).Err()
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

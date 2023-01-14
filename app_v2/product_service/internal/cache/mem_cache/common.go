@@ -11,22 +11,29 @@ import (
 //   key: must be ID or something else
 //
 //  Return storeKey with format "{type}/{key}". Ex: "product/1445"
-func (m *memCache) parseKey(t cache.TypeCache, k any) (storeKey string) {
+func parseKey(t cache.TypeCache, k any) (storeKey string) {
 	return fmt.Sprintf("%s/%v", t, k)
 }
 
 func (m *memCache) Store(typeObject cache.TypeCache, key any, value any) {
-	storeKey := m.parseKey(typeObject, key)
+	storeKey := parseKey(typeObject, key)
 	ok := m.mu.TryLock()
+	missOk := m.missMu.TryLock()
+	defer func() {
+		if ok {
+			m.mu.Unlock()
+		}
+		if missOk {
+			m.missMu.Unlock()
+		}
+	}()
+
 	m.cacheMissNumber.Delete(storeKey)
 	m.Map.Store(storeKey, value)
-	if ok {
-		m.mu.Unlock()
-	}
 }
 
 func (m *memCache) Load(t cache.TypeCache, k any) (value any, ok bool) {
-	storeKey := m.parseKey(t, k)
+	storeKey := parseKey(t, k)
 	return m.Map.Load(storeKey)
 }
 
@@ -55,8 +62,12 @@ func (m *memCache) LoadMultiple(t cache.TypeCache, keys []any) (values []any, mi
 //  if larger than max, delete and return true
 //  if not exists or smaller than max, plus by 1
 func (m *memCache) IsMaxMiss(storeKey string) bool {
-	m.mu.Lock()
-	defer m.mu.Unlock()
+	lockOk := m.missMu.TryLock()
+	defer func() {
+		if lockOk {
+			m.missMu.Unlock()
+		}
+	}()
 
 	v, _ := m.cacheMissNumber.Load(storeKey)
 	number, _ := v.(int)
@@ -69,21 +80,40 @@ func (m *memCache) IsMaxMiss(storeKey string) bool {
 	return false
 }
 
-func funcConvertAny(i int64) any {
+func funcConvertId2Any(i int64) any {
 	return i
 }
 
-func funcConvertModel[T cache.ModelValue](v any) (int64, T) {
+func funcConvertAny2Model[T cache.ModelValue](v any) (int64, T) {
 	result := v.(T)
 	return result.GetId(), result
 }
 
-func funcConvertId(v any) int64 {
+func funcConvertAny2Id(v any) int64 {
 	return v.(int64)
 }
 
+// ConvertMultipleResponse
+//  Convert values (format ModelValue), miss (format int64) to list (map[id]value, missIds)
+//  Warn: If convert fail, panic
 func ConvertMultipleResponse[T cache.ModelValue](values []any, miss []any) (map[int64]T, []int64) {
-	list := math.ToMap(values, funcConvertModel[T])
-	missIds := math.Convert(miss, funcConvertId)
+	list := math.ToMap(values, funcConvertAny2Model[T])
+	missIds := math.Convert(miss, funcConvertAny2Id)
 	return list, missIds
+}
+
+func GetOne[T cache.ModelValue](m *memCache, id int64) (T, bool) {
+	var t T
+	v, ok := m.Load(t.GetType(), id)
+	if !ok {
+		return *new(T), false
+	}
+	_, p := funcConvertAny2Model[T](v)
+	return p, true
+}
+
+func getList[T cache.ModelValue](m *memCache, ids []int64) (map[int64]T, []int64) {
+	var t T
+	values, miss := m.LoadMultiple(t.GetType(), math.Convert(ids, funcConvertId2Any))
+	return ConvertMultipleResponse[T](values, miss)
 }

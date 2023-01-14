@@ -15,7 +15,7 @@ package Server_for_Ecommerce
 *.so
 *.dylib
 *.log
-*.cache
+*.localCache
 *.diff
 *.tmp
 .vscode/

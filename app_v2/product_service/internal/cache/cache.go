@@ -7,6 +7,7 @@ type Cache interface {
 	GetListProductTemplate(ids []int64) (list map[int64]ProductTemplate, missIds []int64)
 	GetListSeller(ids []int64) (list map[int64]Seller, missIds []int64)
 	GetListUom(ids []int64) (list map[int64]Uom, missIds []int64)
+	GetList(t ModelValue, ids []int64) (list map[int64]ModelValue, missIds []int64)
 
 	GetProduct(id int64) (value Product, ok bool)
 	GetUser(id int64) (value User, ok bool)
@@ -14,4 +15,6 @@ type Cache interface {
 	GetProductTemplate(id int64) (value ProductTemplate, ok bool)
 	GetSeller(id int64) (value Seller, ok bool)
 	GetUom(id int64) (value Uom, ok bool)
+
+	SetMultiple(objects map[int64]ModelValue) error
 }

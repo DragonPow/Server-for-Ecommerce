@@ -3,9 +3,9 @@ package main
 import (
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/config"
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/internal/cache/mem_cache"
+	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/internal/cache/redis_cache"
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/internal/database/store"
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/internal/service"
-	redisCache "github.com/DragonPow/Server-for-Ecommerce/library/cache/redis"
 	"github.com/DragonPow/Server-for-Ecommerce/library/database/migrate"
 	"github.com/DragonPow/Server-for-Ecommerce/library/log"
 	"github.com/DragonPow/Server-for-Ecommerce/library/server"
@@ -92,15 +92,14 @@ func newService(cfg *config.Config) (*service.Service, error) {
 	store := store.NewStore(db, logger)
 
 	// Redis cache
-	cache := redisCache.New(
+	cache := redis_cache.NewCache(
 		cfg.RedisConfig.Addr,
 		cfg.RedisConfig.Password,
 		cfg.RedisConfig.ExpiredDefault,
-		logger,
 	)
 
 	// Memory cache
-	memCache := mem_cache.NewCache(cfg.MemCacheConfig.MaxTimeMiss)
+	memCache := mem_cache.NewCache(cfg.MemCacheConfig.MaxTimeMiss, cfg.MemCacheConfig.MaxNumberCache)
 
 	return service.NewService(cfg, logger, store, cache, memCache), nil
 }

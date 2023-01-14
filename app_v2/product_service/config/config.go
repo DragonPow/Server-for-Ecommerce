@@ -30,7 +30,8 @@ type KafkaConfig struct {
 }
 
 type MemConfig struct {
-	MaxTimeMiss int `json:"max_time_miss" mapstructure:"max_time_miss"`
+	MaxTimeMiss    int `json:"max_time_miss" mapstructure:"max_time_miss"`
+	MaxNumberCache int `json:"max_number_cache" mapstructure:"max_number_cache"`
 }
 
 type Consumer struct {

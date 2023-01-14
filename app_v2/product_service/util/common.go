@@ -2,6 +2,7 @@ package util
 
 import (
 	"database/sql"
+	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/internal/cache"
 	"time"
 )
 
@@ -14,4 +15,8 @@ func ParseUnixTimeToString(t sql.NullInt64) string {
 		return EmptyString
 	}
 	return time.Unix(t.Int64, 0).Format(time.RFC3339)
+}
+
+func FuncConvertToCache[T cache.ModelValue](k int64, v T) (int64, cache.ModelValue) {
+	return k, v
 }

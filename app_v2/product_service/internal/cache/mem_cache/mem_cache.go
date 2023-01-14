@@ -1,7 +1,9 @@
 package mem_cache
 
 import (
+	"fmt"
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/internal/cache"
+	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/util"
 	"github.com/DragonPow/Server-for-Ecommerce/library/math"
 	"sync"
 )
@@ -9,112 +11,143 @@ import (
 type MemCache interface {
 	cache.Cache
 	IsMaxMiss(storeKey string) bool
-	SetMultiple(objects map[int64]cache.ModelValue)
+	CheckAndSet(objects map[int64]cache.ModelValue) (bool, error)
 }
 
 type memCache struct {
 	sync.Map
 	mu              sync.RWMutex
+	missMu          sync.RWMutex
 	maxNumberMiss   int
 	cacheMissNumber sync.Map
+	maxNumberCache  int
 }
 
-func NewCache(maxNumberMiss int) cache.Cache {
+func (m *memCache) GetList(t cache.ModelValue, ids []int64) (list map[int64]cache.ModelValue, missIds []int64) {
+	switch t.GetType() {
+	case cache.TypeProduct:
+		var l map[int64]cache.Product
+		l, missIds = getList[cache.Product](m, ids)
+		return math.ConvertMap(l, util.FuncConvertToCache[cache.Product]), missIds
+	case cache.TypeProductTemplate:
+		var l map[int64]cache.ProductTemplate
+		l, missIds = getList[cache.ProductTemplate](m, ids)
+		return math.ConvertMap(l, util.FuncConvertToCache[cache.ProductTemplate]), missIds
+	case cache.TypeUom:
+		var l map[int64]cache.Uom
+		l, missIds = getList[cache.Uom](m, ids)
+		return math.ConvertMap(l, util.FuncConvertToCache[cache.Uom]), missIds
+	case cache.TypeCategory:
+		var l map[int64]cache.Category
+		l, missIds = getList[cache.Category](m, ids)
+		return math.ConvertMap(l, util.FuncConvertToCache[cache.Category]), missIds
+	case cache.TypeSeller:
+		var l map[int64]cache.Seller
+		l, missIds = getList[cache.Seller](m, ids)
+		return math.ConvertMap(l, util.FuncConvertToCache[cache.Seller]), missIds
+	case cache.TypeUser:
+		var l map[int64]cache.User
+		l, missIds = getList[cache.User](m, ids)
+		return math.ConvertMap(l, util.FuncConvertToCache[cache.User]), missIds
+	}
+	return
+}
+
+func NewCache(maxNumberMiss, maxNumberCache int) MemCache {
 	return &memCache{
 		Map:             sync.Map{},
 		maxNumberMiss:   maxNumberMiss,
 		cacheMissNumber: sync.Map{},
+		maxNumberCache:  maxNumberCache,
+		mu:              sync.RWMutex{},
+		missMu:          sync.RWMutex{},
 	}
 }
 
-func (m *memCache) SetMultiple(objects map[int64]cache.ModelValue) {
-	m.mu.Lock()
-	for key, value := range objects {
-		m.Store(value.GetType(), key, value)
+func (m *memCache) SetMultiple(objects map[int64]cache.ModelValue) (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("panic: %v", r)
+			return
+		}
+	}()
+
+	lockOk := m.mu.TryLock()
+	defer func() {
+		if lockOk {
+			m.mu.Unlock()
+		}
+	}()
+
+	for id, value := range objects {
+		m.Store(value.GetType(), id, value)
 	}
-	m.mu.Unlock()
+	return nil
+}
+
+func (m *memCache) CheckAndSet(objects map[int64]cache.ModelValue) (isSet bool, err error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.missMu.Lock()
+	defer m.missMu.Unlock()
+
+	objectNeedSets := make(map[int64]cache.ModelValue, len(objects))
+	for k, v := range objects {
+		if m.IsMaxMiss(parseKey(v.GetType(), k)) {
+			if !isSet {
+				isSet = true
+			}
+			objectNeedSets[k] = v
+		}
+	}
+	err = m.SetMultiple(objectNeedSets)
+	return isSet, err
 }
 
 func (m *memCache) GetListProduct(ids []int64) (list map[int64]cache.Product, missIds []int64) {
-	values, miss := m.LoadMultiple(cache.TypeProduct, math.Convert(ids, funcConvertAny))
-	return ConvertMultipleResponse[cache.Product](values, miss)
+	return getList[cache.Product](m, ids)
 }
 
 func (m *memCache) GetListUser(ids []int64) (list map[int64]cache.User, missIds []int64) {
-	values, miss := m.LoadMultiple(cache.TypeUser, math.Convert(ids, funcConvertAny))
-	return ConvertMultipleResponse[cache.User](values, miss)
+	return getList[cache.User](m, ids)
 }
 
 func (m *memCache) GetListCategory(ids []int64) (list map[int64]cache.Category, missIds []int64) {
-	values, miss := m.LoadMultiple(cache.TypeCategory, math.Convert(ids, funcConvertAny))
-	return ConvertMultipleResponse[cache.Category](values, miss)
+	return getList[cache.Category](m, ids)
 }
 
 func (m *memCache) GetListProductTemplate(ids []int64) (list map[int64]cache.ProductTemplate, missIds []int64) {
-	values, miss := m.LoadMultiple(cache.TypeProductTemplate, math.Convert(ids, funcConvertAny))
-	return ConvertMultipleResponse[cache.ProductTemplate](values, miss)
+	return getList[cache.ProductTemplate](m, ids)
 }
 
 func (m *memCache) GetListSeller(ids []int64) (list map[int64]cache.Seller, missIds []int64) {
-	values, miss := m.LoadMultiple(cache.TypeSeller, math.Convert(ids, funcConvertAny))
-	return ConvertMultipleResponse[cache.Seller](values, miss)
+	return getList[cache.Seller](m, ids)
 }
 
 func (m *memCache) GetListUom(ids []int64) (list map[int64]cache.Uom, missIds []int64) {
-	values, miss := m.LoadMultiple(cache.TypeUom, math.Convert(ids, funcConvertAny))
-	return ConvertMultipleResponse[cache.Uom](values, miss)
+	return getList[cache.Uom](m, ids)
 }
 
-func (m *memCache) GetProduct(id int64) (value cache.Product, ok bool) {
-	v, ok := m.Load(cache.TypeProduct, id)
-	if !ok {
-		return cache.Product{}, false
-	}
-	_, p := funcConvertModel[cache.Product](v)
-	return p, true
+func (m *memCache) GetProduct(id int64) (cache.Product, bool) {
+	return GetOne[cache.Product](m, id)
 }
 
 func (m *memCache) GetUser(id int64) (value cache.User, ok bool) {
-	v, ok := m.Load(cache.TypeProduct, id)
-	if !ok {
-		return cache.User{}, false
-	}
-	_, p := funcConvertModel[cache.User](v)
-	return p, true
+	return GetOne[cache.User](m, id)
 }
 
 func (m *memCache) GetCategory(id int64) (value cache.Category, ok bool) {
-	v, ok := m.Load(cache.TypeProduct, id)
-	if !ok {
-		return cache.Category{}, false
-	}
-	_, p := funcConvertModel[cache.Category](v)
-	return p, true
+	return GetOne[cache.Category](m, id)
 }
 
 func (m *memCache) GetProductTemplate(id int64) (value cache.ProductTemplate, ok bool) {
-	v, ok := m.Load(cache.TypeProduct, id)
-	if !ok {
-		return cache.ProductTemplate{}, false
-	}
-	_, p := funcConvertModel[cache.ProductTemplate](v)
-	return p, true
+	return GetOne[cache.ProductTemplate](m, id)
 }
 
 func (m *memCache) GetSeller(id int64) (value cache.Seller, ok bool) {
-	v, ok := m.Load(cache.TypeProduct, id)
-	if !ok {
-		return cache.Seller{}, false
-	}
-	_, p := funcConvertModel[cache.Seller](v)
-	return p, true
+	return GetOne[cache.Seller](m, id)
 }
 
 func (m *memCache) GetUom(id int64) (value cache.Uom, ok bool) {
-	v, ok := m.Load(cache.TypeProduct, id)
-	if !ok {
-		return cache.Uom{}, false
-	}
-	_, p := funcConvertModel[cache.Uom](v)
-	return p, true
+	return GetOne[cache.Uom](m, id)
 }
