@@ -43,7 +43,7 @@ func (r *myRouter) updateProductHandler(w http.ResponseWriter, req *http.Request
 	defer cancel()
 
 	// Get ProductId
-	productId, err := ParseIdFromRequest(w, req, "id")
+	productId, err := ParseInt64FromReq(req, "id")
 	if err != nil {
 		server.HTTPError(w, req, err)
 		return

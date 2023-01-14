@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"fmt"
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/db_manager_service/util"
 	"github.com/DragonPow/Server-for-Ecommerce/library/server"
 	"github.com/gorilla/mux"
@@ -59,8 +60,22 @@ func NewHttpHandler(httpPattern string, s HttpServer) http.Handler {
 	return router
 }
 
-func ParseIdFromRequest(w http.ResponseWriter, req *http.Request, fieldName string) (int64, error) {
-	productId, err := strconv.ParseInt(mux.Vars(req)[fieldName], util.Base10Int, util.BitSize64)
+// GetField
+//  Get fieldName from request, return string
+func GetField(req *http.Request, fieldName string) (string, bool) {
+	m, ok := mux.Vars(req)[fieldName]
+	return m, ok
+}
+
+// ParseInt64FromReq
+//  Get params with specific fieldName Ex: /get/products/{field_name}
+//  Parse from string to int64
+func ParseInt64FromReq(req *http.Request, fieldName string) (int64, error) {
+	v, ok := GetField(req, fieldName)
+	if !ok {
+		return 0, fmt.Errorf("not found field %v", fieldName)
+	}
+	productId, err := strconv.ParseInt(v, util.Base10Int, util.BitSize64)
 	if err != nil {
 		return 0, err
 	}
