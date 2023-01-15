@@ -25,20 +25,35 @@ const (
 type ModelValue interface {
 	GetType() TypeCache
 	GetId() int64
+	GetVersion() string
 }
 
 // User ...
 type User struct {
-	Id   int64  `json:"id"`
-	Name string `json:"name"`
+	ID         int64     `json:"id"`
+	Name       string    `json:"name"`
+	UpdateDate time.Time `json:"update_date"`
 }
 
 func (u User) GetId() int64 {
-	return u.Id
+	return u.ID
 }
 
 func (u User) GetType() TypeCache {
 	return TypeUser
+}
+
+func (u User) GetVersion() string {
+	return u.UpdateDate.Format(time.RFC3339)
+}
+
+func (u *User) FromDb(model store.User) {
+	*u = User{
+		ID:         model.ID,
+		Name:       model.Name,
+		UpdateDate: model.WriteDate,
+	}
+	return
 }
 
 // Product ...
@@ -52,12 +67,13 @@ type Product struct {
 	CreateDate  time.Time `json:"create_date"`
 	WriteDate   time.Time `json:"write_date"`
 	// Reference
-	CreateUid  int64 `json:"create_uid"`
-	WriteUid   int64 `json:"write_uid"`
-	TemplateID int64 `json:"template_id"`
-	CategoryID int64 `json:"category_id"`
-	UomID      int64 `json:"uom_id"`
-	SellerID   int64 `json:"seller_id"`
+	CreateUid  int64     `json:"create_uid"`
+	WriteUid   int64     `json:"write_uid"`
+	TemplateID int64     `json:"template_id"`
+	CategoryID int64     `json:"category_id"`
+	UomID      int64     `json:"uom_id"`
+	SellerID   int64     `json:"seller_id"`
+	UpdateDate time.Time `json:"update_date"`
 }
 
 func (p Product) GetId() int64 {
@@ -66,6 +82,10 @@ func (p Product) GetId() int64 {
 
 func (p Product) GetType() TypeCache {
 	return TypeProduct
+}
+
+func (p Product) GetVersion() string {
+	return p.UpdateDate.Format(time.RFC3339)
 }
 
 func (p *Product) FromDb(model store.Product, categoryId, uomId, sellerId int64) {
@@ -85,6 +105,7 @@ func (p *Product) FromDb(model store.Product, categoryId, uomId, sellerId int64)
 		CategoryID:  categoryId,
 		UomID:       uomId,
 		SellerID:    sellerId,
+		UpdateDate:  model.WriteDate,
 	}
 	return
 }
@@ -103,11 +124,12 @@ type ProductTemplate struct {
 	WriteDate      time.Time `json:"write_date"`
 	Variants       string    `json:"variants"`
 	// Reference
-	CreateUid  int64 `json:"create_uid"`
-	WriteUid   int64 `json:"write_uid"`
-	SellerID   int64 `json:"seller_id"`
-	CategoryID int64 `json:"category_id"`
-	UomID      int64 `json:"uom_id"`
+	CreateUid  int64     `json:"create_uid"`
+	WriteUid   int64     `json:"write_uid"`
+	SellerID   int64     `json:"seller_id"`
+	CategoryID int64     `json:"category_id"`
+	UomID      int64     `json:"uom_id"`
+	UpdateDate time.Time `json:"update_date"`
 }
 
 func (p ProductTemplate) GetId() int64 {
@@ -116,6 +138,10 @@ func (p ProductTemplate) GetId() int64 {
 
 func (p ProductTemplate) GetType() TypeCache {
 	return TypeProductTemplate
+}
+
+func (p ProductTemplate) GetVersion() string {
+	return p.UpdateDate.Format(time.RFC3339)
 }
 
 func (p *ProductTemplate) FromDb(model store.ProductTemplate) {
@@ -137,16 +163,18 @@ func (p *ProductTemplate) FromDb(model store.ProductTemplate) {
 		SellerID:       model.SellerID.Int64,
 		CategoryID:     model.CategoryID.Int64,
 		UomID:          model.UomID.Int64,
+		UpdateDate:     model.WriteDate,
 	}
 	return
 }
 
 // Seller ...
 type Seller struct {
-	ID      int64  `json:"id"`
-	Name    string `json:"name"`
-	Logo    string `json:"logo"`
-	Address string `json:"address"`
+	ID         int64     `json:"id"`
+	Name       string    `json:"name"`
+	Logo       string    `json:"logo"`
+	Address    string    `json:"address"`
+	UpdateDate time.Time `json:"update_date"`
 }
 
 func (s Seller) GetId() int64 {
@@ -157,20 +185,26 @@ func (s Seller) GetType() TypeCache {
 	return TypeSeller
 }
 
+func (s Seller) GetVersion() string {
+	return s.UpdateDate.Format(time.RFC3339)
+}
+
 func (s *Seller) FromDb(model store.Seller) {
 	*s = Seller{
-		ID:      model.ID,
-		Name:    model.Name,
-		Logo:    model.LogoUrl.String,
-		Address: model.Address.String,
+		ID:         model.ID,
+		Name:       model.Name,
+		Logo:       model.LogoUrl.String,
+		Address:    model.Address.String,
+		UpdateDate: model.WriteDate,
 	}
 	return
 }
 
 // Uom ...
 type Uom struct {
-	ID   int64  `json:"id"`
-	Name string `json:"name"`
+	ID         int64     `json:"id"`
+	Name       string    `json:"name"`
+	UpdateDate time.Time `json:"update_date"`
 }
 
 func (u Uom) GetId() int64 {
@@ -183,17 +217,19 @@ func (u Uom) GetType() TypeCache {
 
 func (u *Uom) FromDb(model store.Uom) {
 	*u = Uom{
-		ID:   model.ID,
-		Name: model.Name,
+		ID:         model.ID,
+		Name:       model.Name,
+		UpdateDate: model.WriteDate,
 	}
 	return
 }
 
 // Category ...
 type Category struct {
-	ID          int64  `json:"id"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
+	ID          int64     `json:"id"`
+	Name        string    `json:"name"`
+	Description string    `json:"description"`
+	UpdateDate  time.Time `json:"update_date"`
 }
 
 func (c Category) GetId() int64 {
@@ -204,11 +240,16 @@ func (c Category) GetType() TypeCache {
 	return TypeCategory
 }
 
+func (c Category) GetVersion() string {
+	return c.UpdateDate.Format(time.RFC3339)
+}
+
 func (c *Category) FromDb(model store.Category) {
 	*c = Category{
 		ID:          model.ID,
 		Name:        model.Name,
 		Description: model.Description.String,
+		UpdateDate:  model.WriteDate,
 	}
 	return
 }
