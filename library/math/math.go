@@ -1,6 +1,9 @@
 package math
 
-import "math"
+import (
+	"fmt"
+	"math"
+)
 
 const (
 	ZERO_INT                  = 0
@@ -54,4 +57,22 @@ func ConvertMap[T, Z comparable, U, Y any](myMap map[T]U, f func(key T, value U)
 		result[newK] = newV
 	}
 	return result
+}
+
+func AppendMap[T comparable, U any](anotherMaps ...map[T]U) (newMap map[T]U) {
+	sumLen := 0
+	for _, anotherMap := range anotherMaps {
+		sumLen += len(anotherMap)
+	}
+	newMap = make(map[T]U, sumLen)
+	for _, anotherMap := range anotherMaps {
+		for k, v := range anotherMap {
+			_, ok := newMap[k]
+			if ok {
+				panic(fmt.Sprintf("Key %v is duplicate", k))
+			}
+			newMap[k] = v
+		}
+	}
+	return newMap
 }

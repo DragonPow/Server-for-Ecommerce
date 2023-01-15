@@ -145,7 +145,8 @@ func (p *ProductTemplate) FromDb(model store.ProductTemplate) {
 type Seller struct {
 	ID      int64  `json:"id"`
 	Name    string `json:"name"`
-	LogoUrl string `json:"logo_url"`
+	Logo    string `json:"logo"`
+	Address string `json:"address"`
 }
 
 func (s Seller) GetId() int64 {
@@ -160,7 +161,8 @@ func (s *Seller) FromDb(model store.Seller) {
 	*s = Seller{
 		ID:      model.ID,
 		Name:    model.Name,
-		LogoUrl: model.LogoUrl.String,
+		Logo:    model.LogoUrl.String,
+		Address: model.Address.String,
 	}
 	return
 }

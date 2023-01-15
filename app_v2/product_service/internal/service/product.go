@@ -18,46 +18,52 @@ func (s *Service) GetDetailProduct(ctx context.Context, req *api.GetDetailProduc
 	memCacheProduct, ok := s.memCache.GetProduct(req.Id)
 	if ok {
 		// Get Template
-		template, err := getProductTemplateOrInsertCache(s, ctx, memCacheProduct.TemplateID)
+		templates, err := getProductTemplateOrInsertCache(s, ctx, []int64{memCacheProduct.TemplateID})
 		if err != nil {
 			logger.Error(err, "getProductTemplateOrInsertCache")
 			return nil, err
 		}
+		template := templates[memCacheProduct.TemplateID]
 
 		// Get Template
-		category, err := getCategoryOrInsertCache(s, ctx, memCacheProduct.CategoryID)
+		categories, err := getCategoryOrInsertCache(s, ctx, []int64{memCacheProduct.CategoryID})
 		if err != nil {
 			logger.Error(err, "getCategoryOrInsertCache")
 			return nil, err
 		}
+		category := categories[memCacheProduct.CategoryID]
 
 		// Get Template
-		uom, err := getUomOrInsertCache(s, ctx, memCacheProduct.UomID)
+		uoms, err := getUomOrInsertCache(s, ctx, []int64{memCacheProduct.UomID})
 		if err != nil {
 			logger.Error(err, "getUomOrInsertCache")
 			return nil, err
 		}
+		uom := uoms[memCacheProduct.UomID]
 
 		// Get Template
-		seller, err := getSellerOrInsertCache(s, ctx, memCacheProduct.SellerID)
+		sellers, err := getSellerOrInsertCache(s, ctx, []int64{memCacheProduct.SellerID})
 		if err != nil {
 			logger.Error(err, "getSellerOrInsertCache")
 			return nil, err
 		}
+		seller := sellers[memCacheProduct.SellerID]
 
 		// Get Template
-		createBy, err := getUserOrInsertCache(s, ctx, memCacheProduct.CreateUid)
+		createBys, err := getUserOrInsertCache(s, ctx, []int64{memCacheProduct.CreateUid})
 		if err != nil {
 			logger.Error(err, "getUserOrInsertCache")
 			return nil, err
 		}
+		createBy := createBys[memCacheProduct.CreateUid]
 
 		// Get Template
-		writeBy, err := getUserOrInsertCache(s, ctx, memCacheProduct.WriteUid)
+		writeBys, err := getUserOrInsertCache(s, ctx, []int64{memCacheProduct.WriteUid})
 		if err != nil {
 			logger.Error(err, "getUserOrInsertCache")
 			return nil, err
 		}
+		writeBy := writeBys[memCacheProduct.WriteUid]
 
 		return &api.GetDetailProductResponse{
 			Code:    0,
@@ -90,7 +96,6 @@ func (s *Service) GetDetailProduct(ctx context.Context, req *api.GetDetailProduc
 			},
 		}, nil
 	}
-
 	// Get from redis
 
 	// Get from database
@@ -111,202 +116,299 @@ func (s *Service) GetDetailProduct(ctx context.Context, req *api.GetDetailProduc
 	}, nil
 }
 
-// getProductTemplateOrInsertCache
-//  Get Template from memCache
-//  If mem not exists, get from database
-//  If database exists, return
-func getProductTemplateOrInsertCache(s *Service, ctx context.Context, id int64) (template cache.ProductTemplate, err error) {
-	var ok bool
+func getProductTemplateOrInsertCache(s *Service, ctx context.Context, ids []int64) (result map[int64]cache.ProductTemplate, err error) {
+	type typeCache = cache.ProductTemplate
+	type typeDb = store.ProductTemplate
+	var (
+		modelName        = "uom"
+		funcMemGetList   = s.memCache.GetListProductTemplate
+		funcLocalGetList = s.localCache.GetListProductTemplate
+		funcDbGetList    = s.storeDb.GetProductTemplates
+
+		mem   map[int64]typeCache
+		local map[int64]typeCache
+		db    map[int64]typeCache
+
+		missMemIds   []int64
+		missLocalIds []int64
+	)
+
 	// Get from mem cache
-	template, ok = s.memCache.GetProductTemplate(id)
-	if !ok {
+	mem, missMemIds = funcMemGetList(ids)
+	if len(missMemIds) > util.ZeroLength {
 		// Get from redis
-		template, ok = s.localCache.GetProductTemplate(id)
-		if !ok {
+		local, missLocalIds = funcLocalGetList(missMemIds)
+		if len(missLocalIds) > util.ZeroLength {
 			// Get from db
-			listTemplate, err := s.storeDb.GetProductTemplates(ctx, []int64{id})
+			storeModel, err := funcDbGetList(ctx, missLocalIds)
 			if err != nil {
-				return cache.ProductTemplate{}, err
+				return nil, err
 			}
-			if len(listTemplate) == util.ZeroLength {
-				return cache.ProductTemplate{}, status.Errorf(codes.NotFound, "Not found template with id = %v", id)
+			if len(storeModel) == util.ZeroLength {
+				return nil, status.Errorf(codes.NotFound, "Not found %s with ids = %v", modelName, missLocalIds)
 			}
-			template.FromDb(listTemplate[0])
+			db = math.ToMap(storeModel, func(model typeDb) (int64, typeCache) {
+				var u typeCache
+				u.FromDb(model)
+				return model.ID, u
+			})
 
 			// Set to redis
-			err = s.localCache.SetMultiple(map[int64]cache.ModelValue{id: template})
-			if err != nil {
-				s.log.Error(err, "Fail set multiple to local cache", "id", id, "template", template)
-			}
+			go func() {
+				err := s.localCache.SetMultiple(math.ConvertMap(db, util.FuncConvertToCache[typeCache]))
+				if err != nil {
+					s.log.Error(err, "Fail set multiple to local cache", "ids", ids, "db", db)
+				}
+			}()
 		}
 
 		// Check and set to mem cache
-		_, err = s.memCache.CheckAndSet(map[int64]cache.ModelValue{id: template})
-		if err != nil {
-			s.log.Error(err, "Fail set multiple to mem cache", "id", id, "template", template)
-		}
-	}
-	return template, nil
-}
-
-func getCategoryOrInsertCache(s *Service, ctx context.Context, id int64) (category cache.Category, err error) {
-	var ok bool
-	// Get from mem cache
-	category, ok = s.memCache.GetCategory(id)
-	if !ok {
-		// Get from redis
-		category, ok = s.localCache.GetCategory(id)
-		if !ok {
-			// Get from db
-			listTemplate, err := s.storeDb.GetCategories(ctx, []int64{id})
+		go func() {
+			newMemCache := math.AppendMap(db, local)
+			_, err := s.memCache.CheckAndSet(math.ConvertMap(newMemCache, util.FuncConvertToCache[typeCache]))
 			if err != nil {
-				return cache.Category{}, err
+				s.log.Error(err, "Fail set multiple to mem cache", "ids", ids, "local", local, "db", db)
 			}
-			if len(listTemplate) == util.ZeroLength {
-				return cache.Category{}, status.Errorf(codes.NotFound, "Not found category with id = %v", id)
-			}
-			category.FromDb(listTemplate[0])
-
-			// Set to redis
-			err = s.localCache.SetMultiple(map[int64]cache.ModelValue{id: category})
-			if err != nil {
-				s.log.Error(err, "Fail set multiple to local cache", "id", id, "category", category)
-			}
-		}
-
-		// Check and set to mem cache
-		_, err = s.memCache.CheckAndSet(map[int64]cache.ModelValue{id: category})
-		if err != nil {
-			s.log.Error(err, "Fail set multiple to mem cache", "id", id, "category", category)
-		}
+		}()
 	}
-	return category, nil
+
+	return math.AppendMap(mem, local, db), nil
 }
 
 func getUomOrInsertCache(s *Service, ctx context.Context, ids []int64) (result map[int64]cache.Uom, err error) {
+	type typeCache = cache.Uom
+	type typeDb = store.Uom
 	var (
-		memUoms   map[int64]cache.Uom
-		localUoms map[int64]cache.Uom
-		dbUoms    map[int64]cache.Uom
+		modelName        = "uom"
+		funcMemGetList   = s.memCache.GetListUom
+		funcLocalGetList = s.localCache.GetListUom
+		funcDbGetList    = s.storeDb.GetUoms
+
+		mem   map[int64]typeCache
+		local map[int64]typeCache
+		db    map[int64]typeCache
 
 		missMemIds   []int64
 		missLocalIds []int64
 	)
+
 	// Get from mem cache
-	memUoms, missMemIds = s.memCache.GetListUom(ids)
+	mem, missMemIds = funcMemGetList(ids)
 	if len(missMemIds) > util.ZeroLength {
 		// Get from redis
-		localUoms, missLocalIds = s.localCache.GetListUom(missMemIds)
+		local, missLocalIds = funcLocalGetList(missMemIds)
 		if len(missLocalIds) > util.ZeroLength {
 			// Get from db
-			storeUoms, err := s.storeDb.GetUoms(ctx, missLocalIds)
+			storeModel, err := funcDbGetList(ctx, missLocalIds)
 			if err != nil {
 				return nil, err
 			}
-			if len(storeUoms) == util.ZeroLength {
-				return nil, status.Errorf(codes.NotFound, "Not found uoms with ids = %v", missLocalIds)
+			if len(storeModel) == util.ZeroLength {
+				return nil, status.Errorf(codes.NotFound, "Not found %s with ids = %v", modelName, missLocalIds)
 			}
-			dbUoms = math.ToMap(storeUoms, func(uom store.Uom) (int64, cache.Uom) {
-				var u cache.Uom
-				u.FromDb(uom)
-				return uom.ID, u
+			db = math.ToMap(storeModel, func(model typeDb) (int64, typeCache) {
+				var u typeCache
+				u.FromDb(model)
+				return model.ID, u
 			})
 
 			// Set to redis
-			err = s.localCache.SetMultiple(math.ConvertMap(dbUoms, util.FuncConvertToCache[cache.Uom]))
-			if err != nil {
-				s.log.Error(err, "Fail set multiple to local cache", "ids", ids, "dbUoms", dbUoms)
-			}
+			go func() {
+				err := s.localCache.SetMultiple(math.ConvertMap(db, util.FuncConvertToCache[typeCache]))
+				if err != nil {
+					s.log.Error(err, "Fail set multiple to local cache", "ids", ids, "db", db)
+				}
+			}()
 		}
 
 		// Check and set to mem cache
-		newMemCache := make(map[int64]cache.Uom, len(dbUoms)+len(localUoms))
-		for id, uom := range localUoms {
-			newMemCache[id] = uom
-		}
-		for id, uom := range dbUoms {
-			newMemCache[id] = uom
-		}
-		_, err = s.memCache.CheckAndSet(math.ConvertMap(newMemCache, util.FuncConvertToCache[cache.Uom]))
-		if err != nil {
-			s.log.Error(err, "Fail set multiple to mem cache", "ids", ids, "localUoms", localUoms, "dbUoms", dbUoms)
-		}
+		go func() {
+			newMemCache := math.AppendMap(db, local)
+			_, err := s.memCache.CheckAndSet(math.ConvertMap(newMemCache, util.FuncConvertToCache[typeCache]))
+			if err != nil {
+				s.log.Error(err, "Fail set multiple to mem cache", "ids", ids, "local", local, "db", db)
+			}
+		}()
 	}
 
-	result = make(map[int64]cache.Uom, len(ids))
-	for id, uom := range memUoms {
-		result[id] = uom
-	}
-	for id, uom := range localUoms {
-		result[id] = uom
-	}
-	for id, uom := range dbUoms {
-		result[id] = uom
-	}
-	return result, nil
+	return math.AppendMap(mem, local, db), nil
 }
 
-func getOrInsertCache[T cache.ModelValue](s *Service, ctx context.Context, ids []int64) (result map[int64]T, err error) {
+func getCategoryOrInsertCache(s *Service, ctx context.Context, ids []int64) (result map[int64]cache.Category, err error) {
+	type typeCache = cache.Category
+	type typeDb = store.Category
 	var (
-		mems   map[int64]T
-		locals map[int64]T
-		dbs    map[int64]T
+		modelName        = "uom"
+		funcMemGetList   = s.memCache.GetListCategory
+		funcLocalGetList = s.localCache.GetListCategory
+		funcDbGetList    = s.storeDb.GetCategories
+
+		mem   map[int64]typeCache
+		local map[int64]typeCache
+		db    map[int64]typeCache
 
 		missMemIds   []int64
 		missLocalIds []int64
 	)
+
 	// Get from mem cache
-	mems, missMemIds = s.memCache.GetList(*new(T), ids)
+	mem, missMemIds = funcMemGetList(ids)
 	if len(missMemIds) > util.ZeroLength {
 		// Get from redis
-		locals, missLocalIds = s.localCache.GetList(missMemIds)
+		local, missLocalIds = funcLocalGetList(missMemIds)
 		if len(missLocalIds) > util.ZeroLength {
 			// Get from db
-			storeUoms, err := s.storeDb.GetUoms(ctx, missLocalIds)
+			storeModel, err := funcDbGetList(ctx, missLocalIds)
 			if err != nil {
 				return nil, err
 			}
-			if len(storeUoms) == util.ZeroLength {
-				return nil, status.Errorf(codes.NotFound, "Not found uoms with ids = %v", missLocalIds)
+			if len(storeModel) == util.ZeroLength {
+				return nil, status.Errorf(codes.NotFound, "Not found %s with ids = %v", modelName, missLocalIds)
 			}
-			dbs = math.ToMap(storeUoms, func(uom store.Uom) (int64, cache.Uom) {
-				var u cache.Uom
-				u.FromDb(uom)
-				return uom.ID, u
+			db = math.ToMap(storeModel, func(model typeDb) (int64, typeCache) {
+				var u typeCache
+				u.FromDb(model)
+				return model.ID, u
 			})
 
 			// Set to redis
-			err = s.localCache.SetMultiple(math.ConvertMap(dbUoms, util.FuncConvertToCache[cache.Uom]))
-			if err != nil {
-				s.log.Error(err, "Fail set multiple to local cache", "ids", ids, "dbUoms", dbUoms)
-			}
+			go func() {
+				err := s.localCache.SetMultiple(math.ConvertMap(db, util.FuncConvertToCache[typeCache]))
+				if err != nil {
+					s.log.Error(err, "Fail set multiple to local cache", "ids", ids, "db", db)
+				}
+			}()
 		}
 
 		// Check and set to mem cache
-		newMemCache := make(map[int64]cache.Uom, len(dbUoms)+len(localUoms))
-		for id, uom := range localUoms {
-			newMemCache[id] = uom
-		}
-		for id, uom := range dbUoms {
-			newMemCache[id] = uom
-		}
-		_, err = s.memCache.CheckAndSet(math.ConvertMap(newMemCache, util.FuncConvertToCache[cache.Uom]))
-		if err != nil {
-			s.log.Error(err, "Fail set multiple to mem cache", "ids", ids, "localUoms", localUoms, "dbUoms", dbUoms)
-		}
+		go func() {
+			newMemCache := math.AppendMap(db, local)
+			_, err := s.memCache.CheckAndSet(math.ConvertMap(newMemCache, util.FuncConvertToCache[typeCache]))
+			if err != nil {
+				s.log.Error(err, "Fail set multiple to mem cache", "ids", ids, "local", local, "db", db)
+			}
+		}()
 	}
 
-	result = make(map[int64]cache.Uom, len(ids))
-	for id, uom := range memUoms {
-		result[id] = uom
+	return math.AppendMap(mem, local, db), nil
+}
+
+func getSellerOrInsertCache(s *Service, ctx context.Context, ids []int64) (result map[int64]cache.Seller, err error) {
+	type typeCache = cache.Seller
+	type typeDb = store.Seller
+	var (
+		modelName        = "uom"
+		funcMemGetList   = s.memCache.GetListSeller
+		funcLocalGetList = s.localCache.GetListSeller
+		funcDbGetList    = s.storeDb.GetSellers
+
+		mem   map[int64]typeCache
+		local map[int64]typeCache
+		db    map[int64]typeCache
+
+		missMemIds   []int64
+		missLocalIds []int64
+	)
+
+	// Get from mem cache
+	mem, missMemIds = funcMemGetList(ids)
+	if len(missMemIds) > util.ZeroLength {
+		// Get from redis
+		local, missLocalIds = funcLocalGetList(missMemIds)
+		if len(missLocalIds) > util.ZeroLength {
+			// Get from db
+			storeModel, err := funcDbGetList(ctx, missLocalIds)
+			if err != nil {
+				return nil, err
+			}
+			if len(storeModel) == util.ZeroLength {
+				return nil, status.Errorf(codes.NotFound, "Not found %s with ids = %v", modelName, missLocalIds)
+			}
+			db = math.ToMap(storeModel, func(model typeDb) (int64, typeCache) {
+				var u typeCache
+				u.FromDb(model)
+				return model.ID, u
+			})
+
+			// Set to redis
+			go func() {
+				err := s.localCache.SetMultiple(math.ConvertMap(db, util.FuncConvertToCache[typeCache]))
+				if err != nil {
+					s.log.Error(err, "Fail set multiple to local cache", "ids", ids, "db", db)
+				}
+			}()
+		}
+
+		// Check and set to mem cache
+		go func() {
+			newMemCache := math.AppendMap(db, local)
+			_, err := s.memCache.CheckAndSet(math.ConvertMap(newMemCache, util.FuncConvertToCache[typeCache]))
+			if err != nil {
+				s.log.Error(err, "Fail set multiple to mem cache", "ids", ids, "local", local, "db", db)
+			}
+		}()
 	}
-	for id, uom := range localUoms {
-		result[id] = uom
+
+	return math.AppendMap(mem, local, db), nil
+}
+
+func getUserOrInsertCache(s *Service, ctx context.Context, ids []int64) (result map[int64]cache.User, err error) {
+	type typeCache = cache.User
+	type typeDb = store.User
+	var (
+		modelName        = "uom"
+		funcMemGetList   = s.memCache.GetListUser
+		funcLocalGetList = s.localCache.GetListUser
+		funcDbGetList    = s.storeDb.GetUsers
+
+		mem   map[int64]typeCache
+		local map[int64]typeCache
+		db    map[int64]typeCache
+
+		missMemIds   []int64
+		missLocalIds []int64
+	)
+
+	// Get from mem cache
+	mem, missMemIds = funcMemGetList(ids)
+	if len(missMemIds) > util.ZeroLength {
+		// Get from redis
+		local, missLocalIds = funcLocalGetList(missMemIds)
+		if len(missLocalIds) > util.ZeroLength {
+			// Get from db
+			storeModel, err := funcDbGetList(ctx, missLocalIds)
+			if err != nil {
+				return nil, err
+			}
+			if len(storeModel) == util.ZeroLength {
+				return nil, status.Errorf(codes.NotFound, "Not found %s with ids = %v", modelName, missLocalIds)
+			}
+			db = math.ToMap(storeModel, func(model typeDb) (int64, typeCache) {
+				var u typeCache
+				u.FromDb(model)
+				return model.ID, u
+			})
+
+			// Set to redis
+			go func() {
+				err := s.localCache.SetMultiple(math.ConvertMap(db, util.FuncConvertToCache[typeCache]))
+				if err != nil {
+					s.log.Error(err, "Fail set multiple to local cache", "ids", ids, "db", db)
+				}
+			}()
+		}
+
+		// Check and set to mem cache
+		go func() {
+			newMemCache := math.AppendMap(db, local)
+			_, err := s.memCache.CheckAndSet(math.ConvertMap(newMemCache, util.FuncConvertToCache[typeCache]))
+			if err != nil {
+				s.log.Error(err, "Fail set multiple to mem cache", "ids", ids, "local", local, "db", db)
+			}
+		}()
 	}
-	for id, uom := range dbUoms {
-		result[id] = uom
-	}
-	return result, nil
+
+	return math.AppendMap(mem, local, db), nil
 }
 
 func (s *Service) GetListProduct(ctx context.Context, req *api.GetListProductRequest) (res *api.GetListProductResponse, err error) {

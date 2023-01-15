@@ -3,8 +3,6 @@ package mem_cache
 import (
 	"fmt"
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/internal/cache"
-	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/util"
-	"github.com/DragonPow/Server-for-Ecommerce/library/math"
 	"sync"
 )
 
@@ -21,36 +19,6 @@ type memCache struct {
 	maxNumberMiss   int
 	cacheMissNumber sync.Map
 	maxNumberCache  int
-}
-
-func (m *memCache) GetList(t cache.ModelValue, ids []int64) (list map[int64]cache.ModelValue, missIds []int64) {
-	switch t.GetType() {
-	case cache.TypeProduct:
-		var l map[int64]cache.Product
-		l, missIds = getList[cache.Product](m, ids)
-		return math.ConvertMap(l, util.FuncConvertToCache[cache.Product]), missIds
-	case cache.TypeProductTemplate:
-		var l map[int64]cache.ProductTemplate
-		l, missIds = getList[cache.ProductTemplate](m, ids)
-		return math.ConvertMap(l, util.FuncConvertToCache[cache.ProductTemplate]), missIds
-	case cache.TypeUom:
-		var l map[int64]cache.Uom
-		l, missIds = getList[cache.Uom](m, ids)
-		return math.ConvertMap(l, util.FuncConvertToCache[cache.Uom]), missIds
-	case cache.TypeCategory:
-		var l map[int64]cache.Category
-		l, missIds = getList[cache.Category](m, ids)
-		return math.ConvertMap(l, util.FuncConvertToCache[cache.Category]), missIds
-	case cache.TypeSeller:
-		var l map[int64]cache.Seller
-		l, missIds = getList[cache.Seller](m, ids)
-		return math.ConvertMap(l, util.FuncConvertToCache[cache.Seller]), missIds
-	case cache.TypeUser:
-		var l map[int64]cache.User
-		l, missIds = getList[cache.User](m, ids)
-		return math.ConvertMap(l, util.FuncConvertToCache[cache.User]), missIds
-	}
-	return
 }
 
 func NewCache(maxNumberMiss, maxNumberCache int) MemCache {
