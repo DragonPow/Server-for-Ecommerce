@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/db_manager_service/config"
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/db_manager_service/internal/database/store"
+	"github.com/DragonPow/Server-for-Ecommerce/app_v2/db_manager_service/internal/producer"
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/db_manager_service/internal/service"
 	"github.com/DragonPow/Server-for-Ecommerce/library/database/migrate"
 	"github.com/DragonPow/Server-for-Ecommerce/library/log"
@@ -82,7 +83,13 @@ func newService(cfg *config.Config) (*service.Service, error) {
 	}
 	store := store.NewStore(db, logger)
 
-	return service.NewService(cfg, logger, store), nil
+	// Producer
+	producer, err := producer.NewProducer(cfg.KafkaConfig, logger)
+	if err != nil {
+		return nil, err
+	}
+
+	return service.NewService(cfg, logger, store, producer), nil
 }
 
 func newDB(dsn string) (*sqlx.DB, error) {

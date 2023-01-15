@@ -15,6 +15,7 @@ type Config struct {
 	MigrationFolder     string              `json:"migration_folder" mapstructure:"migration_folder"`
 	ProductServiceDB    database.DBConfig   `json:"product_service_db" mapstructure:"product_service_db"`
 	TimeOutHttpInSecond int                 `json:"time_out_http_in_second" mapstructure:"time_out_http_in_second"`
+	KafkaConfig         KafkaConfig         `json:"kafka_config" mapstructure:"kafka_config"`
 }
 
 type RedisConfig struct {
@@ -24,17 +25,21 @@ type RedisConfig struct {
 }
 
 type KafkaConfig struct {
-	UpdateDbConsumer Consumer `json:"consumers" mapstructure:"consumers"`
+	Connections                  []string   `json:"connections" mapstructure:"connections"`
+	MaxPublishTimeoutSecond      int        `json:"max_publish_timeout_second" mapstructure:"max_publish_timeout_second"`
+	MaxNumberRetry               int        `json:"max_number_retry" mapstructure:"max_number_retry"`
+	TimeSleepPerRetryMillisecond int        `json:"time_sleep_per_retry_millisecond" mapstructure:"time_sleep_per_retry_millisecond"`
+	ListProducer                 []Producer `json:"list_producer" mapstructure:"list_producer"`
 }
 
 type MemConfig struct {
 	MaxTimeMiss int `json:"max_time_miss" mapstructure:"max_time_miss"`
 }
 
-type Consumer struct {
-	Topic       string   `json:"topic" mapstructure:"topic"`
-	Connections []string `json:"connections" mapstructure:"connections"`
-	Group       string   `json:"group" mapstructure:"group"`
+type Producer struct {
+	Topic            string `json:"topic" mapstructure:"topic"`
+	Group            string `json:"group" mapstructure:"group"`
+	NumberPartitions int    `json:"number_partitions" mapstructure:"number_partitions"`
 }
 
 // Load system env config
@@ -77,5 +82,18 @@ func loadDefaultConfig() *Config {
 		MigrationFolder:     "file://app_v2/product_service/internal/database/migrations",
 		ProductServiceDB:    database.PostgresSQLDefaultConfig(),
 		TimeOutHttpInSecond: 60,
+		KafkaConfig: KafkaConfig{
+			Connections: []string{"localhost:9092"},
+			ListProducer: []Producer{
+				{
+					Topic: "insert_database",
+					Group: "insert_db_producer",
+				},
+				{
+					Topic: "update_database",
+					Group: "update_db_producer",
+				},
+			},
+		},
 	}
 }

@@ -211,6 +211,10 @@ func (m *AddProductRequest) Validate() error {
 
 	// no validation rules for Variants
 
+	// no validation rules for TemplateId
+
+	// no validation rules for CreateUid
+
 	return nil
 }
 

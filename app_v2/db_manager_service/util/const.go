@@ -8,3 +8,9 @@ const (
 	ZeroLength  = 0
 	EmptyString = ""
 )
+
+const (
+	ProductStateAvailable  = "available"
+	ProductStateSold       = "sold"
+	ProductStateWaitExport = "wait_export"
+)

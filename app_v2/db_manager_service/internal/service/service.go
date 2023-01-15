@@ -5,6 +5,7 @@ import (
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/db_manager_service/api"
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/db_manager_service/config"
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/db_manager_service/internal/database/store"
+	"github.com/DragonPow/Server-for-Ecommerce/app_v2/db_manager_service/internal/producer"
 	"github.com/go-logr/logr"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"google.golang.org/grpc"
@@ -12,9 +13,10 @@ import (
 )
 
 type Service struct {
-	cfg     *config.Config
-	log     logr.Logger
-	storeDb store.StoreQuerier
+	cfg      *config.Config
+	log      logr.Logger
+	storeDb  store.StoreQuerier
+	producer producer.Producer
 	//api.UnimplementedOrderServiceServer
 }
 
@@ -22,11 +24,13 @@ func NewService(
 	cfg *config.Config,
 	log logr.Logger,
 	storeDb store.StoreQuerier,
+	producer producer.Producer,
 ) *Service {
 	return &Service{
-		cfg:     cfg,
-		log:     log,
-		storeDb: storeDb,
+		cfg:      cfg,
+		log:      log,
+		storeDb:  storeDb,
+		producer: producer,
 	}
 }
 

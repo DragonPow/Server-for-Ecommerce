@@ -1,11 +1,6 @@
 syntax = "proto3";
 package app_v2.db_manager_service.api;
 option go_package = "app_v2/db_manager_service/api";
-import "validate/validate.proto";
-import "google/rpc/code.proto";
-import "google/api/http.proto";
-import "google/api/annotations.proto";
-import "gogoproto/gogo.proto";
 
 // AddProductTemplateRequest
 message AddProductTemplateRequest {
@@ -49,6 +44,10 @@ message AddProductRequest {
   double sale_price = 3;
   // Variants
   bytes variants = 4;
+  // TemplateId
+  int64 template_id = 5;
+  // CreateUid
+  int64 create_uid = 6;
 }
 
 // AddProductResponse
