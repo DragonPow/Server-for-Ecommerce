@@ -25,6 +25,7 @@ func (s *Service) GetDetailProduct(ctx context.Context, req *api.GetDetailProduc
 	// Get from memory cache
 	memCacheProduct, hasCache = s.memCache.GetProduct(req.Id)
 	if hasCache {
+		logger.Info("Get data from mem cache")
 		return s.computeFromCache(ctx, logger, memCacheProduct)
 	}
 
@@ -32,12 +33,18 @@ func (s *Service) GetDetailProduct(ctx context.Context, req *api.GetDetailProduc
 	localCacheProduct, hasCache = s.localCache.GetProduct(req.Id)
 	if hasCache {
 		defer func() {
-			// Check and set to mem cache
-			_, err := s.memCache.CheckAndSet(map[int64]cache.ModelValue{req.Id: localCacheProduct})
-			if err != nil {
-				s.log.Error(err, "Fail set product to mem cache", "id", req.Id, "local", localCacheProduct)
-			}
+			go func() {
+				// Check and set to mem cache
+				ok, err := s.memCache.CheckAndSet(map[int64]cache.ModelValue{req.Id: localCacheProduct})
+				if err != nil {
+					s.log.Error(err, "Fail set product to mem cache", "id", req.Id, "local", localCacheProduct)
+				}
+				if ok {
+					s.log.Info("Set multiple mem cache success", "productId", req.Id)
+				}
+			}()
 		}()
+		logger.Info("Get data from local cache")
 		return s.computeFromCache(ctx, logger, localCacheProduct)
 	}
 
@@ -54,6 +61,7 @@ func (s *Service) GetDetailProduct(ctx context.Context, req *api.GetDetailProduc
 	// Update cache for local and mem
 	go s.SetCacheAPIGetDetailProduct(data)
 
+	logger.Info("Get data from db")
 	return &api.GetDetailProductResponse{
 		Code:    0,
 		Message: "OK",
