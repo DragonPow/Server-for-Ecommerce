@@ -1,7 +1,7 @@
 create table if not exists "user"
 (
     id bigserial primary key,
-    name varchar not null,
+    "name" varchar not null,
     user_name varchar not null,
     passwrod varchar not null,
     create_date timestamp not null default now(),

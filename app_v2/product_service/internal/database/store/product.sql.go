@@ -56,12 +56,15 @@ SELECT p.id, p.template_id, p.name, p.origin_price, p.sale_price, p.state, p.var
        c.id category_id, c.name category_name,
        u.id uom_id, u.name uom_name,
        s.id seller_id, s.name seller_name, s.logo_url seller_logo, s.address seller_address,
-       pt.name template_name, pt.rating, pt.number_rating, pt.description template_description, pt.remain_quantity, pt.sold_quantity
+       pt.name template_name, pt.rating, pt.number_rating, pt.description template_description, pt.remain_quantity, pt.sold_quantity,
+       us1."name" create_name, us2."name" write_name
 FROM product p
 JOIN product_template pt on pt.id = p.template_id
 JOIN category c on c.id = pt.category_id
 JOIN uom u on u.id = pt.uom_id
 JOIN seller s on s.id = pt.seller_id
+LEFT JOIN "user" us1 on us1.id = p.create_uid
+LEFT JOIN "user" us2 on us2.id = p.write_uid
 WHERE CASE WHEN array_length($1::int8[], 1) > 0 THEN p.id = ANY($1::int8[]) ELSE TRUE END
 `
 
@@ -91,6 +94,8 @@ type GetProductDetailsRow struct {
 	TemplateDescription sql.NullString        `json:"template_description"`
 	RemainQuantity      float64               `json:"remain_quantity"`
 	SoldQuantity        float64               `json:"sold_quantity"`
+	CreateName          sql.NullString        `json:"create_name"`
+	WriteName           sql.NullString        `json:"write_name"`
 }
 
 func (q *Queries) GetProductDetails(ctx context.Context, ids []int64) ([]GetProductDetailsRow, error) {
@@ -128,6 +133,8 @@ func (q *Queries) GetProductDetails(ctx context.Context, ids []int64) ([]GetProd
 			&i.TemplateDescription,
 			&i.RemainQuantity,
 			&i.SoldQuantity,
+			&i.CreateName,
+			&i.WriteName,
 		); err != nil {
 			return nil, err
 		}

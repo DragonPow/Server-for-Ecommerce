@@ -8,77 +8,201 @@ import (
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/internal/database/store"
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/util"
 	"github.com/DragonPow/Server-for-Ecommerce/library/math"
+	"github.com/go-logr/logr"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"sync"
 )
 
 func (s *Service) GetDetailProduct(ctx context.Context, req *api.GetDetailProductRequest) (res *api.GetDetailProductResponse, err error) {
 	logger := s.log.WithName("GetDetailProduct").WithValues("request", req)
-	// Get from memory
-	memCacheProduct, ok := s.memCache.GetProduct(req.Id)
-	if ok {
-		// Get Template
-		templates, err := getProductTemplateOrInsertCache(s, ctx, []int64{memCacheProduct.TemplateID})
+	var (
+		memCacheProduct   cache.Product
+		localCacheProduct cache.Product
+		hasCache          bool
+	)
+
+	// Get from memory cache
+	memCacheProduct, hasCache = s.memCache.GetProduct(req.Id)
+	if hasCache {
+		return s.computeFromCache(ctx, logger, memCacheProduct)
+	}
+
+	// Get from redis
+	localCacheProduct, hasCache = s.localCache.GetProduct(req.Id)
+	if hasCache {
+		defer func() {
+			// Check and set to mem cache
+			_, err := s.memCache.CheckAndSet(map[int64]cache.ModelValue{req.Id: localCacheProduct})
+			if err != nil {
+				s.log.Error(err, "Fail set product to mem cache", "id", req.Id, "local", localCacheProduct)
+			}
+		}()
+		return s.computeFromCache(ctx, logger, localCacheProduct)
+	}
+
+	// Get from database
+	products, err := s.storeDb.GetProductDetails(ctx, []int64{req.Id})
+	if err != nil {
+		return nil, err
+	}
+	if len(products) == util.ZeroLength {
+		return nil, fmt.Errorf("not found product with id = %v", req.Id)
+	}
+	data := &api.ProductDetail{}
+	data.FromEntity(products[0])
+	// Update cache for local and mem
+	go s.SetCacheAPIGetDetailProduct(data)
+
+	return &api.GetDetailProductResponse{
+		Code:    0,
+		Message: "OK",
+		Data:    data,
+	}, nil
+}
+
+func (s *Service) SetCacheAPIGetDetailProduct(data *api.ProductDetail) {
+	ctx := context.Background()
+	p, err := s.storeDb.GetProducts(ctx, []int64{data.Id})
+	if err != nil {
+		s.log.Error(err, "GetProducts", "id", data.Id)
+		return
+	}
+	if len(p) == util.ZeroLength {
+		// Ignore
+		s.log.Info("Not found product to set to local, mem", "id", data.Id)
+		return
+	}
+	productCache := cache.Product{}
+	productCache.FromDb(p[0], data.CategoryId, data.UomId, data.SellerId)
+	// Insert redis cache
+	go func() {
+		err := s.localCache.SetMultiple(map[int64]cache.ModelValue{data.Id: productCache})
+		if err != nil {
+			s.log.Error(err, "Set multiple local cache fail")
+		}
+	}()
+	// Insert mem cache
+	go func() {
+		_, err := s.memCache.CheckAndSet(map[int64]cache.ModelValue{data.Id: productCache})
+		if err != nil {
+			s.log.Error(err, "Set multiple mem cache fail")
+		}
+	}()
+}
+
+func (s *Service) computeFromCache(ctx context.Context, logger logr.Logger, cacheModel cache.Product) (*api.GetDetailProductResponse, error) {
+	wg := &sync.WaitGroup{}
+	errChan := make(chan error)
+	doneChan := make(chan struct{})
+	wg.Add(6)
+	var (
+		templateChan chan cache.ProductTemplate
+		uomChan      chan cache.Uom
+		categoryChan chan cache.Category
+		sellerChan   chan cache.Seller
+		createByChan chan cache.User
+		writeByChan  chan cache.User
+	)
+
+	// Get Template
+	go func() {
+		defer wg.Done()
+		templates, err := getProductTemplateOrInsertCache(s, ctx, []int64{cacheModel.TemplateID})
 		if err != nil {
 			logger.Error(err, "getProductTemplateOrInsertCache")
-			return nil, err
+			errChan <- err
+			return
 		}
-		template := templates[memCacheProduct.TemplateID]
+		templateChan <- templates[cacheModel.TemplateID]
+	}()
 
-		// Get Template
-		categories, err := getCategoryOrInsertCache(s, ctx, []int64{memCacheProduct.CategoryID})
+	// Get Category
+	go func() {
+		defer wg.Done()
+		categories, err := getCategoryOrInsertCache(s, ctx, []int64{cacheModel.CategoryID})
 		if err != nil {
 			logger.Error(err, "getCategoryOrInsertCache")
-			return nil, err
+			errChan <- err
 		}
-		category := categories[memCacheProduct.CategoryID]
+		categoryChan <- categories[cacheModel.CategoryID]
+	}()
 
-		// Get Template
-		uoms, err := getUomOrInsertCache(s, ctx, []int64{memCacheProduct.UomID})
+	// Get Uom
+	go func() {
+		defer wg.Done()
+		uoms, err := getUomOrInsertCache(s, ctx, []int64{cacheModel.UomID})
 		if err != nil {
 			logger.Error(err, "getUomOrInsertCache")
-			return nil, err
+			errChan <- err
 		}
-		uom := uoms[memCacheProduct.UomID]
+		uomChan <- uoms[cacheModel.UomID]
+	}()
 
-		// Get Template
-		sellers, err := getSellerOrInsertCache(s, ctx, []int64{memCacheProduct.SellerID})
+	// Get Seller
+	go func() {
+		defer wg.Done()
+		sellers, err := getSellerOrInsertCache(s, ctx, []int64{cacheModel.SellerID})
 		if err != nil {
 			logger.Error(err, "getSellerOrInsertCache")
-			return nil, err
+			errChan <- err
 		}
-		seller := sellers[memCacheProduct.SellerID]
+		sellerChan <- sellers[cacheModel.SellerID]
+	}()
 
-		// Get Template
-		createBys, err := getUserOrInsertCache(s, ctx, []int64{memCacheProduct.CreateUid})
+	// Get CreateBy
+	go func() {
+		defer wg.Done()
+		createBys, err := getUserOrInsertCache(s, ctx, []int64{cacheModel.CreateUid})
 		if err != nil {
 			logger.Error(err, "getUserOrInsertCache")
-			return nil, err
+			errChan <- err
 		}
-		createBy := createBys[memCacheProduct.CreateUid]
+		createByChan <- createBys[cacheModel.CreateUid]
+	}()
 
-		// Get Template
-		writeBys, err := getUserOrInsertCache(s, ctx, []int64{memCacheProduct.WriteUid})
+	// Get WriteBy
+	go func() {
+		writeBys, err := getUserOrInsertCache(s, ctx, []int64{cacheModel.WriteUid})
 		if err != nil {
 			logger.Error(err, "getUserOrInsertCache")
-			return nil, err
+			errChan <- err
 		}
-		writeBy := writeBys[memCacheProduct.WriteUid]
+		writeByChan <- writeBys[cacheModel.WriteUid]
+	}()
+
+	go func() {
+		wg.Wait()
+		doneChan <- struct{}{}
+	}()
+
+	select {
+	case err := <-errChan:
+		return nil, err
+	case <-doneChan:
+		var (
+			template = <-templateChan
+			uom      = <-uomChan
+			category = <-categoryChan
+			seller   = <-sellerChan
+			createBy = <-createByChan
+			writeBy  = <-writeByChan
+		)
 
 		return &api.GetDetailProductResponse{
 			Code:    0,
 			Message: "OK",
 			Data: &api.ProductDetail{
-				Id:                  memCacheProduct.ID,
-				Name:                memCacheProduct.Name,
-				OriginPrice:         memCacheProduct.OriginPrice,
-				SalePrice:           memCacheProduct.SalePrice,
-				Variants:            memCacheProduct.Variants,
+				Id:                  cacheModel.ID,
+				Name:                cacheModel.Name,
+				OriginPrice:         cacheModel.OriginPrice,
+				SalePrice:           cacheModel.SalePrice,
+				Variants:            cacheModel.Variants,
 				CreatedBy:           createBy.Name,
-				CreatedDate:         util.ParseTimeToString(memCacheProduct.CreateDate),
+				CreatedDate:         util.ParseTimeToString(cacheModel.CreateDate),
 				UpdatedBy:           writeBy.Name,
-				UpdatedDate:         util.ParseTimeToString(memCacheProduct.WriteDate),
-				TemplateId:          memCacheProduct.TemplateID,
+				UpdatedDate:         util.ParseTimeToString(cacheModel.WriteDate),
+				TemplateId:          cacheModel.TemplateID,
 				TemplateName:        template.Name,
 				TemplateDescription: template.Description,
 				SoldQuantity:        template.SoldQuantity,
@@ -96,31 +220,13 @@ func (s *Service) GetDetailProduct(ctx context.Context, req *api.GetDetailProduc
 			},
 		}, nil
 	}
-	// Get from redis
-
-	// Get from database
-	products, err := s.storeDb.GetProductDetails(ctx, []int64{req.Id})
-	if err != nil {
-		return nil, err
-	}
-	if len(products) == util.ZeroLength {
-		return nil, fmt.Errorf("not found product with id = %v", req.Id)
-	}
-	data := &api.ProductDetail{}
-	data.FromEntity(products[0])
-
-	return &api.GetDetailProductResponse{
-		Code:    0,
-		Message: "OK",
-		Data:    data,
-	}, nil
 }
 
 func getProductTemplateOrInsertCache(s *Service, ctx context.Context, ids []int64) (result map[int64]cache.ProductTemplate, err error) {
 	type typeCache = cache.ProductTemplate
 	type typeDb = store.ProductTemplate
 	var (
-		modelName        = "uom"
+		modelName        = "productTemplate"
 		funcMemGetList   = s.memCache.GetListProductTemplate
 		funcLocalGetList = s.localCache.GetListProductTemplate
 		funcDbGetList    = s.storeDb.GetProductTemplates
@@ -238,7 +344,7 @@ func getCategoryOrInsertCache(s *Service, ctx context.Context, ids []int64) (res
 	type typeCache = cache.Category
 	type typeDb = store.Category
 	var (
-		modelName        = "uom"
+		modelName        = "category"
 		funcMemGetList   = s.memCache.GetListCategory
 		funcLocalGetList = s.localCache.GetListCategory
 		funcDbGetList    = s.storeDb.GetCategories
@@ -297,7 +403,7 @@ func getSellerOrInsertCache(s *Service, ctx context.Context, ids []int64) (resul
 	type typeCache = cache.Seller
 	type typeDb = store.Seller
 	var (
-		modelName        = "uom"
+		modelName        = "seller"
 		funcMemGetList   = s.memCache.GetListSeller
 		funcLocalGetList = s.localCache.GetListSeller
 		funcDbGetList    = s.storeDb.GetSellers
@@ -356,7 +462,7 @@ func getUserOrInsertCache(s *Service, ctx context.Context, ids []int64) (result 
 	type typeCache = cache.User
 	type typeDb = store.User
 	var (
-		modelName        = "uom"
+		modelName        = "user"
 		funcMemGetList   = s.memCache.GetListUser
 		funcLocalGetList = s.localCache.GetListUser
 		funcDbGetList    = s.storeDb.GetUsers
