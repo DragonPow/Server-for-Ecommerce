@@ -52,7 +52,7 @@ func (q *Queries) GetCategories(ctx context.Context, ids []int64) ([]Category, e
 }
 
 const getProductDetails = `-- name: GetProductDetails :many
-SELECT p.id, p.template_id, p.name, p.origin_price, p.sale_price, p.state, p.variants, p.create_uid, p.create_date, p.write_uid, p.write_date,
+SELECT p.id, p.template_id, p.name, p.origin_price, p.sale_price, p.state, p.variants, p.create_uid, p.write_uid, p.create_date, p.write_date,
        c.id category_id, c.name category_name,
        u.id uom_id, u.name uom_name,
        s.id seller_id, s.name seller_name, s.logo_url seller_logo, s.address seller_address,
@@ -76,9 +76,9 @@ type GetProductDetailsRow struct {
 	SalePrice           float64               `json:"sale_price"`
 	State               string                `json:"state"`
 	Variants            pqtype.NullRawMessage `json:"variants"`
-	CreateUid           sql.NullInt64         `json:"create_uid"`
+	CreateUid           int64                 `json:"create_uid"`
+	WriteUid            int64                 `json:"write_uid"`
 	CreateDate          time.Time             `json:"create_date"`
-	WriteUid            sql.NullInt64         `json:"write_uid"`
 	WriteDate           time.Time             `json:"write_date"`
 	CategoryID          int64                 `json:"category_id"`
 	CategoryName        string                `json:"category_name"`
@@ -116,8 +116,8 @@ func (q *Queries) GetProductDetails(ctx context.Context, ids []int64) ([]GetProd
 			&i.State,
 			&i.Variants,
 			&i.CreateUid,
-			&i.CreateDate,
 			&i.WriteUid,
+			&i.CreateDate,
 			&i.WriteDate,
 			&i.CategoryID,
 			&i.CategoryName,
@@ -150,7 +150,7 @@ func (q *Queries) GetProductDetails(ctx context.Context, ids []int64) ([]GetProd
 }
 
 const getProductTemplates = `-- name: GetProductTemplates :many
-SELECT id, name, description, default_price, remain_quantity, sold_quantity, rating, number_rating, create_uid, create_date, write_uid, write_date, variants, seller_id, category_id, uom_id
+SELECT id, name, description, default_price, remain_quantity, sold_quantity, rating, number_rating, create_uid, write_uid, create_date, write_date, variants, seller_id, category_id, uom_id
 FROM product_template
 WHERE CASE WHEN array_length($1::int8[], 1) > 0 THEN id = ANY($1::int8[]) ELSE TRUE END
 `
@@ -174,8 +174,8 @@ func (q *Queries) GetProductTemplates(ctx context.Context, ids []int64) ([]Produ
 			&i.Rating,
 			&i.NumberRating,
 			&i.CreateUid,
-			&i.CreateDate,
 			&i.WriteUid,
+			&i.CreateDate,
 			&i.WriteDate,
 			&i.Variants,
 			&i.SellerID,
@@ -196,7 +196,7 @@ func (q *Queries) GetProductTemplates(ctx context.Context, ids []int64) ([]Produ
 }
 
 const getProducts = `-- name: GetProducts :many
-SELECT id, template_id, name, origin_price, sale_price, state, variants, create_uid, create_date, write_uid, write_date
+SELECT id, template_id, name, origin_price, sale_price, state, variants, create_uid, write_uid, create_date, write_date
 FROM product
 WHERE CASE WHEN array_length($1::int8[], 1) > 0 THEN id = ANY($1::int8[]) ELSE TRUE END
 `
@@ -219,8 +219,8 @@ func (q *Queries) GetProducts(ctx context.Context, ids []int64) ([]Product, erro
 			&i.State,
 			&i.Variants,
 			&i.CreateUid,
-			&i.CreateDate,
 			&i.WriteUid,
+			&i.CreateDate,
 			&i.WriteDate,
 		); err != nil {
 			return nil, err

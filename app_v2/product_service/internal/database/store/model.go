@@ -15,8 +15,8 @@ type Category struct {
 	ID          int64          `json:"id"`
 	Name        string         `json:"name"`
 	Description sql.NullString `json:"description"`
-	CreateUid   sql.NullInt64  `json:"create_uid"`
-	WriteUid    sql.NullInt64  `json:"write_uid"`
+	CreateUid   int64          `json:"create_uid"`
+	WriteUid    int64          `json:"write_uid"`
 	CreateDate  time.Time      `json:"create_date"`
 	WriteDate   time.Time      `json:"write_date"`
 }
@@ -29,9 +29,9 @@ type Product struct {
 	SalePrice   float64               `json:"sale_price"`
 	State       string                `json:"state"`
 	Variants    pqtype.NullRawMessage `json:"variants"`
-	CreateUid   sql.NullInt64         `json:"create_uid"`
+	CreateUid   int64                 `json:"create_uid"`
+	WriteUid    int64                 `json:"write_uid"`
 	CreateDate  time.Time             `json:"create_date"`
-	WriteUid    sql.NullInt64         `json:"write_uid"`
 	WriteDate   time.Time             `json:"write_date"`
 }
 
@@ -44,9 +44,9 @@ type ProductTemplate struct {
 	SoldQuantity   float64               `json:"sold_quantity"`
 	Rating         float64               `json:"rating"`
 	NumberRating   int64                 `json:"number_rating"`
-	CreateUid      sql.NullInt64         `json:"create_uid"`
+	CreateUid      int64                 `json:"create_uid"`
+	WriteUid       int64                 `json:"write_uid"`
 	CreateDate     time.Time             `json:"create_date"`
-	WriteUid       sql.NullInt64         `json:"write_uid"`
 	WriteDate      time.Time             `json:"write_date"`
 	Variants       pqtype.NullRawMessage `json:"variants"`
 	SellerID       sql.NullInt64         `json:"seller_id"`
@@ -62,20 +62,20 @@ type Seller struct {
 	Address     sql.NullString `json:"address"`
 	LogoUrl     sql.NullString `json:"logo_url"`
 	ManagerID   int64          `json:"manager_id"`
-	CreateUid   sql.NullInt64  `json:"create_uid"`
-	WriteUid    sql.NullInt64  `json:"write_uid"`
+	CreateUid   int64          `json:"create_uid"`
+	WriteUid    int64          `json:"write_uid"`
 	CreateDate  time.Time      `json:"create_date"`
 	WriteDate   time.Time      `json:"write_date"`
 }
 
 type Uom struct {
-	ID         int64         `json:"id"`
-	Name       string        `json:"name"`
-	SellerID   int64         `json:"seller_id"`
-	CreateUid  sql.NullInt64 `json:"create_uid"`
-	WriteUid   sql.NullInt64 `json:"write_uid"`
-	CreateDate time.Time     `json:"create_date"`
-	WriteDate  time.Time     `json:"write_date"`
+	ID         int64     `json:"id"`
+	Name       string    `json:"name"`
+	SellerID   int64     `json:"seller_id"`
+	CreateUid  int64     `json:"create_uid"`
+	WriteUid   int64     `json:"write_uid"`
+	CreateDate time.Time `json:"create_date"`
+	WriteDate  time.Time `json:"write_date"`
 }
 
 type User struct {

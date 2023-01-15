@@ -215,6 +215,10 @@ func (u Uom) GetType() TypeCache {
 	return TypeUom
 }
 
+func (u Uom) GetVersion() string {
+	return u.UpdateDate.Format(time.RFC3339)
+}
+
 func (u *Uom) FromDb(model store.Uom) {
 	*u = Uom{
 		ID:         model.ID,

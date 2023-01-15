@@ -13,8 +13,8 @@ create table if not exists category
     id bigserial primary key,
     name varchar not null,
     description varchar,
-    create_uid int8,
-    write_uid int8,
+    create_uid int8 not null default 1,
+    write_uid int8 not null default 1,
     create_date timestamp not null default now(),
     write_date timestamp not null default now()
 );
@@ -22,14 +22,14 @@ create table if not exists category
 create table if not exists seller
 (
     id bigserial primary key,
-    name varchar not null,
+    "name" varchar not null,
     description varchar,
     phone varchar,
     address varchar,
     logo_url varchar,
     manager_id int8 not null,
-    create_uid int8,
-    write_uid int8,
+    create_uid int8 not null default 1,
+    write_uid int8 not null default 1,
     create_date timestamp not null default now(),
     write_date timestamp not null default now()
 );
@@ -42,8 +42,8 @@ create table if not exists uom
         constraint uom_seller_id_fkey
             references seller
             on delete cascade,
-    create_uid int8,
-    write_uid int8,
+    create_uid int8 not null default 1,
+    write_uid int8 not null default 1,
     create_date timestamp not null default now(),
     write_date timestamp not null default now(),
     constraint name_seller_id_unique unique(name, seller_id)
@@ -59,9 +59,9 @@ create table if not exists product_template
     sold_quantity double precision not null check ( sold_quantity >= 0 ) default 0,
     rating double precision not null check ( rating >= 0 ) default 0,
     number_rating int8 not null check ( number_rating >= 0 ) default 0,
-    create_uid int8,
+    create_uid int8 not null default 1,
+    write_uid int8 not null default 1,
     create_date timestamp not null default now(),
-    write_uid int8,
     write_date timestamp not null default now(),
     variants json,
     seller_id int8
@@ -85,13 +85,13 @@ create table if not exists product
         constraint product_product_template_id_fkey
             references product_template
             on delete set null,
-    name varchar not null,
+    "name" varchar not null,
     origin_price double precision not null check ( origin_price >= 0 ) default 0,
     sale_price double precision not null check ( sale_price >= 0 ) default 0,
-    state varchar not null default 'draft',
+    "state" varchar not null default 'draft',
     variants json,
-    create_uid int8,
+    create_uid int8 not null default 1,
+    write_uid int8 not null default 1,
     create_date timestamp not null default now(),
-    write_uid int8,
     write_date timestamp not null default now()
 );
