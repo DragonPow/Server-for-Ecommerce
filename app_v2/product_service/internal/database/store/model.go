@@ -77,3 +77,12 @@ type Uom struct {
 	CreateDate time.Time     `json:"create_date"`
 	WriteDate  time.Time     `json:"write_date"`
 }
+
+type User struct {
+	ID         int64     `json:"id"`
+	Name       string    `json:"name"`
+	UserName   string    `json:"user_name"`
+	Passwrod   string    `json:"passwrod"`
+	CreateDate time.Time `json:"create_date"`
+	WriteDate  time.Time `json:"write_date"`
+}
