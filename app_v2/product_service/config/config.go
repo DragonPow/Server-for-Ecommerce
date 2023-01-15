@@ -26,7 +26,7 @@ type RedisConfig struct {
 }
 
 type KafkaConfig struct {
-	UpdateDbConsumer Consumer `json:"consumers" mapstructure:"consumers"`
+	UpdateDbConsumer Consumer `json:"update_db_consumer" mapstructure:"update_db_consumer"`
 }
 
 type MemConfig struct {

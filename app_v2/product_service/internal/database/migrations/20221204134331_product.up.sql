@@ -11,7 +11,7 @@ create table if not exists "user"
 create table if not exists category
 (
     id bigserial primary key,
-    name varchar not null,
+    "name" varchar not null,
     description varchar,
     create_uid int8 not null default 1,
     write_uid int8 not null default 1,
