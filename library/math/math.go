@@ -2,6 +2,7 @@ package math
 
 import (
 	"fmt"
+	"golang.org/x/exp/maps"
 	"math"
 )
 
@@ -42,7 +43,7 @@ func ToMap[T, U any, K comparable](slice []T, f func(item T) (K, U)) map[K]U {
 }
 
 func Convert[T, U any](slice []T, f func(item T) U) []U {
-	result := make([]U, len(slice))
+	result := make([]U, 0, len(slice))
 	for _, i := range slice {
 		v := f(i)
 		result = append(result, v)
@@ -75,4 +76,12 @@ func AppendMap[T comparable, U any](anotherMaps ...map[T]U) (newMap map[T]U) {
 		}
 	}
 	return newMap
+}
+
+func Uniq[T comparable](slice []T) []T {
+	result := make(map[T]struct{}, len(slice))
+	for _, v := range slice {
+		result[v] = struct{}{}
+	}
+	return maps.Keys(result)
 }

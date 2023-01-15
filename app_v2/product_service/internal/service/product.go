@@ -80,13 +80,19 @@ func (s *Service) SetCacheAPIGetDetailProduct(data *api.ProductDetail) {
 		err := s.localCache.SetMultiple(map[int64]cache.ModelValue{data.Id: productCache})
 		if err != nil {
 			s.log.Error(err, "Set multiple local cache fail")
+			return
 		}
+		s.log.Info("Set multiple local cache success", "productId", data.Id)
 	}()
 	// Insert mem cache
 	go func() {
-		_, err := s.memCache.CheckAndSet(map[int64]cache.ModelValue{data.Id: productCache})
+		ok, err := s.memCache.CheckAndSet(map[int64]cache.ModelValue{data.Id: productCache})
 		if err != nil {
 			s.log.Error(err, "Set multiple mem cache fail")
+			return
+		}
+		if ok {
+			s.log.Info("Set multiple mem cache success", "productId", data.Id)
 		}
 	}()
 }
@@ -95,15 +101,23 @@ func (s *Service) computeFromCache(ctx context.Context, logger logr.Logger, cach
 	wg := &sync.WaitGroup{}
 	errChan := make(chan error)
 	doneChan := make(chan struct{})
-	wg.Add(6)
+	wg.Add(5)
 	var (
-		templateChan chan cache.ProductTemplate
-		uomChan      chan cache.Uom
-		categoryChan chan cache.Category
-		sellerChan   chan cache.Seller
-		createByChan chan cache.User
-		writeByChan  chan cache.User
+		template cache.ProductTemplate
+		uom      cache.Uom
+		category cache.Category
+		seller   cache.Seller
+		createBy cache.User
+		writeBy  cache.User
 	)
+	//var (
+	//	templateChan chan cache.ProductTemplate
+	//	uomChan      chan cache.Uom
+	//	categoryChan chan cache.Category
+	//	sellerChan   chan cache.Seller
+	//	createByChan chan cache.User
+	//	writeByChan  chan cache.User
+	//)
 
 	// Get Template
 	go func() {
@@ -114,7 +128,7 @@ func (s *Service) computeFromCache(ctx context.Context, logger logr.Logger, cach
 			errChan <- err
 			return
 		}
-		templateChan <- templates[cacheModel.TemplateID]
+		template = templates[cacheModel.TemplateID]
 	}()
 
 	// Get Category
@@ -125,7 +139,7 @@ func (s *Service) computeFromCache(ctx context.Context, logger logr.Logger, cach
 			logger.Error(err, "getCategoryOrInsertCache")
 			errChan <- err
 		}
-		categoryChan <- categories[cacheModel.CategoryID]
+		category = categories[cacheModel.CategoryID]
 	}()
 
 	// Get Uom
@@ -136,7 +150,7 @@ func (s *Service) computeFromCache(ctx context.Context, logger logr.Logger, cach
 			logger.Error(err, "getUomOrInsertCache")
 			errChan <- err
 		}
-		uomChan <- uoms[cacheModel.UomID]
+		uom = uoms[cacheModel.UomID]
 	}()
 
 	// Get Seller
@@ -147,28 +161,19 @@ func (s *Service) computeFromCache(ctx context.Context, logger logr.Logger, cach
 			logger.Error(err, "getSellerOrInsertCache")
 			errChan <- err
 		}
-		sellerChan <- sellers[cacheModel.SellerID]
+		seller = sellers[cacheModel.SellerID]
 	}()
 
 	// Get CreateBy
 	go func() {
 		defer wg.Done()
-		createBys, err := getUserOrInsertCache(s, ctx, []int64{cacheModel.CreateUid})
+		users, err := getUserOrInsertCache(s, ctx, math.Uniq([]int64{cacheModel.CreateUid, cacheModel.WriteUid}))
 		if err != nil {
 			logger.Error(err, "getUserOrInsertCache")
 			errChan <- err
 		}
-		createByChan <- createBys[cacheModel.CreateUid]
-	}()
-
-	// Get WriteBy
-	go func() {
-		writeBys, err := getUserOrInsertCache(s, ctx, []int64{cacheModel.WriteUid})
-		if err != nil {
-			logger.Error(err, "getUserOrInsertCache")
-			errChan <- err
-		}
-		writeByChan <- writeBys[cacheModel.WriteUid]
+		createBy = users[cacheModel.CreateUid]
+		writeBy = users[cacheModel.WriteUid]
 	}()
 
 	go func() {
@@ -180,14 +185,6 @@ func (s *Service) computeFromCache(ctx context.Context, logger logr.Logger, cach
 	case err := <-errChan:
 		return nil, err
 	case <-doneChan:
-		var (
-			template = <-templateChan
-			uom      = <-uomChan
-			category = <-categoryChan
-			seller   = <-sellerChan
-			createBy = <-createByChan
-			writeBy  = <-writeByChan
-		)
 
 		return &api.GetDetailProductResponse{
 			Code:    0,

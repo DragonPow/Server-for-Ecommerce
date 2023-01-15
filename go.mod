@@ -24,6 +24,7 @@ require (
 	github.com/tabbed/pqtype v0.1.1
 	github.com/urfave/cli/v2 v2.20.3
 	go.uber.org/zap v1.19.0
+	golang.org/x/exp v0.0.0-20230113213754-f9f960f08ad4
 	google.golang.org/genproto v0.0.0-20220822174746-9e6da59bd2fc
 	google.golang.org/grpc v1.48.0
 	google.golang.org/protobuf v1.28.1
@@ -39,7 +40,6 @@ require (
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
-	github.com/google/go-cmp v0.5.8 // indirect
 	github.com/gorilla/mux v1.8.0
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect

@@ -2,6 +2,7 @@ package redis_cache
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/internal/cache"
 	"github.com/DragonPow/Server-for-Ecommerce/library/math"
@@ -23,13 +24,21 @@ func funcConvertId2Key[T cache.ModelValue](id int64) string {
 	return parseKey(t.GetType(), v)
 }
 
-func funcConvertAny2Model[T cache.ModelValue](v any) (int64, T) {
-	result := v.(T)
+func funcConvertCache2Model[T cache.ModelValue](v any) (int64, T) {
+	var result T
+	err := json.Unmarshal([]byte(v.(string)), &result)
+	if err != nil {
+		panic(fmt.Sprintf("Unmarshal cache2Model fail: %v", err.Error()))
+	}
 	return result.GetId(), result
 }
 
-func funcConvertModel2Any(id int64, v cache.ModelValue) (string, any) {
-	return parseKey(v.GetType(), id), v
+func funcConvertModel2Cache(id int64, v cache.ModelValue) (string, any) {
+	data, err := json.Marshal(v)
+	if err != nil {
+		panic(fmt.Sprintf("Marshal model2Cache fail: %v", err.Error()))
+	}
+	return parseKey(v.GetType(), id), data
 }
 
 func GetOne[T cache.ModelValue](r *redisCache, id int64) (T, bool) {
@@ -37,7 +46,7 @@ func GetOne[T cache.ModelValue](r *redisCache, id int64) (T, bool) {
 	if !ok {
 		return *new(T), false
 	}
-	_, v := funcConvertAny2Model[T](rs)
+	_, v := funcConvertCache2Model[T](rs)
 	return v, true
 }
 
@@ -58,5 +67,5 @@ func GetList[T cache.ModelValue](r *redisCache, ids []int64) (map[int64]T, []int
 		list = append(list, results[idx])
 	}
 
-	return math.ToMap(list, funcConvertAny2Model[T]), miss
+	return math.ToMap(list, funcConvertCache2Model[T]), miss
 }

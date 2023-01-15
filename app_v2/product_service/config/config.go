@@ -81,8 +81,8 @@ func loadDefaultConfig() *Config {
 		ProductServiceDB: database.PostgresSQLDefaultConfig(),
 		RedisConfig: RedisConfig{
 			Addr:           "localhost:6379",
-			Password:       "",
-			ExpiredDefault: 0,
+			Password:       "redis@123",
+			ExpiredDefault: 180,
 		},
 		KafkaConfig: KafkaConfig{
 			UpdateDbConsumer: Consumer{
@@ -92,7 +92,8 @@ func loadDefaultConfig() *Config {
 			},
 		},
 		MemCacheConfig: MemConfig{
-			MaxTimeMiss: 3,
+			MaxTimeMiss:    3,
+			MaxNumberCache: 100,
 		},
 	}
 }

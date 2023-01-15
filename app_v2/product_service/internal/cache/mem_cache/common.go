@@ -38,8 +38,8 @@ func (m *memCache) Load(t cache.TypeCache, k any) (value any, ok bool) {
 }
 
 func (m *memCache) LoadMultiple(t cache.TypeCache, keys []any) (values []any, missingKeys []any) {
-	values = make([]any, len(keys))
-	missingKeys = make([]any, len(keys))
+	values = make([]any, 0, len(keys))
+	missingKeys = make([]any, 0, len(keys))
 	lockOk := m.mu.TryRLock()
 	for _, key := range keys {
 		v, ok := m.Load(t, key)

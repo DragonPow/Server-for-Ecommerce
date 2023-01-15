@@ -28,7 +28,7 @@ func (r *redisCache) Close() error {
 }
 
 func (r *redisCache) SetMultiple(objects map[int64]cache.ModelValue) error {
-	return r.base.SetList(context.Background(), math.ConvertMap(objects, funcConvertModel2Any))
+	return r.base.SetList(context.Background(), math.ConvertMap(objects, funcConvertModel2Cache))
 }
 
 func (r *redisCache) GetListProduct(ids []int64) (map[int64]cache.Product, []int64) {
