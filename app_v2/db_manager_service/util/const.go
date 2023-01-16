@@ -14,3 +14,8 @@ const (
 	ProductStateSold       = "sold"
 	ProductStateWaitExport = "wait_export"
 )
+
+const (
+	TopicInsertProduct = "insert_product"
+	TopicUpdateProduct = "update_product"
+)

@@ -1,6 +1,7 @@
 package service
 
 import (
+	"bytes"
 	"context"
 	"database/sql"
 	"encoding/json"
@@ -9,6 +10,7 @@ import (
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/db_manager_service/internal/database/store"
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/db_manager_service/internal/producer"
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/db_manager_service/util"
+	"github.com/go-logr/logr"
 	"github.com/tabbed/pqtype"
 	"google.golang.org/grpc/codes"
 )
@@ -35,16 +37,17 @@ func (s *Service) AddProduct(ctx context.Context, req *api.AddProductRequest) (*
 		return nil, err
 	}
 	// Publish to kafka
-	go func() {
-		err := s.producer.Publish(ctx, "", producer.ProducerEvent{
+	go func(logger logr.Logger) {
+		ctx := context.Background()
+		err := s.producer.Publish(ctx, util.TopicInsertProduct, producer.ProducerEvent{
 			Key:   fmt.Sprintf("product/%v", id),
 			Value: producer.InsertDatabaseEventValue(id),
 		})
 		if err != nil {
-			s.log.Error(err, "Publish message fail")
+			logger.Error(err, "Publish message fail")
 			return
 		}
-	}()
+	}(logger)
 
 	return &api.AddProductResponse{
 		Code:    uint32(codes.OK),
@@ -56,8 +59,43 @@ func (s *Service) AddProduct(ctx context.Context, req *api.AddProductRequest) (*
 }
 
 func (s *Service) UpdateProduct(ctx context.Context, req *api.UpdateProductRequest) (res *api.UpdateProductResponse, err error) {
-	//TODO implement me
-	panic("implement me")
+	logger := s.log.WithName("UpdateProduct").WithValues("request", req)
+
+	reader := bytes.NewReader(req.Variants)
+	decoder := json.NewDecoder(reader)
+	var updateRequestParams store.UpdateProductParams
+
+	err = decoder.Decode(&updateRequestParams)
+	if err != nil {
+		logger.Error(err, "Decode variants fail")
+		return nil, err
+	}
+	updateRequestParams.ID = req.Id
+	err = s.storeDb.UpdateProduct(ctx, updateRequestParams)
+	if err != nil {
+		logger.Error(err, "UpdateProduct")
+		return nil, err
+	}
+	// Publish to kafka
+	go func(logger logr.Logger) {
+		ctx := context.Background()
+		err := s.producer.Publish(ctx, util.TopicUpdateProduct, producer.ProducerEvent{
+			Key: fmt.Sprintf("product/%v", req.Id),
+			Value: producer.UpdateDatabaseEventValue{
+				Id:       req.Id,
+				Variants: req.Variants,
+			},
+		})
+		if err != nil {
+			logger.Error(err, "Publish message fail")
+			return
+		}
+	}(logger)
+
+	return &api.UpdateProductResponse{
+		Code:    uint32(codes.OK),
+		Message: "OK",
+	}, nil
 }
 
 func (s *Service) DeleteProduct(ctx context.Context, req *api.DeleteProductRequest) (res *api.DeleteProductResponse, err error) {

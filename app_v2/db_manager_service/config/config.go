@@ -25,11 +25,11 @@ type RedisConfig struct {
 }
 
 type KafkaConfig struct {
-	Connections                  []string   `json:"connections" mapstructure:"connections"`
-	MaxPublishTimeoutSecond      int        `json:"max_publish_timeout_second" mapstructure:"max_publish_timeout_second"`
-	MaxNumberRetry               int        `json:"max_number_retry" mapstructure:"max_number_retry"`
-	TimeSleepPerRetryMillisecond int        `json:"time_sleep_per_retry_millisecond" mapstructure:"time_sleep_per_retry_millisecond"`
-	ListProducer                 []Producer `json:"list_producer" mapstructure:"list_producer"`
+	Connections                  []string `json:"connections" mapstructure:"connections"`
+	MaxPublishTimeoutSecond      int      `json:"max_publish_timeout_second" mapstructure:"max_publish_timeout_second"`
+	MaxNumberRetry               int      `json:"max_number_retry" mapstructure:"max_number_retry"`
+	TimeSleepPerRetryMillisecond int      `json:"time_sleep_per_retry_millisecond" mapstructure:"time_sleep_per_retry_millisecond"`
+	//ListProducer                 []Producer `json:"list_producer" mapstructure:"list_producer"`
 }
 
 type MemConfig struct {
@@ -84,16 +84,16 @@ func loadDefaultConfig() *Config {
 		TimeOutHttpInSecond: 60,
 		KafkaConfig: KafkaConfig{
 			Connections: []string{"localhost:9092"},
-			ListProducer: []Producer{
-				{
-					Topic: "insert_database",
-					Group: "insert_db_producer",
-				},
-				{
-					Topic: "update_database",
-					Group: "update_db_producer",
-				},
-			},
+			//ListProducer: []Producer{
+			//	{
+			//		Topic: "insert_database",
+			//		Group: "insert_db_producer",
+			//	},
+			//	{
+			//		Topic: "update_database",
+			//		Group: "update_db_producer",
+			//	},
+			//},
 		},
 	}
 }

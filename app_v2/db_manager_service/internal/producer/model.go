@@ -6,3 +6,8 @@ type ProducerEvent struct {
 }
 
 type InsertDatabaseEventValue int64 // id of new model
+
+type UpdateDatabaseEventValue struct {
+	Id       int64  `json:"id"`
+	Variants []byte `json:"variants"`
+}
