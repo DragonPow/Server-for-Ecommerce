@@ -12,6 +12,10 @@ type Store struct {
 	log logr.Logger
 }
 
+func (s *Store) Close() error {
+	return s.db.Close()
+}
+
 func NewStore(db *sqlx.DB, log logr.Logger) *Store {
 	return &Store{
 		db:      db,
@@ -32,7 +36,7 @@ func (s *Store) WithTx(tx *sql.Tx) *Store {
 
 func (s *Store) Transaction(txFunc func(StoreQuerier) error) (err error) {
 	// just execute txFunc if already in transaction
-	if s.Queries.tx != nil {
+	if s.Queries.db != nil {
 		return txFunc(s)
 	}
 

@@ -18,10 +18,9 @@ import (
 func (s *Service) AddProduct(ctx context.Context, req *api.AddProductRequest) (*api.AddProductResponse, error) {
 	logger := s.log.WithName("AddProduct").WithValues("request", req)
 	var variants pqtype.NullRawMessage
-	err := json.Unmarshal(req.Variants, &variants)
-	if err != nil {
-		logger.Error(err, "Marshal json fail")
-		return nil, err
+	variants.RawMessage = []byte(req.Variants)
+	if req.Variants != util.EmptyString {
+		variants.Valid = true
 	}
 	id, err := s.storeDb.CreateProduct(ctx, store.CreateProductParams{
 		TemplateID:  sql.NullInt64{Int64: req.TemplateId, Valid: true},
@@ -63,15 +62,15 @@ func (s *Service) UpdateProduct(ctx context.Context, req *api.UpdateProductReque
 
 	reader := bytes.NewReader(req.Variants)
 	decoder := json.NewDecoder(reader)
-	var updateRequestParams store.UpdateProductParams
-
+	var updateRequestParams UpdateProductParams
 	err = decoder.Decode(&updateRequestParams)
 	if err != nil {
 		logger.Error(err, "Decode variants fail")
 		return nil, err
 	}
+
 	updateRequestParams.ID = req.Id
-	err = s.storeDb.UpdateProduct(ctx, updateRequestParams)
+	err = s.storeDb.UpdateProduct(ctx, updateRequestParams.ToStore())
 	if err != nil {
 		logger.Error(err, "UpdateProduct")
 		return nil, err
@@ -101,4 +100,28 @@ func (s *Service) UpdateProduct(ctx context.Context, req *api.UpdateProductReque
 func (s *Service) DeleteProduct(ctx context.Context, req *api.DeleteProductRequest) (res *api.DeleteProductResponse, err error) {
 	//TODO implement me
 	panic("implement me")
+}
+
+type UpdateProductParams struct {
+	TemplateID  util.NullInt64        `json:"template_id,omitempty"`
+	Name        util.NullString       `json:"name,omitempty"`
+	OriginPrice util.NullFloat64      `json:"origin_price,omitempty"`
+	SalePrice   util.NullFloat64      `json:"sale_price,omitempty"`
+	State       util.NullString       `json:"state,omitempty"`
+	Variants    pqtype.NullRawMessage `json:"variants,omitempty"`
+	CreateUid   int64                 `json:"create_uid,omitempty"`
+	ID          int64                 `json:"id"`
+}
+
+func (u *UpdateProductParams) ToStore() store.UpdateProductParams {
+	return store.UpdateProductParams{
+		TemplateID:  u.TemplateID.NullInt64,
+		Name:        u.Name.NullString,
+		OriginPrice: u.OriginPrice.NullFloat64,
+		SalePrice:   u.SalePrice.NullFloat64,
+		State:       u.State.NullString,
+		Variants:    u.Variants,
+		CreateUid:   u.CreateUid,
+		ID:          u.ID,
+	}
 }

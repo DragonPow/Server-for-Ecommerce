@@ -86,9 +86,9 @@ func loadDefaultConfig() *Config {
 		},
 		KafkaConfig: KafkaConfig{
 			UpdateDbConsumer: Consumer{
-				Topic:       "update_database",
-				Connections: []string{"localhost:9092"},
-				Group:       "update_db_consumer",
+				Topic:       "update_product",
+				Connections: []string{"localhost:9092", "localhost:9093"},
+				Group:       "update_product_consumer",
 			},
 		},
 		MemCacheConfig: MemConfig{

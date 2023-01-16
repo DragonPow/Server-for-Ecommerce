@@ -14,7 +14,7 @@ import (
 
 const createProduct = `-- name: CreateProduct :one
 INSERT INTO product(template_id, name, origin_price, sale_price, state, variants,
-                    create_uid, create_date, write_uid, write_date)
+                    create_uid, write_uid, create_date, write_date)
 VALUES ($1, $2, $3, $4, $5, $6,
         case when $7::int8 > 0 then $7::int8 else 1 end,
         case when $7::int8 > 0 then $7::int8 else 1 end,
@@ -95,12 +95,12 @@ func (q *Queries) CreateProductTemplate(ctx context.Context, arg CreateProductTe
 
 const updateProduct = `-- name: UpdateProduct :exec
 UPDATE product
-SET template_id  = $1,
-    name         = $2,
-    origin_price = $3,
-    sale_price   = $4,
-    state        = $5,
-    variants     = $6,
+SET template_id  = coalesce($1, template_id),
+    name         = coalesce($2, name),
+    origin_price = coalesce($3, origin_price),
+    sale_price   = coalesce($4, sale_price),
+    state        = coalesce($5, state),
+    variants     = coalesce($6, variants),
     write_uid    = case when $7::int8 > 0 then $7::int8 else 1 end,
     write_date   = now() AT TIME ZONE 'utc'
 WHERE id = $8::int8
@@ -108,10 +108,10 @@ WHERE id = $8::int8
 
 type UpdateProductParams struct {
 	TemplateID  sql.NullInt64         `json:"template_id"`
-	Name        string                `json:"name"`
-	OriginPrice float64               `json:"origin_price"`
-	SalePrice   float64               `json:"sale_price"`
-	State       string                `json:"state"`
+	Name        sql.NullString        `json:"name"`
+	OriginPrice sql.NullFloat64       `json:"origin_price"`
+	SalePrice   sql.NullFloat64       `json:"sale_price"`
+	State       sql.NullString        `json:"state"`
 	Variants    pqtype.NullRawMessage `json:"variants"`
 	CreateUid   int64                 `json:"create_uid"`
 	ID          int64                 `json:"id"`
@@ -133,30 +133,30 @@ func (q *Queries) UpdateProduct(ctx context.Context, arg UpdateProductParams) er
 
 const updateProductTemplate = `-- name: UpdateProductTemplate :exec
 UPDATE product_template
-SET name            = $1,
-    description     = $2,
-    default_price   = $3,
-    remain_quantity = $4,
-    sold_quantity   = $5,
-    rating          = $6,
-    number_rating   = $7,
-    variants        = $8,
-    seller_id       = $9,
-    category_id     = $10,
-    uom_id          = $11,
+SET name            = coalesce($1, name),
+    description     = coalesce($2, description),
+    default_price   = coalesce($3, default_price),
+    remain_quantity = coalesce($4, remain_quantity),
+    sold_quantity   = coalesce($5, sold_quantity),
+    rating          = coalesce($6, rating),
+    number_rating   = coalesce($7, number_rating),
+    variants        = coalesce($8, variants),
+    seller_id       = coalesce($9, seller_id),
+    category_id     = coalesce($10, category_id),
+    uom_id          = coalesce($11, uom_id),
     write_uid       = case when $12::int8 > 0 then $12::int8 else 1 end,
     write_date      = now() AT TIME ZONE 'utc'
 WHERE id = $13::int8
 `
 
 type UpdateProductTemplateParams struct {
-	Name           string                `json:"name"`
+	Name           sql.NullString        `json:"name"`
 	Description    sql.NullString        `json:"description"`
-	DefaultPrice   float64               `json:"default_price"`
-	RemainQuantity float64               `json:"remain_quantity"`
-	SoldQuantity   float64               `json:"sold_quantity"`
-	Rating         float64               `json:"rating"`
-	NumberRating   int64                 `json:"number_rating"`
+	DefaultPrice   sql.NullFloat64       `json:"default_price"`
+	RemainQuantity sql.NullFloat64       `json:"remain_quantity"`
+	SoldQuantity   sql.NullFloat64       `json:"sold_quantity"`
+	Rating         sql.NullFloat64       `json:"rating"`
+	NumberRating   sql.NullInt64         `json:"number_rating"`
 	Variants       pqtype.NullRawMessage `json:"variants"`
 	SellerID       sql.NullInt64         `json:"seller_id"`
 	CategoryID     sql.NullInt64         `json:"category_id"`

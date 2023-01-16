@@ -11,3 +11,7 @@ packages:
     emit_exact_table_names: true
     emit_empty_slices: true
     output_models_file_name: "model.go"
+#overrides:
+#  - go_type:
+#      type: "UpdateProductParams"
+#    go_struct_tag: 'validate:"required" sometagtype:"some_value"'

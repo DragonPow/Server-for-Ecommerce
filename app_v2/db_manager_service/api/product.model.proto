@@ -1,6 +1,7 @@
 syntax = "proto3";
 package app_v2.db_manager_service.api;
 option go_package = "app_v2/db_manager_service/api";
+import "google/protobuf/any.proto";
 
 // AddProductTemplateRequest
 message AddProductTemplateRequest {
@@ -11,7 +12,7 @@ message AddProductTemplateRequest {
   // SalePrice
   double sale_price = 3;
   // Variants
-  bytes variants = 4;
+  string variants = 4;
   // TemplateId
   int64 template_id = 6;
   // CategoryId
@@ -43,7 +44,7 @@ message AddProductRequest {
   // SalePrice
   double sale_price = 3;
   // Variants
-  bytes variants = 4;
+  string variants = 4;
   // TemplateId
   int64 template_id = 5;
   // CreateUid

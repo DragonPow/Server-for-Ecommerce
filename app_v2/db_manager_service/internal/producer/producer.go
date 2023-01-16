@@ -103,8 +103,9 @@ func (p *producer) Publish(ctx context.Context, topicName string, events ...Prod
 	}
 
 	defer topic.Close()
+	var retry int
 	// Begin publish with retry
-	for i := 0; i < p.maxNumberRetry; i++ {
+	for retry = 0; retry < p.maxNumberRetry; retry++ {
 		newCtx, cancel := context.WithTimeout(ctx, p.maxPublishTimeOut)
 		defer cancel()
 
@@ -120,6 +121,10 @@ func (p *producer) Publish(ctx context.Context, topicName string, events ...Prod
 			logger.Error(err, "Push message fail")
 			return err
 		}
+	}
+	if retry == p.maxNumberRetry {
+		logger.Info("Push message fail, get max number retry")
+		return nil
 	}
 	logger.Info("Push message success")
 	return nil

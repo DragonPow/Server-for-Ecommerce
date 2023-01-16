@@ -5,13 +5,14 @@ import (
 	"encoding/json"
 	"github.com/DragonPow/Server-for-Ecommerce/library/encode/gzip"
 	"github.com/DragonPow/Server-for-Ecommerce/library/server"
+	"io"
 	"io/ioutil"
 	"net/http"
 )
 
 func (r *myRouter) RegisterProductHandler() {
 	p := r.PathPrefix(productRouter).Subrouter()
-	p.HandleFunc("/", r.addProductHandler).Methods(POST)
+	p.HandleFunc("", r.addProductHandler).Methods(POST)
 	p.HandleFunc("/{id}", r.updateProductHandler).Methods(PUT)
 	p.HandleFunc("/{id}", r.deleteProductHandler).Methods(DELETE)
 }
@@ -24,7 +25,7 @@ func (r *myRouter) addProductHandler(w http.ResponseWriter, req *http.Request) {
 	// Read the request body
 	decode := json.NewDecoder(req.Body)
 	err := decode.Decode(request)
-	if err != nil {
+	if err != nil && err != io.EOF {
 		server.HTTPError(w, req, err)
 		return
 	}
