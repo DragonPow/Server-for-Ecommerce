@@ -8,6 +8,7 @@ package store
 import (
 	"context"
 	"database/sql"
+	"time"
 
 	"github.com/tabbed/pqtype"
 )
@@ -93,7 +94,7 @@ func (q *Queries) CreateProductTemplate(ctx context.Context, arg CreateProductTe
 	return id, err
 }
 
-const updateProduct = `-- name: UpdateProduct :exec
+const updateProduct = `-- name: UpdateProduct :one
 UPDATE product
 SET template_id  = coalesce($1, template_id),
     name         = coalesce($2, name),
@@ -104,6 +105,7 @@ SET template_id  = coalesce($1, template_id),
     write_uid    = case when $7::int8 > 0 then $7::int8 else 1 end,
     write_date   = now() AT TIME ZONE 'utc'
 WHERE id = $8::int8
+RETURNING write_date
 `
 
 type UpdateProductParams struct {
@@ -117,8 +119,8 @@ type UpdateProductParams struct {
 	ID          int64                 `json:"id"`
 }
 
-func (q *Queries) UpdateProduct(ctx context.Context, arg UpdateProductParams) error {
-	_, err := q.exec(ctx, q.updateProductStmt, updateProduct,
+func (q *Queries) UpdateProduct(ctx context.Context, arg UpdateProductParams) (time.Time, error) {
+	row := q.queryRow(ctx, q.updateProductStmt, updateProduct,
 		arg.TemplateID,
 		arg.Name,
 		arg.OriginPrice,
@@ -128,7 +130,9 @@ func (q *Queries) UpdateProduct(ctx context.Context, arg UpdateProductParams) er
 		arg.CreateUid,
 		arg.ID,
 	)
-	return err
+	var write_date time.Time
+	err := row.Scan(&write_date)
+	return write_date, err
 }
 
 const updateProductTemplate = `-- name: UpdateProductTemplate :exec

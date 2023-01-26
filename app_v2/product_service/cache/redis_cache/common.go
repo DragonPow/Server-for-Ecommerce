@@ -4,16 +4,17 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/internal/cache"
+	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/cache"
 	"github.com/DragonPow/Server-for-Ecommerce/library/math"
 	"strconv"
 )
 
 // parseKey:
-//   type: must be "product", "user",...
-//   key: must be ID or something else
 //
-//  Return storeKey with format "{type}/{key}". Ex: "product/1445"
+//	 type: must be "product", "user",...
+//	 key: must be ID or something else
+//
+//	Return storeKey with format "{type}/{key}". Ex: "product/1445"
 func parseKey(t cache.TypeCache, k any) (storeKey string) {
 	return fmt.Sprintf("%s/%v", t, k)
 }

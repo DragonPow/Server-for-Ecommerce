@@ -2,7 +2,7 @@ package redis_cache
 
 import (
 	"context"
-	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/internal/cache"
+	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/cache"
 	"github.com/DragonPow/Server-for-Ecommerce/library/cache/redis"
 	"github.com/DragonPow/Server-for-Ecommerce/library/math"
 )

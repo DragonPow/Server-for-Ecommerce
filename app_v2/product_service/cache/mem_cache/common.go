@@ -2,19 +2,24 @@ package mem_cache
 
 import (
 	"fmt"
-	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/internal/cache"
+	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/cache"
 	"github.com/DragonPow/Server-for-Ecommerce/library/math"
 )
 
 // parseKey:
-//   type: must be "product", "user",...
-//   key: must be ID or something else
 //
-//  Return storeKey with format "{type}/{key}". Ex: "product/1445"
+//	 type: must be "product", "user",...
+//	 key: must be ID or something else
+//
+//	Return storeKey with format "{type}/{key}". Ex: "product/1445"
 func parseKey(t cache.TypeCache, k any) (storeKey string) {
 	return fmt.Sprintf("%s/%v", t, k)
 }
 
+// Store
+//
+//	Delete cacheMissNumber if exists
+//	Update new key
 func (m *memCache) Store(typeObject cache.TypeCache, key any, value any) {
 	storeKey := parseKey(typeObject, key)
 	ok := m.mu.TryLock()
@@ -59,8 +64,9 @@ func (m *memCache) LoadMultiple(t cache.TypeCache, keys []any) (values []any, mi
 // ----------------------------------------------------
 
 // IsMaxMiss check number miss of storeKey
-//  if larger than max, delete and return true
-//  if not exists or smaller than max, plus by 1
+//
+//	if larger than max, delete and return true
+//	if not exists or smaller than max, plus by 1
 func (m *memCache) IsMaxMiss(storeKey string) bool {
 	lockOk := m.missMu.TryLock()
 	defer func() {
@@ -85,7 +91,10 @@ func funcConvertId2Any(i int64) any {
 }
 
 func funcConvertAny2Model[T cache.ModelValue](v any) (int64, T) {
-	result := v.(T)
+	result, ok := v.(T)
+	if !ok {
+		panic("wrong type")
+	}
 	return result.GetId(), result
 }
 
@@ -94,8 +103,9 @@ func funcConvertAny2Id(v any) int64 {
 }
 
 // ConvertMultipleResponse
-//  Convert values (format ModelValue), miss (format int64) to list (map[id]value, missIds)
-//  Warn: If convert fail, panic
+//
+//	Convert values (format ModelValue), miss (format int64) to list (map[id]value, missIds)
+//	Warn: If convert fail, panic
 func ConvertMultipleResponse[T cache.ModelValue](values []any, miss []any) (map[int64]T, []int64) {
 	list := math.ToMap(values, funcConvertAny2Model[T])
 	missIds := math.Convert(miss, funcConvertAny2Id)

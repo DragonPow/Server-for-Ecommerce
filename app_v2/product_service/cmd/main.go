@@ -1,10 +1,10 @@
 package main
 
 import (
+	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/cache/mem_cache"
+	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/cache/redis_cache"
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/config"
-	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/internal/cache/mem_cache"
-	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/internal/cache/redis_cache"
-	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/internal/database/store"
+	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/database/store"
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/internal/service"
 	"github.com/DragonPow/Server-for-Ecommerce/library/database/migrate"
 	"github.com/DragonPow/Server-for-Ecommerce/library/log"

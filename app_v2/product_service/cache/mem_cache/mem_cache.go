@@ -1,8 +1,9 @@
 package mem_cache
 
 import (
+	"encoding/json"
 	"fmt"
-	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/internal/cache"
+	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/cache"
 	"sync"
 )
 
@@ -10,6 +11,7 @@ type MemCache interface {
 	cache.Cache
 	IsMaxMiss(storeKey string) bool
 	CheckAndSet(objects map[int64]cache.ModelValue) (bool, error)
+	SetProductByAttr(object cache.Product, attrs []byte) error
 }
 
 type memCache struct {
@@ -118,4 +120,34 @@ func (m *memCache) GetSeller(id int64) (value cache.Seller, ok bool) {
 
 func (m *memCache) GetUom(id int64) (value cache.Uom, ok bool) {
 	return GetOne[cache.Uom](m, id)
+}
+
+func (m *memCache) SetProductByAttr(object cache.Product, attrs []byte) (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("panic: %v", r)
+			return
+		}
+	}()
+
+	lockOk := m.mu.TryLock()
+	defer func() {
+		if lockOk {
+			m.mu.Unlock()
+		}
+	}()
+
+	product, ok := GetOne[cache.Product](m, object.GetId())
+	if !ok {
+		// if not in mem cache, ignore
+		return nil
+	}
+
+	err = json.Unmarshal(attrs, &product)
+	if err != nil {
+		return err
+	}
+
+	m.Store(object.GetType(), object.GetId(), product)
+	return nil
 }

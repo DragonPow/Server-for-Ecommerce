@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/db_manager_service/api"
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/db_manager_service/internal/database/store"
-	"github.com/DragonPow/Server-for-Ecommerce/app_v2/db_manager_service/internal/producer"
+	"github.com/DragonPow/Server-for-Ecommerce/app_v2/db_manager_service/producer"
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/db_manager_service/util"
 	"github.com/go-logr/logr"
 	"github.com/tabbed/pqtype"
@@ -70,7 +70,7 @@ func (s *Service) UpdateProduct(ctx context.Context, req *api.UpdateProductReque
 	}
 
 	updateRequestParams.ID = req.Id
-	err = s.storeDb.UpdateProduct(ctx, updateRequestParams.ToStore())
+	writeTime, err := s.storeDb.UpdateProduct(ctx, updateRequestParams.ToStore())
 	if err != nil {
 		logger.Error(err, "UpdateProduct")
 		return nil, err
@@ -81,8 +81,9 @@ func (s *Service) UpdateProduct(ctx context.Context, req *api.UpdateProductReque
 		err := s.producer.Publish(ctx, util.TopicUpdateProduct, producer.ProducerEvent{
 			Key: fmt.Sprintf("product/%v", req.Id),
 			Value: producer.UpdateDatabaseEventValue{
-				Id:       req.Id,
-				Variants: req.Variants,
+				Id:         req.Id,
+				Variants:   req.Variants,
+				TimeUpdate: writeTime,
 			},
 		})
 		if err != nil {

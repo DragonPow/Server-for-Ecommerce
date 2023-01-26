@@ -6,6 +6,7 @@ package store
 
 import (
 	"context"
+	"time"
 )
 
 type Querier interface {
@@ -15,7 +16,7 @@ type Querier interface {
 	CreateSeller(ctx context.Context, arg CreateSellerParams) (int64, error)
 	CreateUom(ctx context.Context, arg CreateUomParams) (int64, error)
 	UpdateCategory(ctx context.Context, arg UpdateCategoryParams) error
-	UpdateProduct(ctx context.Context, arg UpdateProductParams) error
+	UpdateProduct(ctx context.Context, arg UpdateProductParams) (time.Time, error)
 	UpdateProductTemplate(ctx context.Context, arg UpdateProductTemplateParams) error
 	UpdateSeller(ctx context.Context, arg UpdateSellerParams) error
 	UpdateUom(ctx context.Context, arg UpdateUomParams) error

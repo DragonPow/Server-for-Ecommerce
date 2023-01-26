@@ -1,7 +1,7 @@
 package cache
 
 import (
-	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/internal/database/store"
+	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/database/store"
 	"time"
 )
 

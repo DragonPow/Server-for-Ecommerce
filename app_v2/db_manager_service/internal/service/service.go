@@ -5,7 +5,7 @@ import (
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/db_manager_service/api"
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/db_manager_service/config"
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/db_manager_service/internal/database/store"
-	"github.com/DragonPow/Server-for-Ecommerce/app_v2/db_manager_service/internal/producer"
+	"github.com/DragonPow/Server-for-Ecommerce/app_v2/db_manager_service/producer"
 	"github.com/go-logr/logr"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"google.golang.org/grpc"

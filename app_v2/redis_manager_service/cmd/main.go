@@ -1,10 +1,10 @@
 package main
 
 import (
-	"github.com/DragonPow/Server-for-Ecommerce/app_v2/db_manager_service/config"
-	"github.com/DragonPow/Server-for-Ecommerce/app_v2/db_manager_service/internal/database/store"
-	"github.com/DragonPow/Server-for-Ecommerce/app_v2/db_manager_service/internal/service"
-	"github.com/DragonPow/Server-for-Ecommerce/app_v2/db_manager_service/producer"
+	"github.com/DragonPow/Server-for-Ecommerce/app_v2/redis_manager_service/config"
+	"github.com/DragonPow/Server-for-Ecommerce/app_v2/redis_manager_service/internal/database/store"
+	"github.com/DragonPow/Server-for-Ecommerce/app_v2/redis_manager_service/internal/service"
+	"github.com/DragonPow/Server-for-Ecommerce/library/cache/redis"
 	"github.com/DragonPow/Server-for-Ecommerce/library/database/migrate"
 	"github.com/DragonPow/Server-for-Ecommerce/library/log"
 	"github.com/DragonPow/Server-for-Ecommerce/library/server"
@@ -68,6 +68,13 @@ func serverAction(context *cli.Context) error {
 		return err
 	}
 
+	go func() {
+		err := serviceInstance.Consume()
+		if err != nil {
+			logger.Error(err, "Consume error")
+		}
+	}()
+
 	if err := s.Serve(); err != nil {
 		logger.Error(err, "Error start server")
 		return err
@@ -83,13 +90,13 @@ func newService(cfg *config.Config) (*service.Service, error) {
 	}
 	store := store.NewStore(db, logger)
 
-	// Producer
-	producer, err := producer.NewProducer(cfg.KafkaConfig, logger)
-	if err != nil {
-		return nil, err
-	}
+	redis := redis.New(
+		cfg.RedisConfig.Addr,
+		cfg.RedisConfig.Password,
+		cfg.RedisConfig.ExpiredDefault,
+	)
 
-	return service.NewService(cfg, logger, store, producer), nil
+	return service.NewService(cfg, logger, store, redis), nil
 }
 
 func newDB(dsn string) (*sqlx.DB, error) {

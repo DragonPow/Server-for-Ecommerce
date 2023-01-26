@@ -2,7 +2,7 @@ package util
 
 import (
 	"database/sql"
-	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/internal/cache"
+	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/cache"
 	"time"
 )
 

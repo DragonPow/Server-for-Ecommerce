@@ -34,7 +34,7 @@ SET name            = coalesce(sqlc.narg('name'), name),
     write_date      = now() AT TIME ZONE 'utc'
 WHERE id = @id::int8;
 
--- name: UpdateProduct :exec
+-- name: UpdateProduct :one
 UPDATE product
 SET template_id  = coalesce(sqlc.narg('template_id'), template_id),
     name         = coalesce(sqlc.narg('name'), name),
@@ -44,4 +44,5 @@ SET template_id  = coalesce(sqlc.narg('template_id'), template_id),
     variants     = coalesce(sqlc.narg('variants'), variants),
     write_uid    = case when @create_uid::int8 > 0 then @create_uid::int8 else 1 end,
     write_date   = now() AT TIME ZONE 'utc'
-WHERE id = @id::int8;
+WHERE id = @id::int8
+RETURNING write_date;
