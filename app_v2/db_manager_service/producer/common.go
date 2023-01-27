@@ -13,7 +13,7 @@ func funcConvertEvent2Message(topicName string) func(e ProducerEvent) kafka.Mess
 			panic("marshal fail")
 		}
 		return kafka.Message{
-			Topic: topicName,
+			//Topic: topicName,
 			Key:   []byte(e.Key),
 			Value: v,
 			Time:  time.Now(),

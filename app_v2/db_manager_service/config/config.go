@@ -83,17 +83,10 @@ func loadDefaultConfig() *Config {
 		ProductServiceDB:    database.PostgresSQLDefaultConfig(),
 		TimeOutHttpInSecond: 60,
 		KafkaConfig: KafkaConfig{
-			Connections: []string{"localhost:9092"},
-			//ListProducer: []Producer{
-			//	{
-			//		Topic: "insert_database",
-			//		Group: "insert_db_producer",
-			//	},
-			//	{
-			//		Topic: "update_database",
-			//		Group: "update_db_producer",
-			//	},
-			//},
+			Connections:                  []string{"localhost:9092"},
+			MaxPublishTimeoutSecond:      10,
+			MaxNumberRetry:               3,
+			TimeSleepPerRetryMillisecond: 200,
 		},
 	}
 }

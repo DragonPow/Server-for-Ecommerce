@@ -195,6 +195,8 @@ func (m *GetListProductRequest) Validate() error {
 
 	// no validation rules for PageSize
 
+	// no validation rules for Key
+
 	return nil
 }
 
@@ -464,9 +466,7 @@ func (m *ProductOverview) Validate() error {
 
 	// no validation rules for SalePrice
 
-	// no validation rules for CreatedBy
-
-	// no validation rules for CreatedDate
+	// no validation rules for Variants
 
 	// no validation rules for TemplateId
 
