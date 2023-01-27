@@ -51,6 +51,71 @@ func (q *Queries) GetCategories(ctx context.Context, ids []int64) ([]Category, e
 	return items, nil
 }
 
+const getProductAndRelations = `-- name: GetProductAndRelations :many
+SELECT p.id, p.template_id, p.name, p.origin_price, p.sale_price, p.state, p.variants, p.create_uid, p.write_uid, p.create_date, p.write_date, c.id category_id, u.id uom_id, s.id seller_id
+FROM product p
+JOIN product_template pt on pt.id = p.template_id
+JOIN category c on c.id = pt.category_id
+JOIN uom u on u.id = pt.uom_id
+JOIN seller s on s.id = pt.seller_id
+WHERE CASE WHEN array_length($1::int8[], 1) > 0 THEN p.id = ANY($1::int8[]) ELSE TRUE END
+`
+
+type GetProductAndRelationsRow struct {
+	ID          int64                 `json:"id"`
+	TemplateID  sql.NullInt64         `json:"template_id"`
+	Name        string                `json:"name"`
+	OriginPrice float64               `json:"origin_price"`
+	SalePrice   float64               `json:"sale_price"`
+	State       string                `json:"state"`
+	Variants    pqtype.NullRawMessage `json:"variants"`
+	CreateUid   int64                 `json:"create_uid"`
+	WriteUid    int64                 `json:"write_uid"`
+	CreateDate  time.Time             `json:"create_date"`
+	WriteDate   time.Time             `json:"write_date"`
+	CategoryID  int64                 `json:"category_id"`
+	UomID       int64                 `json:"uom_id"`
+	SellerID    int64                 `json:"seller_id"`
+}
+
+func (q *Queries) GetProductAndRelations(ctx context.Context, ids []int64) ([]GetProductAndRelationsRow, error) {
+	rows, err := q.query(ctx, q.getProductAndRelationsStmt, getProductAndRelations, pq.Array(ids))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetProductAndRelationsRow{}
+	for rows.Next() {
+		var i GetProductAndRelationsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.TemplateID,
+			&i.Name,
+			&i.OriginPrice,
+			&i.SalePrice,
+			&i.State,
+			&i.Variants,
+			&i.CreateUid,
+			&i.WriteUid,
+			&i.CreateDate,
+			&i.WriteDate,
+			&i.CategoryID,
+			&i.UomID,
+			&i.SellerID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getProductDetails = `-- name: GetProductDetails :many
 SELECT p.id, p.template_id, p.name, p.origin_price, p.sale_price, p.state, p.variants, p.create_uid, p.write_uid, p.create_date, p.write_date,
        c.id category_id, c.name category_name,
@@ -223,6 +288,48 @@ func (q *Queries) GetProducts(ctx context.Context, ids []int64) ([]Product, erro
 			&i.CreateDate,
 			&i.WriteDate,
 		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getProductsByKeyword = `-- name: GetProductsByKeyword :many
+SELECT id, COUNT(*) OVER() total
+FROM product
+WHERE "name" LIKE $1::varchar
+OFFSET $2::int8
+LIMIT $3::int8
+`
+
+type GetProductsByKeywordParams struct {
+	Keyword string `json:"keyword"`
+	Offset  int64  `json:"_offset"`
+	Limit   int64  `json:"_limit"`
+}
+
+type GetProductsByKeywordRow struct {
+	ID    int64 `json:"id"`
+	Total int64 `json:"total"`
+}
+
+func (q *Queries) GetProductsByKeyword(ctx context.Context, arg GetProductsByKeywordParams) ([]GetProductsByKeywordRow, error) {
+	rows, err := q.query(ctx, q.getProductsByKeywordStmt, getProductsByKeyword, arg.Keyword, arg.Offset, arg.Limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetProductsByKeywordRow{}
+	for rows.Next() {
+		var i GetProductsByKeywordRow
+		if err := rows.Scan(&i.ID, &i.Total); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

@@ -9,6 +9,7 @@ import (
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/util"
 	"github.com/DragonPow/Server-for-Ecommerce/library/math"
 	"github.com/go-logr/logr"
+	"golang.org/x/exp/maps"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"sync"
@@ -51,6 +52,7 @@ func (s *Service) GetDetailProduct(ctx context.Context, req *api.GetDetailProduc
 	// Get from database
 	products, err := s.storeDb.GetProductDetails(ctx, []int64{req.Id})
 	if err != nil {
+		logger.Error(err, "GetProductDetails fail")
 		return nil, err
 	}
 	if len(products) == util.ZeroLength {
@@ -225,6 +227,65 @@ func (s *Service) computeFromCache(ctx context.Context, logger logr.Logger, cach
 			},
 		}, nil
 	}
+}
+
+func getProductOrInsertCache(s *Service, ctx context.Context, ids []int64) (result map[int64]cache.Product, err error) {
+	type typeCache = cache.Product
+	type typeDb = store.Product
+	var (
+		modelName        = "product"
+		funcMemGetList   = s.memCache.GetListProduct
+		funcLocalGetList = s.localCache.GetListProduct
+		funcDbGetList    = s.storeDb.GetProductAndRelations
+
+		mem   map[int64]typeCache
+		local map[int64]typeCache
+		db    map[int64]typeCache
+
+		missMemIds   []int64
+		missLocalIds []int64
+	)
+
+	// Get from mem cache
+	mem, missMemIds = funcMemGetList(ids)
+	if len(missMemIds) > util.ZeroLength {
+		// Get from redis
+		local, missLocalIds = funcLocalGetList(missMemIds)
+		if len(missLocalIds) > util.ZeroLength {
+			// Get from db
+			storeModel, err := funcDbGetList(ctx, missLocalIds)
+			if err != nil {
+				return nil, err
+			}
+			if len(storeModel) == util.ZeroLength {
+				return nil, status.Errorf(codes.NotFound, "Not found %s with ids = %v", modelName, missLocalIds)
+			}
+			db = math.ToMap(storeModel, func(model store.GetProductAndRelationsRow) (int64, typeCache) {
+				var u typeCache
+				u.FromDbV2(model)
+				return model.ID, u
+			})
+
+			// Set to redis
+			go func() {
+				err := s.localCache.SetMultiple(math.ConvertMap(db, util.FuncConvertToCache[typeCache]))
+				if err != nil {
+					s.log.Error(err, "Fail set multiple to local cache", "ids", ids, "db", db)
+				}
+			}()
+		}
+
+		// Check and set to mem cache
+		go func() {
+			newMemCache := math.AppendMap(db, local)
+			_, err := s.memCache.CheckAndSet(math.ConvertMap(newMemCache, util.FuncConvertToCache[typeCache]))
+			if err != nil {
+				s.log.Error(err, "Fail set multiple to mem cache", "ids", ids, "local", local, "db", db)
+			}
+		}()
+	}
+
+	return math.AppendMap(mem, local, db), nil
 }
 
 func getProductTemplateOrInsertCache(s *Service, ctx context.Context, ids []int64) (result map[int64]cache.ProductTemplate, err error) {
@@ -523,5 +584,124 @@ func getUserOrInsertCache(s *Service, ctx context.Context, ids []int64) (result 
 }
 
 func (s *Service) GetListProduct(ctx context.Context, req *api.GetListProductRequest) (res *api.GetListProductResponse, err error) {
-	return nil, nil
+	logger := s.log.WithName("GetListProduct").WithValues("request", req)
+
+	limit := req.PageSize
+	offset := (req.Page - 1) * req.PageSize
+	rows, err := s.storeDb.GetProductsByKeyword(ctx, store.GetProductsByKeywordParams{
+		Keyword: "",
+		Offset:  offset,
+		Limit:   limit,
+	})
+	if err != nil {
+		logger.Error(err, "GetProductsByKeyword fail")
+		return nil, err
+	}
+
+	var totalItems int64
+	if len(rows) > util.ZeroLength {
+		totalItems = rows[0].Total
+	}
+	productIds := math.Convert(rows, func(row store.GetProductsByKeywordRow) int64 { return row.ID })
+	products, err := getProductOrInsertCache(s, ctx, productIds)
+	if err != nil {
+		logger.Error(err, "getProductOrInsertCache fail")
+		return nil, err
+	}
+	items, err := s.computeListFromCache(ctx, logger, products)
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.GetListProductResponse{
+		Code:    0,
+		Message: "OK",
+		Data: &api.GetListProductResponse_Data{
+			TotalItems: totalItems,
+			Page:       int32(req.Page),
+			PageSize:   int32(req.PageSize),
+			Items:      items,
+		},
+	}, nil
+}
+
+func (s *Service) computeListFromCache(ctx context.Context, logger logr.Logger, cacheModel map[int64]cache.Product) ([]*api.ProductOverview, error) {
+	wg := &sync.WaitGroup{}
+	errChan := make(chan error)
+	doneChan := make(chan struct{})
+	wg.Add(4)
+	var (
+		templates  map[int64]cache.ProductTemplate
+		uoms       map[int64]cache.Uom
+		categories map[int64]cache.Category
+		sellers    map[int64]cache.Seller
+	)
+
+	// Get Template
+	go func() {
+		defer wg.Done()
+		var err error
+		templateIds := math.Convert(maps.Values(cacheModel), func(p cache.Product) int64 { return p.TemplateID })
+		templates, err = getProductTemplateOrInsertCache(s, ctx, templateIds)
+		if err != nil {
+			logger.Error(err, "getProductTemplateOrInsertCache")
+			errChan <- err
+			return
+		}
+	}()
+
+	// Get Category
+	go func() {
+		defer wg.Done()
+		var err error
+		categoryIds := math.Convert(maps.Values(cacheModel), func(p cache.Product) int64 { return p.CategoryID })
+		categories, err = getCategoryOrInsertCache(s, ctx, categoryIds)
+		if err != nil {
+			logger.Error(err, "getCategoryOrInsertCache")
+			errChan <- err
+		}
+	}()
+
+	// Get Uom
+	go func() {
+		defer wg.Done()
+		var err error
+		uomIds := math.Convert(maps.Values(cacheModel), func(p cache.Product) int64 { return p.UomID })
+		uoms, err = getUomOrInsertCache(s, ctx, uomIds)
+		if err != nil {
+			logger.Error(err, "getUomOrInsertCache")
+			errChan <- err
+		}
+	}()
+
+	// Get Seller
+	go func() {
+		defer wg.Done()
+		var err error
+		sellerIds := math.Convert(maps.Values(cacheModel), func(p cache.Product) int64 { return p.SellerID })
+		sellers, err = getSellerOrInsertCache(s, ctx, sellerIds)
+		if err != nil {
+			logger.Error(err, "getSellerOrInsertCache")
+			errChan <- err
+		}
+	}()
+
+	go func() {
+		wg.Wait()
+		doneChan <- struct{}{}
+	}()
+
+	select {
+	case err := <-errChan:
+		return nil, err
+	case <-doneChan:
+		productsResp := make([]*api.ProductOverview, 0, len(cacheModel))
+		for _, product := range cacheModel {
+			var p *api.ProductOverview
+			p.FromCache(product, templates[product.TemplateID], categories[product.CategoryID], uoms[product.UomID], sellers[product.SellerID])
+			productsResp = append(productsResp, p)
+		}
+
+		return productsResp, nil
+	}
 }

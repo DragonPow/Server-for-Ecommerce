@@ -4,7 +4,7 @@ SERVER:
   HTTP:
     PORT: 9090
 
-MIGRATION_FOLDER: file://internal/database/migrations
+MIGRATION_FOLDER: file://database/migrations
 
 PRODUCT_SERVICE_DB:
   HOST: 127.0.0.1

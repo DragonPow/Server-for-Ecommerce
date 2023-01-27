@@ -27,6 +27,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getCategoriesStmt, err = db.PrepareContext(ctx, getCategories); err != nil {
 		return nil, fmt.Errorf("error preparing query GetCategories: %w", err)
 	}
+	if q.getProductAndRelationsStmt, err = db.PrepareContext(ctx, getProductAndRelations); err != nil {
+		return nil, fmt.Errorf("error preparing query GetProductAndRelations: %w", err)
+	}
 	if q.getProductDetailsStmt, err = db.PrepareContext(ctx, getProductDetails); err != nil {
 		return nil, fmt.Errorf("error preparing query GetProductDetails: %w", err)
 	}
@@ -35,6 +38,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.getProductsStmt, err = db.PrepareContext(ctx, getProducts); err != nil {
 		return nil, fmt.Errorf("error preparing query GetProducts: %w", err)
+	}
+	if q.getProductsByKeywordStmt, err = db.PrepareContext(ctx, getProductsByKeyword); err != nil {
+		return nil, fmt.Errorf("error preparing query GetProductsByKeyword: %w", err)
 	}
 	if q.getSellersStmt, err = db.PrepareContext(ctx, getSellers); err != nil {
 		return nil, fmt.Errorf("error preparing query GetSellers: %w", err)
@@ -55,6 +61,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getCategoriesStmt: %w", cerr)
 		}
 	}
+	if q.getProductAndRelationsStmt != nil {
+		if cerr := q.getProductAndRelationsStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getProductAndRelationsStmt: %w", cerr)
+		}
+	}
 	if q.getProductDetailsStmt != nil {
 		if cerr := q.getProductDetailsStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getProductDetailsStmt: %w", cerr)
@@ -68,6 +79,11 @@ func (q *Queries) Close() error {
 	if q.getProductsStmt != nil {
 		if cerr := q.getProductsStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getProductsStmt: %w", cerr)
+		}
+	}
+	if q.getProductsByKeywordStmt != nil {
+		if cerr := q.getProductsByKeywordStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getProductsByKeywordStmt: %w", cerr)
 		}
 	}
 	if q.getSellersStmt != nil {
@@ -122,27 +138,31 @@ func (q *Queries) queryRow(ctx context.Context, stmt *sql.Stmt, query string, ar
 }
 
 type Queries struct {
-	db DBTX
-	tx *sql.Tx
-	getCategoriesStmt       *sql.Stmt
-	getProductDetailsStmt   *sql.Stmt
-	getProductTemplatesStmt *sql.Stmt
-	getProductsStmt         *sql.Stmt
-	getSellersStmt          *sql.Stmt
-	getUomsStmt             *sql.Stmt
-	getUsersStmt            *sql.Stmt
+	db                         DBTX
+	tx                         *sql.Tx
+	getCategoriesStmt          *sql.Stmt
+	getProductAndRelationsStmt *sql.Stmt
+	getProductDetailsStmt      *sql.Stmt
+	getProductTemplatesStmt    *sql.Stmt
+	getProductsStmt            *sql.Stmt
+	getProductsByKeywordStmt   *sql.Stmt
+	getSellersStmt             *sql.Stmt
+	getUomsStmt                *sql.Stmt
+	getUsersStmt               *sql.Stmt
 }
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	return &Queries{
-		db:                      tx,
-		tx:                      tx,
-		getCategoriesStmt:       q.getCategoriesStmt,
-		getProductDetailsStmt:   q.getProductDetailsStmt,
-		getProductTemplatesStmt: q.getProductTemplatesStmt,
-		getProductsStmt:         q.getProductsStmt,
-		getSellersStmt:          q.getSellersStmt,
-		getUomsStmt:             q.getUomsStmt,
-		getUsersStmt:            q.getUsersStmt,
+		db:                         tx,
+		tx:                         tx,
+		getCategoriesStmt:          q.getCategoriesStmt,
+		getProductAndRelationsStmt: q.getProductAndRelationsStmt,
+		getProductDetailsStmt:      q.getProductDetailsStmt,
+		getProductTemplatesStmt:    q.getProductTemplatesStmt,
+		getProductsStmt:            q.getProductsStmt,
+		getProductsByKeywordStmt:   q.getProductsByKeywordStmt,
+		getSellersStmt:             q.getSellersStmt,
+		getUomsStmt:                q.getUomsStmt,
+		getUsersStmt:               q.getUsersStmt,
 	}
 }

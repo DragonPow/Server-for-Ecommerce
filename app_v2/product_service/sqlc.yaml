@@ -1,9 +1,9 @@
 version: "1"
 packages:
   - name: "store"
-    path: "internal/database/store/"
-    queries: "internal/database/queries/"
-    schema: "internal/database/migrations/"
+    path: "database/store/"
+    queries: "database/queries/"
+    schema: "database/migrations/"
     engine: "postgresql"
     emit_json_tags: true
     emit_prepared_queries: true

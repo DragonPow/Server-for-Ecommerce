@@ -1,6 +1,7 @@
 package api
 
 import (
+	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/cache"
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/database/store"
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/util"
 )
@@ -31,5 +32,27 @@ func (p *ProductDetail) FromEntity(product store.GetProductDetailsRow) {
 		CategoryName:        product.CategoryName,
 		UomId:               product.UomID,
 		UomName:             product.UomName,
+	}
+}
+
+func (p *ProductOverview) FromCache(product cache.Product, template cache.ProductTemplate, category cache.Category, uom cache.Uom, seller cache.Seller) {
+	*p = ProductOverview{
+		Id:             product.ID,
+		Name:           product.Name,
+		OriginPrice:    product.OriginPrice,
+		SalePrice:      product.SalePrice,
+		Variants:       product.Variants,
+		TemplateId:     template.ID,
+		TemplateName:   template.Name,
+		SoldQuantity:   template.SoldQuantity,
+		RemainQuantity: template.RemainQuantity,
+		Rating:         template.Rating,
+		SellerId:       seller.ID,
+		SellerName:     seller.Name,
+		SellerLogo:     seller.Logo,
+		CategoryId:     category.ID,
+		CategoryName:   category.Name,
+		UomId:          uom.ID,
+		UomName:        uom.Name,
 	}
 }

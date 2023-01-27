@@ -110,6 +110,28 @@ func (p *Product) FromDb(model store.Product, categoryId, uomId, sellerId int64)
 	return
 }
 
+func (p *Product) FromDbV2(model store.GetProductAndRelationsRow) {
+	variants := string(model.Variants.RawMessage)
+	*p = Product{
+		ID:          model.ID,
+		Name:        model.Name,
+		OriginPrice: model.OriginPrice,
+		SalePrice:   model.SalePrice,
+		State:       model.State,
+		Variants:    variants,
+		CreateDate:  model.CreateDate,
+		WriteDate:   model.WriteDate,
+		CreateUid:   model.CreateUid,
+		WriteUid:    model.WriteUid,
+		TemplateID:  model.TemplateID.Int64,
+		CategoryID:  model.CategoryID,
+		UomID:       model.UomID,
+		SellerID:    model.SellerID,
+		UpdateDate:  model.WriteDate,
+	}
+	return
+}
+
 // ProductTemplate ...
 type ProductTemplate struct {
 	ID             int64     `json:"id"`

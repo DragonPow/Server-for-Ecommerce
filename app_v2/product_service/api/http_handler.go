@@ -2,8 +2,10 @@ package api
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/DragonPow/Server-for-Ecommerce/library/encode/gzip"
 	"github.com/DragonPow/Server-for-Ecommerce/library/server"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 
@@ -35,7 +37,7 @@ func NewHttpHandler(httpPattern string, s HttpServer) *mux.Router {
 		}
 	}).Methods(GET)
 	r.HandleFunc("/products/{id}", getDetailProductHandler(s)).Methods(GET)
-	r.HandleFunc("/products", getListProductHandler).Methods(GET)
+	r.HandleFunc("/products", getListProductHandler(s)).Methods(GET)
 
 	return r
 }
@@ -60,6 +62,27 @@ func getDetailProductHandler(s HttpServer) func(http.ResponseWriter, *http.Reque
 	}
 }
 
-func getListProductHandler(w http.ResponseWriter, r *http.Request) {
+func getListProductHandler(s HttpServer) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+		body, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			server.HTTPError(w, r, err)
+			return
+		}
 
+		var req *GetListProductRequest
+		err = json.Unmarshal(body, req)
+		if err != nil {
+			server.HTTPError(w, r, err)
+			return
+		}
+		resp, err := s.GetListProduct(ctx, req)
+		if err != nil {
+			server.HTTPError(w, r, err)
+			return
+		}
+		server.ForwardResponseMessage(ctx, gzip.NewGzipEncoder(), w, r, resp)
+	}
 }
