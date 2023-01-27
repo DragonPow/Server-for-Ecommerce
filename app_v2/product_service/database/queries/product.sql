@@ -52,5 +52,6 @@ WHERE CASE WHEN array_length(@ids::int8[], 1) > 0 THEN id = ANY(@ids::int8[]) EL
 SELECT id, COUNT(*) OVER() total
 FROM product
 WHERE "name" LIKE @keyword::varchar
+ORDER BY id DESC
 OFFSET @_offset::int8
 LIMIT @_limit::int8;

@@ -72,7 +72,7 @@ func getListProductHandler(s HttpServer) func(w http.ResponseWriter, r *http.Req
 			return
 		}
 
-		var req *GetListProductRequest
+		req := &GetListProductRequest{}
 		err = json.Unmarshal(body, req)
 		if err != nil {
 			server.HTTPError(w, r, err)

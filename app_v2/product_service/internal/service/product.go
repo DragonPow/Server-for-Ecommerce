@@ -231,6 +231,7 @@ func (s *Service) computeGetDetailProduct(ctx context.Context, logger logr.Logge
 }
 
 func getProductOrInsertCache(s *Service, ctx context.Context, ids []int64) (result map[int64]cache.Product, err error) {
+	logger := s.log.WithName("getProductOrInsertCache")
 	type typeCache = cache.Product
 	type typeDb = store.Product
 	var (
@@ -249,18 +250,21 @@ func getProductOrInsertCache(s *Service, ctx context.Context, ids []int64) (resu
 
 	// Get from mem cache
 	mem, missMemIds = funcMemGetList(ids)
+	logger.Info("Get from mem cache", "mem", maps.Keys(mem))
 	if len(missMemIds) > util.ZeroLength {
 		// Get from redis
 		local, missLocalIds = funcLocalGetList(missMemIds)
+		logger.Info("Get from local cache", "local", maps.Keys(local))
 		if len(missLocalIds) > util.ZeroLength {
 			// Get from db
 			storeModel, err := funcDbGetList(ctx, missLocalIds)
 			if err != nil {
 				return nil, err
 			}
-			if len(storeModel) == util.ZeroLength {
-				return nil, status.Errorf(codes.NotFound, "Not found %s with ids = %v", modelName, missLocalIds)
+			if len(storeModel) < len(missLocalIds) {
+				return nil, status.Errorf(codes.NotFound, "Not found %s with ids = %v", modelName, missLocalIds, "store", storeModel)
 			}
+			logger.Info("Get from db", "store", missLocalIds)
 			db = math.ToMap(storeModel, func(model store.GetProductAndRelationsRow) (int64, typeCache) {
 				var u typeCache
 				u.FromDbV2(model)
@@ -290,6 +294,7 @@ func getProductOrInsertCache(s *Service, ctx context.Context, ids []int64) (resu
 }
 
 func getProductTemplateOrInsertCache(s *Service, ctx context.Context, ids []int64) (result map[int64]cache.ProductTemplate, err error) {
+	logger := s.log.WithName("getProductTemplateOrInsertCache")
 	type typeCache = cache.ProductTemplate
 	type typeDb = store.ProductTemplate
 	var (
@@ -308,18 +313,21 @@ func getProductTemplateOrInsertCache(s *Service, ctx context.Context, ids []int6
 
 	// Get from mem cache
 	mem, missMemIds = funcMemGetList(ids)
+	logger.Info("Get from mem cache", "mem", maps.Keys(mem))
 	if len(missMemIds) > util.ZeroLength {
 		// Get from redis
 		local, missLocalIds = funcLocalGetList(missMemIds)
+		logger.Info("Get from local cache", "local", maps.Keys(local))
 		if len(missLocalIds) > util.ZeroLength {
 			// Get from db
 			storeModel, err := funcDbGetList(ctx, missLocalIds)
 			if err != nil {
 				return nil, err
 			}
-			if len(storeModel) == util.ZeroLength {
-				return nil, status.Errorf(codes.NotFound, "Not found %s with ids = %v", modelName, missLocalIds)
+			if len(storeModel) < len(missLocalIds) {
+				return nil, status.Errorf(codes.NotFound, "Not found %s with ids = %v", modelName, missLocalIds, "store", storeModel)
 			}
+			logger.Info("Get from db", "store", missLocalIds)
 			db = math.ToMap(storeModel, func(model typeDb) (int64, typeCache) {
 				var u typeCache
 				u.FromDb(model)
@@ -349,6 +357,7 @@ func getProductTemplateOrInsertCache(s *Service, ctx context.Context, ids []int6
 }
 
 func getUomOrInsertCache(s *Service, ctx context.Context, ids []int64) (result map[int64]cache.Uom, err error) {
+	logger := s.log.WithName("getUomOrInsertCache")
 	type typeCache = cache.Uom
 	type typeDb = store.Uom
 	var (
@@ -367,18 +376,21 @@ func getUomOrInsertCache(s *Service, ctx context.Context, ids []int64) (result m
 
 	// Get from mem cache
 	mem, missMemIds = funcMemGetList(ids)
+	logger.Info("Get from mem cache", "mem", maps.Keys(mem))
 	if len(missMemIds) > util.ZeroLength {
 		// Get from redis
 		local, missLocalIds = funcLocalGetList(missMemIds)
+		logger.Info("Get from local cache", "local", maps.Keys(local))
 		if len(missLocalIds) > util.ZeroLength {
 			// Get from db
 			storeModel, err := funcDbGetList(ctx, missLocalIds)
 			if err != nil {
 				return nil, err
 			}
-			if len(storeModel) == util.ZeroLength {
-				return nil, status.Errorf(codes.NotFound, "Not found %s with ids = %v", modelName, missLocalIds)
+			if len(storeModel) < len(missLocalIds) {
+				return nil, status.Errorf(codes.NotFound, "Not found %s with ids = %v", modelName, missLocalIds, "store", storeModel)
 			}
+			logger.Info("Get from db", "store", missLocalIds)
 			db = math.ToMap(storeModel, func(model typeDb) (int64, typeCache) {
 				var u typeCache
 				u.FromDb(model)
@@ -408,6 +420,7 @@ func getUomOrInsertCache(s *Service, ctx context.Context, ids []int64) (result m
 }
 
 func getCategoryOrInsertCache(s *Service, ctx context.Context, ids []int64) (result map[int64]cache.Category, err error) {
+	logger := s.log.WithName("getCategoryOrInsertCache")
 	type typeCache = cache.Category
 	type typeDb = store.Category
 	var (
@@ -426,18 +439,21 @@ func getCategoryOrInsertCache(s *Service, ctx context.Context, ids []int64) (res
 
 	// Get from mem cache
 	mem, missMemIds = funcMemGetList(ids)
+	logger.Info("Get from mem cache", "mem", maps.Keys(mem))
 	if len(missMemIds) > util.ZeroLength {
 		// Get from redis
 		local, missLocalIds = funcLocalGetList(missMemIds)
+		logger.Info("Get from local cache", "local", maps.Keys(local))
 		if len(missLocalIds) > util.ZeroLength {
 			// Get from db
 			storeModel, err := funcDbGetList(ctx, missLocalIds)
 			if err != nil {
 				return nil, err
 			}
-			if len(storeModel) == util.ZeroLength {
-				return nil, status.Errorf(codes.NotFound, "Not found %s with ids = %v", modelName, missLocalIds)
+			if len(storeModel) < len(missLocalIds) {
+				return nil, status.Errorf(codes.NotFound, "Not found %s with ids = %v", modelName, missLocalIds, "store", storeModel)
 			}
+			logger.Info("Get from db", "store", missLocalIds)
 			db = math.ToMap(storeModel, func(model typeDb) (int64, typeCache) {
 				var u typeCache
 				u.FromDb(model)
@@ -467,6 +483,7 @@ func getCategoryOrInsertCache(s *Service, ctx context.Context, ids []int64) (res
 }
 
 func getSellerOrInsertCache(s *Service, ctx context.Context, ids []int64) (result map[int64]cache.Seller, err error) {
+	logger := s.log.WithName("getSellerOrInsertCache")
 	type typeCache = cache.Seller
 	type typeDb = store.Seller
 	var (
@@ -485,18 +502,21 @@ func getSellerOrInsertCache(s *Service, ctx context.Context, ids []int64) (resul
 
 	// Get from mem cache
 	mem, missMemIds = funcMemGetList(ids)
+	logger.Info("Get from mem cache", "mem", maps.Keys(mem))
 	if len(missMemIds) > util.ZeroLength {
 		// Get from redis
 		local, missLocalIds = funcLocalGetList(missMemIds)
+		logger.Info("Get from local cache", "local", maps.Keys(local))
 		if len(missLocalIds) > util.ZeroLength {
 			// Get from db
 			storeModel, err := funcDbGetList(ctx, missLocalIds)
 			if err != nil {
 				return nil, err
 			}
-			if len(storeModel) == util.ZeroLength {
-				return nil, status.Errorf(codes.NotFound, "Not found %s with ids = %v", modelName, missLocalIds)
+			if len(storeModel) < len(missLocalIds) {
+				return nil, status.Errorf(codes.NotFound, "Not found %s with ids = %v", modelName, missLocalIds, "store", storeModel)
 			}
+			logger.Info("Get from db", "store", missLocalIds)
 			db = math.ToMap(storeModel, func(model typeDb) (int64, typeCache) {
 				var u typeCache
 				u.FromDb(model)
@@ -526,6 +546,7 @@ func getSellerOrInsertCache(s *Service, ctx context.Context, ids []int64) (resul
 }
 
 func getUserOrInsertCache(s *Service, ctx context.Context, ids []int64) (result map[int64]cache.User, err error) {
+	logger := s.log.WithName("getUserOrInsertCache")
 	type typeCache = cache.User
 	type typeDb = store.User
 	var (
@@ -544,18 +565,21 @@ func getUserOrInsertCache(s *Service, ctx context.Context, ids []int64) (result 
 
 	// Get from mem cache
 	mem, missMemIds = funcMemGetList(ids)
+	logger.Info("Get from mem cache", "mem", maps.Keys(mem))
 	if len(missMemIds) > util.ZeroLength {
 		// Get from redis
 		local, missLocalIds = funcLocalGetList(missMemIds)
+		logger.Info("Get from local cache", "local", maps.Keys(local))
 		if len(missLocalIds) > util.ZeroLength {
 			// Get from db
 			storeModel, err := funcDbGetList(ctx, missLocalIds)
 			if err != nil {
 				return nil, err
 			}
-			if len(storeModel) == util.ZeroLength {
-				return nil, status.Errorf(codes.NotFound, "Not found %s with ids = %v", modelName, missLocalIds)
+			if len(storeModel) < len(missLocalIds) {
+				return nil, status.Errorf(codes.NotFound, "Not found %s with ids = %v", modelName, missLocalIds, "store", storeModel)
 			}
+			logger.Info("Get from db", "store", missLocalIds)
 			db = math.ToMap(storeModel, func(model typeDb) (int64, typeCache) {
 				var u typeCache
 				u.FromDb(model)
@@ -590,7 +614,7 @@ func (s *Service) GetListProduct(ctx context.Context, req *api.GetListProductReq
 	limit := req.PageSize
 	offset := (req.Page - 1) * req.PageSize
 	rows, err := s.storeDb.GetProductsByKeyword(ctx, store.GetProductsByKeywordParams{
-		Keyword: "",
+		Keyword: fmt.Sprintf("%%%v%%", req.Key),
 		Offset:  offset,
 		Limit:   limit,
 	})
@@ -651,7 +675,7 @@ func (s *Service) computeGetListProduct(ctx context.Context, logger logr.Logger,
 	go func() {
 		defer wg.Done()
 		var err error
-		templateIds := math.Convert(maps.Values(cacheModel), func(p cache.Product) int64 { return p.TemplateID })
+		templateIds := math.Uniq(math.Convert(maps.Values(cacheModel), func(p cache.Product) int64 { return p.TemplateID }))
 		templates, err = getProductTemplateOrInsertCache(s, ctx, templateIds)
 		if err != nil {
 			logger.Error(err, "getProductTemplateOrInsertCache")
@@ -664,7 +688,7 @@ func (s *Service) computeGetListProduct(ctx context.Context, logger logr.Logger,
 	go func() {
 		defer wg.Done()
 		var err error
-		categoryIds := math.Convert(maps.Values(cacheModel), func(p cache.Product) int64 { return p.CategoryID })
+		categoryIds := math.Uniq(math.Convert(maps.Values(cacheModel), func(p cache.Product) int64 { return p.CategoryID }))
 		categories, err = getCategoryOrInsertCache(s, ctx, categoryIds)
 		if err != nil {
 			logger.Error(err, "getCategoryOrInsertCache")
@@ -676,7 +700,7 @@ func (s *Service) computeGetListProduct(ctx context.Context, logger logr.Logger,
 	go func() {
 		defer wg.Done()
 		var err error
-		uomIds := math.Convert(maps.Values(cacheModel), func(p cache.Product) int64 { return p.UomID })
+		uomIds := math.Uniq(math.Convert(maps.Values(cacheModel), func(p cache.Product) int64 { return p.UomID }))
 		uoms, err = getUomOrInsertCache(s, ctx, uomIds)
 		if err != nil {
 			logger.Error(err, "getUomOrInsertCache")
@@ -688,7 +712,7 @@ func (s *Service) computeGetListProduct(ctx context.Context, logger logr.Logger,
 	go func() {
 		defer wg.Done()
 		var err error
-		sellerIds := math.Convert(maps.Values(cacheModel), func(p cache.Product) int64 { return p.SellerID })
+		sellerIds := math.Uniq(math.Convert(maps.Values(cacheModel), func(p cache.Product) int64 { return p.SellerID }))
 		sellers, err = getSellerOrInsertCache(s, ctx, sellerIds)
 		if err != nil {
 			logger.Error(err, "getSellerOrInsertCache")
@@ -707,7 +731,7 @@ func (s *Service) computeGetListProduct(ctx context.Context, logger logr.Logger,
 	case <-doneChan:
 		productsResp := make([]*api.ProductOverview, 0, len(cacheModel))
 		for _, product := range cacheModel {
-			var p *api.ProductOverview
+			p := &api.ProductOverview{}
 			p.FromCache(product, templates[product.TemplateID], categories[product.CategoryID], uoms[product.UomID], sellers[product.SellerID])
 			productsResp = append(productsResp, p)
 		}
