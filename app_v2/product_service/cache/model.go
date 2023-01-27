@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"encoding/json"
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/database/store"
 	"time"
 )
@@ -58,22 +59,21 @@ func (u *User) FromDb(model store.User) {
 
 // Product ...
 type Product struct {
-	ID          int64     `json:"id"`
-	Name        string    `json:"name"`
-	OriginPrice float64   `json:"origin_price"`
-	SalePrice   float64   `json:"sale_price"`
-	State       string    `json:"state"`
-	Variants    string    `json:"variants"`
-	CreateDate  time.Time `json:"create_date"`
-	WriteDate   time.Time `json:"write_date"`
+	ID          int64          `json:"id"`
+	Name        string         `json:"name"`
+	OriginPrice float64        `json:"origin_price"`
+	SalePrice   float64        `json:"sale_price"`
+	State       string         `json:"state"`
+	Variants    map[string]any `json:"variants"`
+	CreateDate  time.Time      `json:"create_date"`
+	WriteDate   time.Time      `json:"write_date"`
 	// Reference
-	CreateUid  int64     `json:"create_uid"`
-	WriteUid   int64     `json:"write_uid"`
-	TemplateID int64     `json:"template_id"`
-	CategoryID int64     `json:"category_id"`
-	UomID      int64     `json:"uom_id"`
-	SellerID   int64     `json:"seller_id"`
-	UpdateDate time.Time `json:"update_date"`
+	CreateUid  int64 `json:"create_uid"`
+	WriteUid   int64 `json:"write_uid"`
+	TemplateID int64 `json:"template_id"`
+	CategoryID int64 `json:"category_id"`
+	UomID      int64 `json:"uom_id"`
+	SellerID   int64 `json:"seller_id"`
 }
 
 func (p Product) GetId() int64 {
@@ -85,11 +85,21 @@ func (p Product) GetType() TypeCache {
 }
 
 func (p Product) GetVersion() string {
-	return p.UpdateDate.Format(time.RFC3339)
+	return p.WriteDate.Format(time.RFC3339)
+}
+
+func (p *Product) UpdateVersion(version string) error {
+	t, err := time.Parse(time.RFC3339, version)
+	if err != nil {
+		return err
+	}
+	p.WriteDate = t
+	return nil
 }
 
 func (p *Product) FromDb(model store.Product, categoryId, uomId, sellerId int64) {
-	variants := string(model.Variants.RawMessage)
+	var variants map[string]any
+	json.Unmarshal(model.Variants.RawMessage, &variants)
 	*p = Product{
 		ID:          model.ID,
 		Name:        model.Name,
@@ -105,13 +115,13 @@ func (p *Product) FromDb(model store.Product, categoryId, uomId, sellerId int64)
 		CategoryID:  categoryId,
 		UomID:       uomId,
 		SellerID:    sellerId,
-		UpdateDate:  model.WriteDate,
 	}
 	return
 }
 
 func (p *Product) FromDbV2(model store.GetProductAndRelationsRow) {
-	variants := string(model.Variants.RawMessage)
+	var variants map[string]any
+	json.Unmarshal(model.Variants.RawMessage, &variants)
 	*p = Product{
 		ID:          model.ID,
 		Name:        model.Name,
@@ -127,7 +137,6 @@ func (p *Product) FromDbV2(model store.GetProductAndRelationsRow) {
 		CategoryID:  model.CategoryID,
 		UomID:       model.UomID,
 		SellerID:    model.SellerID,
-		UpdateDate:  model.WriteDate,
 	}
 	return
 }
@@ -146,12 +155,11 @@ type ProductTemplate struct {
 	WriteDate      time.Time `json:"write_date"`
 	Variants       string    `json:"variants"`
 	// Reference
-	CreateUid  int64     `json:"create_uid"`
-	WriteUid   int64     `json:"write_uid"`
-	SellerID   int64     `json:"seller_id"`
-	CategoryID int64     `json:"category_id"`
-	UomID      int64     `json:"uom_id"`
-	UpdateDate time.Time `json:"update_date"`
+	CreateUid  int64 `json:"create_uid"`
+	WriteUid   int64 `json:"write_uid"`
+	SellerID   int64 `json:"seller_id"`
+	CategoryID int64 `json:"category_id"`
+	UomID      int64 `json:"uom_id"`
 }
 
 func (p ProductTemplate) GetId() int64 {
@@ -163,7 +171,7 @@ func (p ProductTemplate) GetType() TypeCache {
 }
 
 func (p ProductTemplate) GetVersion() string {
-	return p.UpdateDate.Format(time.RFC3339)
+	return p.WriteDate.Format(time.RFC3339)
 }
 
 func (p *ProductTemplate) FromDb(model store.ProductTemplate) {
@@ -185,18 +193,17 @@ func (p *ProductTemplate) FromDb(model store.ProductTemplate) {
 		SellerID:       model.SellerID.Int64,
 		CategoryID:     model.CategoryID.Int64,
 		UomID:          model.UomID.Int64,
-		UpdateDate:     model.WriteDate,
 	}
 	return
 }
 
 // Seller ...
 type Seller struct {
-	ID         int64     `json:"id"`
-	Name       string    `json:"name"`
-	Logo       string    `json:"logo"`
-	Address    string    `json:"address"`
-	UpdateDate time.Time `json:"update_date"`
+	ID        int64     `json:"id"`
+	Name      string    `json:"name"`
+	Logo      string    `json:"logo"`
+	Address   string    `json:"address"`
+	WriteDate time.Time `json:"write_date"`
 }
 
 func (s Seller) GetId() int64 {
@@ -208,25 +215,25 @@ func (s Seller) GetType() TypeCache {
 }
 
 func (s Seller) GetVersion() string {
-	return s.UpdateDate.Format(time.RFC3339)
+	return s.WriteDate.Format(time.RFC3339)
 }
 
 func (s *Seller) FromDb(model store.Seller) {
 	*s = Seller{
-		ID:         model.ID,
-		Name:       model.Name,
-		Logo:       model.LogoUrl.String,
-		Address:    model.Address.String,
-		UpdateDate: model.WriteDate,
+		ID:        model.ID,
+		Name:      model.Name,
+		Logo:      model.LogoUrl.String,
+		Address:   model.Address.String,
+		WriteDate: model.WriteDate,
 	}
 	return
 }
 
 // Uom ...
 type Uom struct {
-	ID         int64     `json:"id"`
-	Name       string    `json:"name"`
-	UpdateDate time.Time `json:"update_date"`
+	ID        int64     `json:"id"`
+	Name      string    `json:"name"`
+	WriteDate time.Time `json:"write_date"`
 }
 
 func (u Uom) GetId() int64 {
@@ -238,14 +245,14 @@ func (u Uom) GetType() TypeCache {
 }
 
 func (u Uom) GetVersion() string {
-	return u.UpdateDate.Format(time.RFC3339)
+	return u.WriteDate.Format(time.RFC3339)
 }
 
 func (u *Uom) FromDb(model store.Uom) {
 	*u = Uom{
-		ID:         model.ID,
-		Name:       model.Name,
-		UpdateDate: model.WriteDate,
+		ID:        model.ID,
+		Name:      model.Name,
+		WriteDate: model.WriteDate,
 	}
 	return
 }
@@ -255,7 +262,7 @@ type Category struct {
 	ID          int64     `json:"id"`
 	Name        string    `json:"name"`
 	Description string    `json:"description"`
-	UpdateDate  time.Time `json:"update_date"`
+	WriteDate   time.Time `json:"write_date"`
 }
 
 func (c Category) GetId() int64 {
@@ -267,7 +274,7 @@ func (c Category) GetType() TypeCache {
 }
 
 func (c Category) GetVersion() string {
-	return c.UpdateDate.Format(time.RFC3339)
+	return c.WriteDate.Format(time.RFC3339)
 }
 
 func (c *Category) FromDb(model store.Category) {
@@ -275,7 +282,7 @@ func (c *Category) FromDb(model store.Category) {
 		ID:          model.ID,
 		Name:        model.Name,
 		Description: model.Description.String,
-		UpdateDate:  model.WriteDate,
+		WriteDate:   model.WriteDate,
 	}
 	return
 }

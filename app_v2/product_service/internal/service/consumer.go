@@ -3,10 +3,8 @@ package service
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	producerDb "github.com/DragonPow/Server-for-Ecommerce/app_v2/db_manager_service/producer"
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/cache"
-	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/util"
 	"github.com/segmentio/kafka-go"
 )
 
@@ -19,11 +17,12 @@ func (s *Service) Consume() error {
 	go func() {
 		// create a new reader to the topic "my-topic"
 		r := kafka.NewReader(kafka.ReaderConfig{
-			Brokers:  updateConsumer.Connections,
-			Topic:    updateConsumer.Topic,
-			GroupID:  updateConsumer.Group,
-			MinBytes: 10e3, // 10KB
-			MaxBytes: 10e6, // 10MB
+			Brokers:     updateConsumer.Connections,
+			Topic:       updateConsumer.Topic,
+			GroupID:     updateConsumer.Group,
+			MinBytes:    10e3, // 10KB
+			MaxBytes:    10e6, // 10MB
+			StartOffset: kafka.LastOffset,
 		})
 		err := s.ProcessConsume(r, s.UpdateMemoryCache)
 		if err != nil {
@@ -65,17 +64,17 @@ func (s *Service) UpdateMemoryCache(ctx context.Context, message kafka.Message) 
 		logger.Error(err, "Message value must be UpdateDatabaseEventValue")
 		return err
 	}
-	products, err := s.storeDb.GetProducts(ctx, []int64{payload.Id})
-	if err != nil {
-		logger.Error(err, "Call db get products fail")
-	}
-	if len(products) == util.ZeroLength {
-		err = fmt.Errorf("not found product with id %v", payload.Id)
-		logger.Error(err, "Product not exists")
-		return err
-	}
+	//products, err := s.storeDb.GetProducts(ctx, []int64{payload.Id})
+	//if err != nil {
+	//	logger.Error(err, "Call db get products fail")
+	//}
+	//if len(products) == util.ZeroLength {
+	//	err = fmt.Errorf("not found product with id %v", payload.Id)
+	//	logger.Error(err, "Product not exists")
+	//	return err
+	//}
 
-	err = s.memCache.SetProductByAttr(cache.Product{ID: payload.Id}, payload.Variants)
+	err = s.memCache.SetProductByAttr(cache.Product{ID: payload.Id}, payload.Variants, payload.GetVersion())
 	if err != nil {
 		logger.Error(err, "Fail to SetProductByAttr")
 		return err

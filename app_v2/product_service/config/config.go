@@ -88,7 +88,7 @@ func loadDefaultConfig() *Config {
 			UpdateDbConsumer: Consumer{
 				Topic:       "update_product",
 				Connections: []string{"localhost:9092", "localhost:9093"},
-				Group:       "update_product_consumer",
+				Group:       "product_consume_update_product_consumer",
 			},
 		},
 		MemCacheConfig: MemConfig{

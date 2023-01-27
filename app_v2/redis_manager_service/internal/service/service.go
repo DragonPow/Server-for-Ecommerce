@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"github.com/DragonPow/Server-for-Ecommerce/library/cache/redis"
+	"github.com/gorilla/mux"
 	"net/http"
 
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/redis_manager_service/config"
@@ -43,7 +44,7 @@ func (s *Service) RegisterWithServer(server *grpc.Server) {
 }
 
 func (s *Service) RegisterWithHttpHandler(httpPattern string) (http.Handler, error) {
-	return nil, nil
+	return mux.NewRouter().PathPrefix(httpPattern).Subrouter(), nil
 }
 
 // RegisterWithHandler implementing service server interface

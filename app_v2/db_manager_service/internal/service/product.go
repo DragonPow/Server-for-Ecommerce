@@ -13,6 +13,7 @@ import (
 	"github.com/go-logr/logr"
 	"github.com/tabbed/pqtype"
 	"google.golang.org/grpc/codes"
+	"time"
 )
 
 func (s *Service) AddProduct(ctx context.Context, req *api.AddProductRequest) (*api.AddProductResponse, error) {
@@ -76,13 +77,13 @@ func (s *Service) UpdateProduct(ctx context.Context, req *api.UpdateProductReque
 		return nil, err
 	}
 	// Publish to kafka
-	go func(logger logr.Logger) {
+	go func(logger logr.Logger, writeTime time.Time, id int64, variants []byte) {
 		ctx := context.Background()
-		err := s.producer.Publish(ctx, util.TopicUpdateProduct, producer.ProducerEvent{
+		err = s.producer.Publish(ctx, util.TopicUpdateProduct, producer.ProducerEvent{
 			Key: fmt.Sprintf("product/%v", req.Id),
 			Value: producer.UpdateDatabaseEventValue{
-				Id:         req.Id,
-				Variants:   req.Variants,
+				Id:         id,
+				Variants:   variants,
 				TimeUpdate: writeTime,
 			},
 		})
@@ -90,7 +91,7 @@ func (s *Service) UpdateProduct(ctx context.Context, req *api.UpdateProductReque
 			logger.Error(err, "Publish message fail")
 			return
 		}
-	}(logger)
+	}(logger, writeTime, req.Id, req.Variants)
 
 	return &api.UpdateProductResponse{
 		Code:    uint32(codes.OK),
@@ -104,24 +105,29 @@ func (s *Service) DeleteProduct(ctx context.Context, req *api.DeleteProductReque
 }
 
 type UpdateProductParams struct {
-	TemplateID  util.NullInt64        `json:"template_id,omitempty"`
-	Name        util.NullString       `json:"name,omitempty"`
-	OriginPrice util.NullFloat64      `json:"origin_price,omitempty"`
-	SalePrice   util.NullFloat64      `json:"sale_price,omitempty"`
-	State       util.NullString       `json:"state,omitempty"`
-	Variants    pqtype.NullRawMessage `json:"variants,omitempty"`
-	CreateUid   int64                 `json:"create_uid,omitempty"`
-	ID          int64                 `json:"id"`
+	TemplateID  util.NullInt64   `json:"template_id,omitempty"`
+	Name        util.NullString  `json:"name,omitempty"`
+	OriginPrice util.NullFloat64 `json:"origin_price,omitempty"`
+	SalePrice   util.NullFloat64 `json:"sale_price,omitempty"`
+	State       util.NullString  `json:"state,omitempty"`
+	Variants    map[string]any   `json:"variants,omitempty"`
+	CreateUid   int64            `json:"create_uid,omitempty"`
+	ID          int64            `json:"id"`
 }
 
 func (u *UpdateProductParams) ToStore() store.UpdateProductParams {
+	b, _ := json.Marshal(u.Variants)
+	variants := pqtype.NullRawMessage{
+		RawMessage: b,
+		Valid:      len(u.Variants) > util.ZeroLength,
+	}
 	return store.UpdateProductParams{
 		TemplateID:  u.TemplateID.NullInt64,
 		Name:        u.Name.NullString,
 		OriginPrice: u.OriginPrice.NullFloat64,
 		SalePrice:   u.SalePrice.NullFloat64,
 		State:       u.State.NullString,
-		Variants:    u.Variants,
+		Variants:    variants,
 		CreateUid:   u.CreateUid,
 		ID:          u.ID,
 	}

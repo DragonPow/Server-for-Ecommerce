@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/api"
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/cache"
@@ -27,7 +28,7 @@ func (s *Service) GetDetailProduct(ctx context.Context, req *api.GetDetailProduc
 	memCacheProduct, hasCache = s.memCache.GetProduct(req.Id)
 	if hasCache {
 		logger.Info("Get data from mem cache")
-		return s.computeFromCache(ctx, logger, memCacheProduct)
+		return s.computeGetDetailProduct(ctx, logger, memCacheProduct)
 	}
 
 	// Get from redis
@@ -46,7 +47,7 @@ func (s *Service) GetDetailProduct(ctx context.Context, req *api.GetDetailProduc
 			}()
 		}()
 		logger.Info("Get data from local cache")
-		return s.computeFromCache(ctx, logger, localCacheProduct)
+		return s.computeGetDetailProduct(ctx, logger, localCacheProduct)
 	}
 
 	// Get from database
@@ -107,7 +108,7 @@ func (s *Service) SetCacheAPIGetDetailProduct(data *api.ProductDetail) {
 	}()
 }
 
-func (s *Service) computeFromCache(ctx context.Context, logger logr.Logger, cacheModel cache.Product) (*api.GetDetailProductResponse, error) {
+func (s *Service) computeGetDetailProduct(ctx context.Context, logger logr.Logger, cacheModel cache.Product) (*api.GetDetailProductResponse, error) {
 	wg := &sync.WaitGroup{}
 	errChan := make(chan error)
 	doneChan := make(chan struct{})
@@ -195,7 +196,7 @@ func (s *Service) computeFromCache(ctx context.Context, logger logr.Logger, cach
 	case err := <-errChan:
 		return nil, err
 	case <-doneChan:
-
+		b, _ := json.Marshal(cacheModel.Variants)
 		return &api.GetDetailProductResponse{
 			Code:    0,
 			Message: "OK",
@@ -204,7 +205,7 @@ func (s *Service) computeFromCache(ctx context.Context, logger logr.Logger, cach
 				Name:                cacheModel.Name,
 				OriginPrice:         cacheModel.OriginPrice,
 				SalePrice:           cacheModel.SalePrice,
-				Variants:            cacheModel.Variants,
+				Variants:            string(b),
 				CreatedBy:           createBy.Name,
 				CreatedDate:         util.ParseTimeToString(cacheModel.CreateDate),
 				UpdatedBy:           writeBy.Name,
@@ -597,22 +598,31 @@ func (s *Service) GetListProduct(ctx context.Context, req *api.GetListProductReq
 		logger.Error(err, "GetProductsByKeyword fail")
 		return nil, err
 	}
-
-	var totalItems int64
-	if len(rows) > util.ZeroLength {
-		totalItems = rows[0].Total
+	if len(rows) == util.ZeroLength {
+		logger.Info("Not found items")
+		return &api.GetListProductResponse{
+			Code:    0,
+			Message: "OK",
+			Data: &api.GetListProductResponse_Data{
+				TotalItems: 0,
+				Page:       int32(req.Page),
+				PageSize:   int32(req.PageSize),
+				Items:      nil,
+			},
+		}, nil
 	}
+
+	totalItems := rows[0].Total
 	productIds := math.Convert(rows, func(row store.GetProductsByKeywordRow) int64 { return row.ID })
 	products, err := getProductOrInsertCache(s, ctx, productIds)
 	if err != nil {
 		logger.Error(err, "getProductOrInsertCache fail")
 		return nil, err
 	}
-	items, err := s.computeListFromCache(ctx, logger, products)
+	items, err := s.computeGetListProduct(ctx, logger, products)
 	if err != nil {
 		return nil, err
 	}
-
 	return &api.GetListProductResponse{
 		Code:    0,
 		Message: "OK",
@@ -625,7 +635,7 @@ func (s *Service) GetListProduct(ctx context.Context, req *api.GetListProductReq
 	}, nil
 }
 
-func (s *Service) computeListFromCache(ctx context.Context, logger logr.Logger, cacheModel map[int64]cache.Product) ([]*api.ProductOverview, error) {
+func (s *Service) computeGetListProduct(ctx context.Context, logger logr.Logger, cacheModel map[int64]cache.Product) ([]*api.ProductOverview, error) {
 	wg := &sync.WaitGroup{}
 	errChan := make(chan error)
 	doneChan := make(chan struct{})

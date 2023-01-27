@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/cache"
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/database/store"
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/util"
@@ -36,12 +37,13 @@ func (p *ProductDetail) FromEntity(product store.GetProductDetailsRow) {
 }
 
 func (p *ProductOverview) FromCache(product cache.Product, template cache.ProductTemplate, category cache.Category, uom cache.Uom, seller cache.Seller) {
+	b, _ := json.Marshal(product.Variants)
 	*p = ProductOverview{
 		Id:             product.ID,
 		Name:           product.Name,
 		OriginPrice:    product.OriginPrice,
 		SalePrice:      product.SalePrice,
-		Variants:       product.Variants,
+		Variants:       string(b),
 		TemplateId:     template.ID,
 		TemplateName:   template.Name,
 		SoldQuantity:   template.SoldQuantity,

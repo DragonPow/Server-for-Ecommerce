@@ -11,7 +11,7 @@ type MemCache interface {
 	cache.Cache
 	IsMaxMiss(storeKey string) bool
 	CheckAndSet(objects map[int64]cache.ModelValue) (bool, error)
-	SetProductByAttr(object cache.Product, attrs []byte) error
+	SetProductByAttr(object cache.Product, attrs []byte, version string) error
 }
 
 type memCache struct {
@@ -122,7 +122,7 @@ func (m *memCache) GetUom(id int64) (value cache.Uom, ok bool) {
 	return GetOne[cache.Uom](m, id)
 }
 
-func (m *memCache) SetProductByAttr(object cache.Product, attrs []byte) (err error) {
+func (m *memCache) SetProductByAttr(object cache.Product, attrs []byte, version string) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = fmt.Errorf("panic: %v", r)
@@ -144,6 +144,10 @@ func (m *memCache) SetProductByAttr(object cache.Product, attrs []byte) (err err
 	}
 
 	err = json.Unmarshal(attrs, &product)
+	if err != nil {
+		return err
+	}
+	err = product.UpdateVersion(version)
 	if err != nil {
 		return err
 	}

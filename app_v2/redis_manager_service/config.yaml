@@ -1,8 +1,8 @@
 SERVER:
   GRPC:
-    PORT: 9492
+    PORT: 11002
   HTTP:
-    PORT: 9092
+    PORT: 10002
 
 MIGRATION_FOLDER: file://internal/database/migrations
 

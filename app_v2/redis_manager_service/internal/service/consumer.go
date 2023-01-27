@@ -18,11 +18,12 @@ func (s *Service) Consume() error {
 	go func() {
 		// create a new reader to the topic "update-db"
 		r := kafka.NewReader(kafka.ReaderConfig{
-			Brokers:  updateConsumer.Connections,
-			Topic:    updateConsumer.Topic,
-			GroupID:  updateConsumer.Group,
-			MinBytes: 10e3, // 10KB
-			MaxBytes: 10e6, // 10MB
+			Brokers:     updateConsumer.Connections,
+			Topic:       updateConsumer.Topic,
+			GroupID:     updateConsumer.Group,
+			MinBytes:    10e3, // 10KB
+			MaxBytes:    10e6, // 10MB
+			StartOffset: kafka.LastOffset,
 		})
 		err := s.ProcessConsume(r, s.UpdateRedis)
 		if err != nil {
@@ -119,6 +120,11 @@ func (s *Service) UpdateRedis(ctx context.Context, message kafka.Message) error 
 	if err != nil {
 		logger.Error(err, "Fail unmarshal variants")
 		return err
+	}
+	// Update version
+	err = cacheModel.UpdateVersion(payload.GetVersion())
+	if err != nil {
+		logger.Error(err, "Update version fail") // ignore if fail
 	}
 
 	key, value := util.FuncConvertModel2Cache(payload.Id, cacheModel)
