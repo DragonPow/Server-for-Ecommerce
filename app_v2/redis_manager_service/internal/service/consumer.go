@@ -3,15 +3,35 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	producerDb "github.com/DragonPow/Server-for-Ecommerce/app_v2/db_manager_service/producer"
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/cache"
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/redis_manager_service/util"
+	"github.com/DragonPow/Server-for-Ecommerce/library/ring"
 	"github.com/segmentio/kafka-go"
+	"time"
 )
 
 func (s *Service) Consume() error {
 	kafkaConfig := s.cfg.KafkaConfig
 	errChan := make(chan error)
+
+	// Wait ring signal
+	go func() {
+		for {
+			if s.redis.Ring.Length() == util.ZeroLength {
+				s.log.Info("Ring empty, wait write")
+				<-s.redis.Ring.SignalWrite
+				s.log.Info("Write success, continue")
+			}
+			timeout := time.After(time.Duration(s.redis.TimeoutRingWriterInSecond) * time.Second)
+			err := s.WaitRing(timeout)
+			if err != nil {
+				s.log.Error(err, "WaitRing fail")
+			}
+			s.log.Info("Wait ring success")
+		}
+	}()
 
 	// Consumer update database
 	updateConsumer := kafkaConfig.UpdateDbConsumer
@@ -24,8 +44,9 @@ func (s *Service) Consume() error {
 			MinBytes:    10e3, // 10KB
 			MaxBytes:    10e6, // 10MB
 			StartOffset: kafka.LastOffset,
+			MaxWait:     1 * time.Second,
 		})
-		err := s.ProcessConsume(r, s.UpdateRedis)
+		err := s.ProcessConsume(r, s.AddUpdateMessageToRing)
 		if err != nil {
 			errChan <- err
 		}
@@ -71,15 +92,127 @@ func (s *Service) ProcessConsume(r *kafka.Reader, process func(ctx context.Conte
 	}
 }
 
-func (s *Service) UpdateRedis(ctx context.Context, message kafka.Message) error {
-	logger := s.log.WithName("UpdateMemoryCache").WithValues("message", message)
-	logger.Info("Start process")
-	var payload producerDb.UpdateDatabaseEventValue
-	err := json.Unmarshal(message.Value, &payload)
+func (s *Service) WaitRing(timeout <-chan time.Time) error {
+	for {
+		select {
+		case <-s.redis.Ring.SignalFull:
+			s.log.Info("SignalFull")
+			return s.updateRedisFromRing()
+		case <-timeout:
+			s.log.Info("SignalTimeout")
+			return s.updateRedisFromRing()
+		case <-s.redis.Ring.SignalWrite:
+		}
+	}
+
+}
+
+func (s *Service) updateRedisFromRing() error {
+	logger := s.log.WithName("updateRedisFromRing")
+	if s.redis.Ring.IsEmpty() {
+		return nil
+	}
+	length := s.redis.Ring.Length()
+	buf := make([]kafka.Message, length)
+	_, err := s.redis.Ring.Read(buf)
+	if errors.Is(ring.ErrIsEmpty, err) {
+		logger.Info("Ring is empty")
+		return nil
+	}
 	if err != nil {
-		logger.Error(err, "Message value must be UpdateDatabaseEventValue")
+		logger.Error(err, "Read from ring fail")
+		s.redis.Ring.Free()
 		return err
 	}
+	// Compute all message in ring
+	err = s.computeMessagesUpdate(buf)
+	if err != nil {
+		logger.Error(err, "computeMessagesUpdate fail")
+		return err
+	}
+	logger.Info("Success")
+	return nil
+}
+
+func (s *Service) AddUpdateMessageToRing(ctx context.Context, message kafka.Message) error {
+	logger := s.log.WithName("AddUpdateMessageToRing").WithValues("message", message)
+	err := s.redis.Ring.WriteOne(message)
+	if err != nil {
+		logger.Error(err, "Write fail")
+		return err
+	}
+	logger.Info("Success")
+	return nil
+}
+
+func (s *Service) computeMessagesUpdate(buf []kafka.Message) error {
+	mapBuf := make(map[int64]*producerDb.UpdateDatabaseEventValue, len(buf))
+	for _, message := range buf {
+		// Marshal from message
+		var payload producerDb.UpdateDatabaseEventValue
+		err := json.Unmarshal(message.Value, &payload)
+		if err != nil {
+			return err
+		}
+
+		// Check if mapBuf exists id, append to variants
+		// Else add to mapBuf
+		m, ok := mapBuf[payload.Id]
+		if !ok {
+			mapBuf[payload.Id] = &payload
+			continue
+		}
+
+		// Compute variants
+		variants := make(map[string]any)
+		mVariants := make(map[string]any)
+		var isAppend bool
+		err = json.Unmarshal(payload.Variants, &variants)
+		if err != nil {
+			return err
+		}
+		err = json.Unmarshal(m.Variants, &mVariants)
+		if err != nil {
+			return err
+		}
+
+		// Merge prev_variants and payload Variants
+		// Only merge when old message
+		for k, v := range variants {
+			isAppend = true
+			_, ok := mVariants[k]
+			if ok {
+				// If exists in mapBuf and version is lower, change in mapBuf
+				if m.GetVersion() < payload.GetVersion() {
+					mVariants[k] = v
+				}
+				continue
+			}
+			mVariants[k] = v
+		}
+		// If merge, update in mapBuf variants
+		if isAppend {
+			b, err := json.Marshal(mVariants)
+			if err != nil {
+				return err
+			}
+			m.Variants = b
+		}
+		continue
+	}
+
+	for _, payload := range mapBuf {
+		go func(payload producerDb.UpdateDatabaseEventValue) {
+			ctx := context.Background()
+			_ = s.UpdateRedis(ctx, payload) // ignore if error
+		}(*payload)
+	}
+	return nil
+}
+
+func (s *Service) UpdateRedis(ctx context.Context, payload producerDb.UpdateDatabaseEventValue) error {
+	logger := s.log.WithName("UpdateMemoryCache").WithValues("payload", payload)
+	logger.Info("Start process")
 
 	// Way 1: Call db to enrich data
 	//products, err := s.storeDb.GetProducts(ctx, []int64{payload.Id})
@@ -106,7 +239,7 @@ func (s *Service) UpdateRedis(ctx context.Context, message kafka.Message) error 
 	//cacheModel.FromDb(storeProduct.Product(product), template.CategoryID.Int64, template.UomID.Int64, template.SellerID.Int64)
 
 	// Way 2: update from variants
-	cacheModel, ok := util.GetOne[cache.Product](s.redis, payload.Id)
+	cacheModel, ok := util.GetOne[cache.Product](s.redis.Redis, payload.Id)
 	if !ok {
 		logger.Info("Product not in cache, ignore", "id", payload.Id)
 		return nil
@@ -116,7 +249,7 @@ func (s *Service) UpdateRedis(ctx context.Context, message kafka.Message) error 
 		return nil
 	}
 
-	err = json.Unmarshal(payload.Variants, &cacheModel)
+	err := json.Unmarshal(payload.Variants, &cacheModel)
 	if err != nil {
 		logger.Error(err, "Fail unmarshal variants")
 		return err

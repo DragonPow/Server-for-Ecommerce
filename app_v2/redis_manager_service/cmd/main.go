@@ -3,8 +3,8 @@ package main
 import (
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/redis_manager_service/config"
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/redis_manager_service/internal/database/store"
+	"github.com/DragonPow/Server-for-Ecommerce/app_v2/redis_manager_service/internal/redis"
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/redis_manager_service/internal/service"
-	"github.com/DragonPow/Server-for-Ecommerce/library/cache/redis"
 	"github.com/DragonPow/Server-for-Ecommerce/library/database/migrate"
 	"github.com/DragonPow/Server-for-Ecommerce/library/log"
 	"github.com/DragonPow/Server-for-Ecommerce/library/server"
@@ -90,11 +90,7 @@ func newService(cfg *config.Config) (*service.Service, error) {
 	}
 	store := store.NewStore(db, logger)
 
-	redis := redis.New(
-		cfg.RedisConfig.Addr,
-		cfg.RedisConfig.Password,
-		cfg.RedisConfig.ExpiredDefault,
-	)
+	redis := redis.New(cfg.RedisConfig)
 
 	return service.NewService(cfg, logger, store, redis), nil
 }

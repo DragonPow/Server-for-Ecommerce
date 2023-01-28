@@ -2,7 +2,7 @@ package service
 
 import (
 	"context"
-	"github.com/DragonPow/Server-for-Ecommerce/library/cache/redis"
+	"github.com/DragonPow/Server-for-Ecommerce/app_v2/redis_manager_service/internal/redis"
 	"github.com/gorilla/mux"
 	"net/http"
 

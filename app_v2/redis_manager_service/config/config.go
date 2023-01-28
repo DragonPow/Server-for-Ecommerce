@@ -19,9 +19,11 @@ type Config struct {
 }
 
 type RedisConfig struct {
-	Addr           string `json:"addr" mapstructure:"addr"`
-	Password       string `json:"password" mapstructure:"password"`
-	ExpiredDefault uint32 `json:"expired_default" mapstructure:"expired_default"`
+	Addr                      string `json:"addr" mapstructure:"addr"`
+	Password                  string `json:"password" mapstructure:"password"`
+	ExpiredDefault            uint32 `json:"expired_default" mapstructure:"expired_default"`
+	MaxRingNumber             int    `json:"max_ring_number" mapstructure:"max_ring_number"`
+	TimeoutRingWriterInSecond int    `json:"timeout_ring_writer_in_second" mapstructure:"timeout_ring_writer_in_second"`
 }
 
 type KafkaConfig struct {
@@ -74,9 +76,11 @@ func loadDefaultConfig() *Config {
 		MigrationFolder:  "file://app_v2/product_service/internal/database/migrations",
 		ProductServiceDB: database.PostgresSQLDefaultConfig(),
 		RedisConfig: RedisConfig{
-			Addr:           "localhost:6379",
-			Password:       "redis@123",
-			ExpiredDefault: 180,
+			Addr:                      "localhost:6379",
+			Password:                  "redis@123",
+			ExpiredDefault:            180,
+			MaxRingNumber:             10,
+			TimeoutRingWriterInSecond: 3,
 		},
 		KafkaConfig: KafkaConfig{
 			UpdateDbConsumer: Consumer{

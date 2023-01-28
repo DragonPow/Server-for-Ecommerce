@@ -1,7 +1,7 @@
 INSERT INTO "user"(id, "name", user_name, passwrod)
 VALUES (1, 'Admin', 'admin', '123456'),
        (2, 'Thạch', 'vungocthach', '123456'),
-       (1, 'Hưng', 'hung', '123456');
+       (3, 'Hưng', 'hung', '123456');
 
 INSERT INTO seller(id, "name", description, phone, address, logo_url, manager_id, create_uid, write_uid)
 VALUES (1, 'Phong Vũ', '', '038225xxxx', 'Quận 1, thành phố Hồ Chí Minh', null, 1, 1, 1),
@@ -10,11 +10,11 @@ VALUES (1, 'Phong Vũ', '', '038225xxxx', 'Quận 1, thành phố Hồ Chí Minh
         null, 1, 1, 1);
 
 INSERT INTO category(id, "name", description)
-VALUES (1, 'Dụng cụ nấu ăn', ""),
-       (2, 'Thiết bị công nghệ', ""),
-       (3, 'Dụng cụ văn phòng', ""),
-       (4, 'Dụng cụ trang trí nhà cửa', ""),
-       (5, 'Dụng cụ y tế', "");
+VALUES (1, 'Dụng cụ nấu ăn', ''),
+       (2, 'Thiết bị công nghệ', ''),
+       (3, 'Dụng cụ văn phòng', ''),
+       (4, 'Dụng cụ trang trí nhà cửa', ''),
+       (5, 'Dụng cụ y tế', '');
 
 INSERT INTO uom(id, name, seller_id)
 VALUES (1, 'Cái', 1),
