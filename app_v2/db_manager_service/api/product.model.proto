@@ -49,6 +49,8 @@ message AddProductRequest {
   int64 template_id = 5;
   // CreateUid
   int64 create_uid = 6;
+  // Image
+  string image = 7;
 }
 
 // AddProductResponse

@@ -14,16 +14,17 @@ import (
 )
 
 const createProduct = `-- name: CreateProduct :one
-INSERT INTO product(template_id, name, origin_price, sale_price, state, variants,
+INSERT INTO product(image, template_id, name, origin_price, sale_price, state, variants,
                     create_uid, write_uid, create_date, write_date)
-VALUES ($1, $2, $3, $4, $5, $6,
-        case when $7::int8 > 0 then $7::int8 else 1 end,
-        case when $7::int8 > 0 then $7::int8 else 1 end,
+VALUES ($1, $2, $3, $4, $5, $6, $7,
+        case when $8::int8 > 0 then $8::int8 else 1 end,
+        case when $8::int8 > 0 then $8::int8 else 1 end,
         now() AT TIME ZONE 'utc',
         now() AT TIME ZONE 'utc') RETURNING id
 `
 
 type CreateProductParams struct {
+	Image       string                `json:"image"`
 	TemplateID  sql.NullInt64         `json:"template_id"`
 	Name        string                `json:"name"`
 	OriginPrice float64               `json:"origin_price"`
@@ -35,6 +36,7 @@ type CreateProductParams struct {
 
 func (q *Queries) CreateProduct(ctx context.Context, arg CreateProductParams) (int64, error) {
 	row := q.queryRow(ctx, q.createProductStmt, createProduct,
+		arg.Image,
 		arg.TemplateID,
 		arg.Name,
 		arg.OriginPrice,
@@ -97,19 +99,21 @@ func (q *Queries) CreateProductTemplate(ctx context.Context, arg CreateProductTe
 const updateProduct = `-- name: UpdateProduct :one
 UPDATE product
 SET template_id  = coalesce($1, template_id),
-    name         = coalesce($2, name),
-    origin_price = coalesce($3, origin_price),
-    sale_price   = coalesce($4, sale_price),
-    state        = coalesce($5, state),
-    variants     = coalesce($6, variants),
-    write_uid    = case when $7::int8 > 0 then $7::int8 else 1 end,
+    image        = coalesce($2, image),
+    name         = coalesce($3, name),
+    origin_price = coalesce($4, origin_price),
+    sale_price   = coalesce($5, sale_price),
+    state        = coalesce($6, state),
+    variants     = coalesce($7, variants),
+    write_uid    = case when $8::int8 > 0 then $8::int8 else 1 end,
     write_date   = now() AT TIME ZONE 'utc'
-WHERE id = $8::int8
+WHERE id = $9::int8
 RETURNING write_date
 `
 
 type UpdateProductParams struct {
 	TemplateID  sql.NullInt64         `json:"template_id"`
+	Image       sql.NullString        `json:"image"`
 	Name        sql.NullString        `json:"name"`
 	OriginPrice sql.NullFloat64       `json:"origin_price"`
 	SalePrice   sql.NullFloat64       `json:"sale_price"`
@@ -122,6 +126,7 @@ type UpdateProductParams struct {
 func (q *Queries) UpdateProduct(ctx context.Context, arg UpdateProductParams) (time.Time, error) {
 	row := q.queryRow(ctx, q.updateProductStmt, updateProduct,
 		arg.TemplateID,
+		arg.Image,
 		arg.Name,
 		arg.OriginPrice,
 		arg.SalePrice,

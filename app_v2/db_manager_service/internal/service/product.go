@@ -25,6 +25,7 @@ func (s *Service) AddProduct(ctx context.Context, req *api.AddProductRequest) (*
 	}
 	id, err := s.storeDb.CreateProduct(ctx, store.CreateProductParams{
 		TemplateID:  sql.NullInt64{Int64: req.TemplateId, Valid: true},
+		Image:       req.Image,
 		Name:        req.Name,
 		OriginPrice: req.OriginPrice,
 		SalePrice:   req.SalePrice,

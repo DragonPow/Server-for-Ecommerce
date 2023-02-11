@@ -23,6 +23,7 @@ type Category struct {
 
 type Product struct {
 	ID          int64                 `json:"id"`
+	Image       string                `json:"image"`
 	TemplateID  sql.NullInt64         `json:"template_id"`
 	Name        string                `json:"name"`
 	OriginPrice float64               `json:"origin_price"`
@@ -61,7 +62,7 @@ type Seller struct {
 	Phone       sql.NullString `json:"phone"`
 	Address     sql.NullString `json:"address"`
 	LogoUrl     sql.NullString `json:"logo_url"`
-	ManagerID   int64          `json:"manager_id"`
+	ManagerID   sql.NullInt64  `json:"manager_id"`
 	CreateUid   int64          `json:"create_uid"`
 	WriteUid    int64          `json:"write_uid"`
 	CreateDate  time.Time      `json:"create_date"`
