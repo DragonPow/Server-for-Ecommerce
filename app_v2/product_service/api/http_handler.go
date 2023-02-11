@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"github.com/DragonPow/Server-for-Ecommerce/library/encode/gzip"
 	"github.com/DragonPow/Server-for-Ecommerce/library/server"
-	"io/ioutil"
 	"net/http"
 	"strconv"
 
@@ -66,14 +65,14 @@ func getListProductHandler(s HttpServer) func(w http.ResponseWriter, r *http.Req
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
-		body, err := ioutil.ReadAll(r.Body)
+		data, err := json.Marshal(mux.Vars(r))
 		if err != nil {
 			server.HTTPError(w, r, err)
 			return
 		}
 
 		req := &GetListProductRequest{}
-		err = json.Unmarshal(body, req)
+		err = json.Unmarshal(data, req)
 		if err != nil {
 			server.HTTPError(w, r, err)
 			return
