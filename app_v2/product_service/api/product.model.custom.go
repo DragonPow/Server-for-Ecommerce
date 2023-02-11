@@ -1,7 +1,6 @@
 package api
 
 import (
-	"encoding/json"
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/cache"
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/database/store"
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/util"
@@ -10,6 +9,7 @@ import (
 func (p *ProductDetail) FromEntity(product store.GetProductDetailsRow) {
 	*p = ProductDetail{
 		Id:                  product.ID,
+		Image:               product.Image,
 		Name:                product.Name,
 		OriginPrice:         product.OriginPrice,
 		SalePrice:           product.SalePrice,
@@ -36,25 +36,12 @@ func (p *ProductDetail) FromEntity(product store.GetProductDetailsRow) {
 	}
 }
 
-func (p *ProductOverview) FromCache(product cache.Product, template cache.ProductTemplate, category cache.Category, uom cache.Uom, seller cache.Seller) {
-	b, _ := json.Marshal(product.Variants)
+func (p *ProductOverview) FromCache(product cache.Product) {
 	*p = ProductOverview{
-		Id:             product.ID,
-		Name:           product.Name,
-		OriginPrice:    product.OriginPrice,
-		SalePrice:      product.SalePrice,
-		Variants:       string(b),
-		TemplateId:     template.ID,
-		TemplateName:   template.Name,
-		SoldQuantity:   template.SoldQuantity,
-		RemainQuantity: template.RemainQuantity,
-		Rating:         template.Rating,
-		SellerId:       seller.ID,
-		SellerName:     seller.Name,
-		SellerLogo:     seller.Logo,
-		CategoryId:     category.ID,
-		CategoryName:   category.Name,
-		UomId:          uom.ID,
-		UomName:        uom.Name,
+		Id:          product.ID,
+		Name:        product.Name,
+		OriginPrice: product.OriginPrice,
+		SalePrice:   product.SalePrice,
+		Image:       product.Image,
 	}
 }

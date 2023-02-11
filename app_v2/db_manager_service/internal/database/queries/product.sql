@@ -9,9 +9,9 @@ VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11,
         now() AT TIME ZONE 'utc') RETURNING id;
 
 -- name: CreateProduct :one
-INSERT INTO product(template_id, name, origin_price, sale_price, state, variants,
+INSERT INTO product(image, template_id, name, origin_price, sale_price, state, variants,
                     create_uid, write_uid, create_date, write_date)
-VALUES ($1, $2, $3, $4, $5, $6,
+VALUES ($1, $2, $3, $4, $5, $6, $7,
         case when @create_uid::int8 > 0 then @create_uid::int8 else 1 end,
         case when @create_uid::int8 > 0 then @create_uid::int8 else 1 end,
         now() AT TIME ZONE 'utc',
@@ -37,6 +37,7 @@ WHERE id = @id::int8;
 -- name: UpdateProduct :one
 UPDATE product
 SET template_id  = coalesce(sqlc.narg('template_id'), template_id),
+    image        = coalesce(sqlc.narg('image'), image),
     name         = coalesce(sqlc.narg('name'), name),
     origin_price = coalesce(sqlc.narg('origin_price'), origin_price),
     sale_price   = coalesce(sqlc.narg('sale_price'), sale_price),

@@ -393,6 +393,8 @@ func (m *ProductDetail) Validate() error {
 
 	// no validation rules for UomName
 
+	// no validation rules for Image
+
 	return nil
 }
 
@@ -466,31 +468,7 @@ func (m *ProductOverview) Validate() error {
 
 	// no validation rules for SalePrice
 
-	// no validation rules for Variants
-
-	// no validation rules for TemplateId
-
-	// no validation rules for TemplateName
-
-	// no validation rules for SoldQuantity
-
-	// no validation rules for RemainQuantity
-
-	// no validation rules for Rating
-
-	// no validation rules for SellerId
-
-	// no validation rules for SellerName
-
-	// no validation rules for SellerLogo
-
-	// no validation rules for CategoryId
-
-	// no validation rules for CategoryName
-
-	// no validation rules for UomId
-
-	// no validation rules for UomName
+	// no validation rules for Image
 
 	return nil
 }

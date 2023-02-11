@@ -215,6 +215,8 @@ func (m *AddProductRequest) Validate() error {
 
 	// no validation rules for CreateUid
 
+	// no validation rules for Image
+
 	return nil
 }
 

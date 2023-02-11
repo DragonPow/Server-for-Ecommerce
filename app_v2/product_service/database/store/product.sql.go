@@ -52,7 +52,7 @@ func (q *Queries) GetCategories(ctx context.Context, ids []int64) ([]Category, e
 }
 
 const getProductAndRelations = `-- name: GetProductAndRelations :many
-SELECT p.id, p.template_id, p.name, p.origin_price, p.sale_price, p.state, p.variants, p.create_uid, p.write_uid, p.create_date, p.write_date, c.id category_id, u.id uom_id, s.id seller_id
+SELECT p.id, p.image, p.template_id, p.name, p.origin_price, p.sale_price, p.state, p.variants, p.create_uid, p.write_uid, p.create_date, p.write_date, c.id category_id, u.id uom_id, s.id seller_id
 FROM product p
 JOIN product_template pt on pt.id = p.template_id
 JOIN category c on c.id = pt.category_id
@@ -63,6 +63,7 @@ WHERE CASE WHEN array_length($1::int8[], 1) > 0 THEN p.id = ANY($1::int8[]) ELSE
 
 type GetProductAndRelationsRow struct {
 	ID          int64                 `json:"id"`
+	Image       string                `json:"image"`
 	TemplateID  sql.NullInt64         `json:"template_id"`
 	Name        string                `json:"name"`
 	OriginPrice float64               `json:"origin_price"`
@@ -89,6 +90,7 @@ func (q *Queries) GetProductAndRelations(ctx context.Context, ids []int64) ([]Ge
 		var i GetProductAndRelationsRow
 		if err := rows.Scan(
 			&i.ID,
+			&i.Image,
 			&i.TemplateID,
 			&i.Name,
 			&i.OriginPrice,
@@ -117,7 +119,7 @@ func (q *Queries) GetProductAndRelations(ctx context.Context, ids []int64) ([]Ge
 }
 
 const getProductDetails = `-- name: GetProductDetails :many
-SELECT p.id, p.template_id, p.name, p.origin_price, p.sale_price, p.state, p.variants, p.create_uid, p.write_uid, p.create_date, p.write_date,
+SELECT p.id, p.image, p.template_id, p.name, p.origin_price, p.sale_price, p.state, p.variants, p.create_uid, p.write_uid, p.create_date, p.write_date,
        c.id category_id, c.name category_name,
        u.id uom_id, u.name uom_name,
        s.id seller_id, s.name seller_name, s.logo_url seller_logo, s.address seller_address,
@@ -135,6 +137,7 @@ WHERE CASE WHEN array_length($1::int8[], 1) > 0 THEN p.id = ANY($1::int8[]) ELSE
 
 type GetProductDetailsRow struct {
 	ID                  int64                 `json:"id"`
+	Image               string                `json:"image"`
 	TemplateID          sql.NullInt64         `json:"template_id"`
 	Name                string                `json:"name"`
 	OriginPrice         float64               `json:"origin_price"`
@@ -174,6 +177,7 @@ func (q *Queries) GetProductDetails(ctx context.Context, ids []int64) ([]GetProd
 		var i GetProductDetailsRow
 		if err := rows.Scan(
 			&i.ID,
+			&i.Image,
 			&i.TemplateID,
 			&i.Name,
 			&i.OriginPrice,
@@ -261,7 +265,7 @@ func (q *Queries) GetProductTemplates(ctx context.Context, ids []int64) ([]Produ
 }
 
 const getProducts = `-- name: GetProducts :many
-SELECT id, template_id, name, origin_price, sale_price, state, variants, create_uid, write_uid, create_date, write_date
+SELECT id, image, template_id, name, origin_price, sale_price, state, variants, create_uid, write_uid, create_date, write_date
 FROM product
 WHERE CASE WHEN array_length($1::int8[], 1) > 0 THEN id = ANY($1::int8[]) ELSE TRUE END
 `
@@ -277,6 +281,7 @@ func (q *Queries) GetProducts(ctx context.Context, ids []int64) ([]Product, erro
 		var i Product
 		if err := rows.Scan(
 			&i.ID,
+			&i.Image,
 			&i.TemplateID,
 			&i.Name,
 			&i.OriginPrice,
@@ -302,7 +307,7 @@ func (q *Queries) GetProducts(ctx context.Context, ids []int64) ([]Product, erro
 }
 
 const getProductsByKeyword = `-- name: GetProductsByKeyword :many
-SELECT id, COUNT(*) OVER() total
+SELECT id, "name", origin_price, sale_price, image, COUNT(*) OVER() total
 FROM product
 WHERE CASE WHEN CHAR_LENGTH($1::varchar) > 0 THEN "name" LIKE $1::varchar ELSE TRUE END
 ORDER BY id DESC
@@ -317,8 +322,12 @@ type GetProductsByKeywordParams struct {
 }
 
 type GetProductsByKeywordRow struct {
-	ID    int64 `json:"id"`
-	Total int64 `json:"total"`
+	ID          int64   `json:"id"`
+	Name        string  `json:"name"`
+	OriginPrice float64 `json:"origin_price"`
+	SalePrice   float64 `json:"sale_price"`
+	Image       string  `json:"image"`
+	Total       int64   `json:"total"`
 }
 
 func (q *Queries) GetProductsByKeyword(ctx context.Context, arg GetProductsByKeywordParams) ([]GetProductsByKeywordRow, error) {
@@ -330,7 +339,14 @@ func (q *Queries) GetProductsByKeyword(ctx context.Context, arg GetProductsByKey
 	items := []GetProductsByKeywordRow{}
 	for rows.Next() {
 		var i GetProductsByKeywordRow
-		if err := rows.Scan(&i.ID, &i.Total); err != nil {
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.OriginPrice,
+			&i.SalePrice,
+			&i.Image,
+			&i.Total,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

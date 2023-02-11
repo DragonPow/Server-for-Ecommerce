@@ -225,6 +225,7 @@ func (s *Service) computeGetDetailProduct(ctx context.Context, logger logr.Logge
 				CategoryName:        category.Name,
 				UomId:               uom.ID,
 				UomName:             uom.Name,
+				Image:               cacheModel.Image,
 			},
 		}, nil
 	}
@@ -637,16 +638,15 @@ func (s *Service) GetListProduct(ctx context.Context, req *api.GetListProductReq
 	}
 
 	totalItems := rows[0].Total
-	productIds := math.Convert(rows, func(row store.GetProductsByKeywordRow) int64 { return row.ID })
-	products, err := getProductOrInsertCache(s, ctx, productIds)
-	if err != nil {
-		logger.Error(err, "getProductOrInsertCache fail")
-		return nil, err
-	}
-	items, err := s.computeGetListProduct(ctx, logger, products)
-	if err != nil {
-		return nil, err
-	}
+	items := math.Convert(rows, func(row store.GetProductsByKeywordRow) *api.ProductOverview {
+		return &api.ProductOverview{
+			Id:          row.ID,
+			Name:        row.Name,
+			OriginPrice: row.OriginPrice,
+			SalePrice:   row.SalePrice,
+			Image:       row.Image,
+		}
+	})
 	return &api.GetListProductResponse{
 		Code:    0,
 		Message: "OK",
@@ -657,85 +657,4 @@ func (s *Service) GetListProduct(ctx context.Context, req *api.GetListProductReq
 			Items:      items,
 		},
 	}, nil
-}
-
-func (s *Service) computeGetListProduct(ctx context.Context, logger logr.Logger, cacheModel map[int64]cache.Product) ([]*api.ProductOverview, error) {
-	wg := &sync.WaitGroup{}
-	errChan := make(chan error)
-	doneChan := make(chan struct{})
-	wg.Add(4)
-	var (
-		templates  map[int64]cache.ProductTemplate
-		uoms       map[int64]cache.Uom
-		categories map[int64]cache.Category
-		sellers    map[int64]cache.Seller
-	)
-
-	// Get Template
-	go func() {
-		defer wg.Done()
-		var err error
-		templateIds := math.Uniq(math.Convert(maps.Values(cacheModel), func(p cache.Product) int64 { return p.TemplateID }))
-		templates, err = getProductTemplateOrInsertCache(s, ctx, templateIds)
-		if err != nil {
-			logger.Error(err, "getProductTemplateOrInsertCache")
-			errChan <- err
-			return
-		}
-	}()
-
-	// Get Category
-	go func() {
-		defer wg.Done()
-		var err error
-		categoryIds := math.Uniq(math.Convert(maps.Values(cacheModel), func(p cache.Product) int64 { return p.CategoryID }))
-		categories, err = getCategoryOrInsertCache(s, ctx, categoryIds)
-		if err != nil {
-			logger.Error(err, "getCategoryOrInsertCache")
-			errChan <- err
-		}
-	}()
-
-	// Get Uom
-	go func() {
-		defer wg.Done()
-		var err error
-		uomIds := math.Uniq(math.Convert(maps.Values(cacheModel), func(p cache.Product) int64 { return p.UomID }))
-		uoms, err = getUomOrInsertCache(s, ctx, uomIds)
-		if err != nil {
-			logger.Error(err, "getUomOrInsertCache")
-			errChan <- err
-		}
-	}()
-
-	// Get Seller
-	go func() {
-		defer wg.Done()
-		var err error
-		sellerIds := math.Uniq(math.Convert(maps.Values(cacheModel), func(p cache.Product) int64 { return p.SellerID }))
-		sellers, err = getSellerOrInsertCache(s, ctx, sellerIds)
-		if err != nil {
-			logger.Error(err, "getSellerOrInsertCache")
-			errChan <- err
-		}
-	}()
-
-	go func() {
-		wg.Wait()
-		doneChan <- struct{}{}
-	}()
-
-	select {
-	case err := <-errChan:
-		return nil, err
-	case <-doneChan:
-		productsResp := make([]*api.ProductOverview, 0, len(cacheModel))
-		for _, product := range cacheModel {
-			p := &api.ProductOverview{}
-			p.FromCache(product, templates[product.TemplateID], categories[product.CategoryID], uoms[product.UomID], sellers[product.SellerID])
-			productsResp = append(productsResp, p)
-		}
-
-		return productsResp, nil
-	}
 }

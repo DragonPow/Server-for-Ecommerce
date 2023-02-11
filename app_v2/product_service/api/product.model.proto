@@ -108,6 +108,8 @@ message ProductDetail {
   int64 uom_id = 23;
   // UomName
   string uom_name = 24;
+  // Image
+  string image = 25;
 }
 
 // ProductOverview
@@ -120,33 +122,6 @@ message ProductOverview {
   double origin_price = 3;
   // SalePrice
   double sale_price = 4;
-  // Variants
-  string variants = 5;
-  // TemplateId
-  int64 template_id = 6;
-  // TemplateName
-  string template_name = 7;
-  // SoldQuantity
-  double sold_quantity = 8;
-  // RemainQuantity
-  double remain_quantity = 9;
-  // Rating
-  double Rating = 10;
-
-  // SellerId
-  int64 seller_id = 11;
-  // SellerName
-  string seller_name = 12;
-  // SellerLogo
-  string seller_logo = 13;
-
-  // CategoryId
-  int64 category_id = 14;
-  // CategoryName
-  string category_name = 15;
-
-  // UomId
-  int64 uom_id = 16;
-  // UomName
-  string uom_name = 17;
+  // Image
+  string image = 5;
 }
