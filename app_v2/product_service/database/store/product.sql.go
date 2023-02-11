@@ -304,7 +304,8 @@ func (q *Queries) GetProducts(ctx context.Context, ids []int64) ([]Product, erro
 const getProductsByKeyword = `-- name: GetProductsByKeyword :many
 SELECT id, COUNT(*) OVER() total
 FROM product
-WHERE "name" LIKE $1::varchar
+WHERE CASE WHEN CHAR_LENGTH($1::varchar) > 0 THEN "name" LIKE $1::varchar ELSE TRUE END
+ORDER BY id DESC
 OFFSET $2::int8
 LIMIT $3::int8
 `
