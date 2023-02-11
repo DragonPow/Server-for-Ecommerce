@@ -6,6 +6,7 @@ import (
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/cache/redis_cache"
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/database/store"
 	"net/http"
+	"sync"
 
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/api"
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/config"
@@ -20,6 +21,7 @@ type Service struct {
 	storeDb    store.StoreQuerier
 	localCache redis_cache.RedisCache
 	memCache   mem_cache.MemCache
+	lockCache  LockCache
 	//api.UnimplementedOrderServiceServer
 }
 
@@ -55,4 +57,9 @@ func (s *Service) RegisterWithHttpHandler(httpPattern string) (http.Handler, err
 // RegisterWithHandler implementing service server interface
 func (s *Service) RegisterWithHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
 	return nil
+}
+
+type LockCache struct {
+	list sync.Map
+	mu   sync.RWMutex
 }

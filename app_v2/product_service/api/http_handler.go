@@ -2,13 +2,13 @@ package api
 
 import (
 	"context"
+	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/util"
 	"github.com/DragonPow/Server-for-Ecommerce/library/encode/gzip"
 	"github.com/DragonPow/Server-for-Ecommerce/library/server"
+	"github.com/gorilla/mux"
 	"net/http"
 	"strconv"
-
-	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/util"
-	"github.com/gorilla/mux"
+	"time"
 )
 
 const (
@@ -33,10 +33,10 @@ func NewHttpHandler(httpPattern string, s HttpServer) *mux.Router {
 			server.HTTPError(w, r, err)
 			return
 		}
-	}).Methods(GET)
-	r.HandleFunc("/products/{id}", getDetailProductHandler(s)).Methods(GET)
-	r.HandleFunc("/products", getListProductHandler(s)).Methods(GET)
-
+	}).Methods(GET, http.MethodOptions)
+	r.HandleFunc("/products/{id}", getDetailProductHandler(s)).Methods(GET, http.MethodOptions)
+	r.HandleFunc("/products", getListProductHandler(s)).Methods(GET, http.MethodOptions)
+	r.Use(mux.CORSMethodMiddleware(r))
 	return r
 }
 
@@ -56,6 +56,11 @@ func getDetailProductHandler(s HttpServer) func(http.ResponseWriter, *http.Reque
 			server.HTTPError(w, r, err)
 			return
 		}
+		cacheSince := time.Now().Format(http.TimeFormat)
+		cacheUntil := time.Now().Add(60 * time.Second).Format(http.TimeFormat)
+		w.Header().Set("Cache-Control", "max-age:60, public")
+		w.Header().Set("Last-Modified", cacheSince)
+		w.Header().Set("Expires", cacheUntil)
 		server.ForwardResponseMessage(ctx, gzip.NewGzipEncoder(), w, r, resp)
 	}
 }
@@ -88,6 +93,11 @@ func getListProductHandler(s HttpServer) func(w http.ResponseWriter, r *http.Req
 			server.HTTPError(w, r, err)
 			return
 		}
+		cacheSince := time.Now().Format(http.TimeFormat)
+		cacheUntil := time.Now().Add(120 * time.Second).Format(http.TimeFormat)
+		w.Header().Set("Cache-Control", "max-age:120, public")
+		w.Header().Set("Last-Modified", cacheSince)
+		w.Header().Set("Expires", cacheUntil)
 		server.ForwardResponseMessage(ctx, gzip.NewGzipEncoder(), w, r, resp)
 	}
 }
