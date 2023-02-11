@@ -12,9 +12,9 @@ import (
 
 func (r *myRouter) RegisterProductHandler() {
 	p := r.PathPrefix(productRouter).Subrouter()
-	p.HandleFunc("", r.addProductHandler).Methods(POST)
-	p.HandleFunc("/{id}", r.updateProductHandler).Methods(PUT)
-	p.HandleFunc("/{id}", r.deleteProductHandler).Methods(DELETE)
+	p.HandleFunc("", r.addProductHandler).Methods(POST, http.MethodOptions)
+	p.HandleFunc("/{id}", r.updateProductHandler).Methods(PUT, http.MethodOptions)
+	p.HandleFunc("/{id}", r.deleteProductHandler).Methods(DELETE, http.MethodOptions)
 }
 
 func (r *myRouter) addProductHandler(w http.ResponseWriter, req *http.Request) {

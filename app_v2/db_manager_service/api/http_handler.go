@@ -52,11 +52,11 @@ func NewHttpHandler(httpPattern string, s HttpServer) http.Handler {
 			server.HTTPError(w, r, err)
 			return
 		}
-	}).Methods(GET)
+	}).Methods(GET, http.MethodOptions)
 
 	// Register some route
 	router.RegisterProductHandler()
-
+	router.Use(mux.CORSMethodMiddleware(router.Router))
 	return router
 }
 

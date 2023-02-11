@@ -9,11 +9,13 @@ import (
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/database/store"
 	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/util"
 	"github.com/DragonPow/Server-for-Ecommerce/library/math"
+	"github.com/DragonPow/Server-for-Ecommerce/library/slice"
 	"github.com/go-logr/logr"
 	"golang.org/x/exp/maps"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"sync"
+	"time"
 )
 
 func (s *Service) GetDetailProduct(ctx context.Context, req *api.GetDetailProductRequest) (res *api.GetDetailProductResponse, err error) {
@@ -50,7 +52,42 @@ func (s *Service) GetDetailProduct(ctx context.Context, req *api.GetDetailProduc
 		return s.computeGetDetailProduct(ctx, logger, localCacheProduct)
 	}
 
-	// Get from database
+	time.Sleep(15 * time.Second)
+
+	type funcCallDb struct {
+		wg  *sync.WaitGroup
+		res *api.GetDetailProductResponse
+		err error
+	}
+
+	keyLoad := fmt.Sprintf("product:%d", req.Id)
+	s.lockCache.mu.Lock()
+	v, ok := s.lockCache.list.Load(keyLoad)
+	if ok {
+		rs := v.(*funcCallDb)
+		s.lockCache.mu.Unlock()
+		logger.Info("Wait lockCache")
+		rs.wg.Wait()
+		return rs.res, rs.err
+	} else {
+		rs := &funcCallDb{
+			wg:  &sync.WaitGroup{},
+			res: nil,
+			err: nil,
+		}
+		rs.wg.Add(1)
+		s.lockCache.list.Store(keyLoad, rs)
+		s.lockCache.mu.Unlock()
+		// Get from database
+		rs.res, rs.err = s.FetchFromDb(ctx, req, logger)
+		time.Sleep(2 * time.Second)
+		rs.wg.Done()
+		return rs.res, rs.err
+	}
+
+}
+
+func (s *Service) FetchFromDb(ctx context.Context, req *api.GetDetailProductRequest, logger logr.Logger) (*api.GetDetailProductResponse, error) {
 	products, err := s.storeDb.GetProductDetails(ctx, []int64{req.Id})
 	if err != nil {
 		logger.Error(err, "GetProductDetails fail")
@@ -647,6 +684,7 @@ func (s *Service) GetListProduct(ctx context.Context, req *api.GetListProductReq
 			Image:       row.Image,
 		}
 	})
+	logger.Info("Get list product success", "ids", slice.Map(rows, func(row store.GetProductsByKeywordRow) int64 { return row.ID }))
 	return &api.GetListProductResponse{
 		Code:    0,
 		Message: "OK",
