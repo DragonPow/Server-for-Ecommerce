@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"encoding/json"
 	"github.com/DragonPow/Server-for-Ecommerce/library/encode/gzip"
 	"github.com/DragonPow/Server-for-Ecommerce/library/server"
 	"net/http"
@@ -65,18 +64,25 @@ func getListProductHandler(s HttpServer) func(w http.ResponseWriter, r *http.Req
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
-		data, err := json.Marshal(mux.Vars(r))
+
+		query := r.URL.Query()
+		page, err := strconv.ParseInt(query.Get("page"), util.Base10Int, util.BitSize64)
 		if err != nil {
 			server.HTTPError(w, r, err)
 			return
+		}
+		pageSize, err := strconv.ParseInt(query.Get("page_size"), util.Base10Int, util.BitSize64)
+		if err != nil {
+			server.HTTPError(w, r, err)
+			return
+		}
+		key := query.Get("key")
+		req := &GetListProductRequest{
+			Page:     page,
+			PageSize: pageSize,
+			Key:      key,
 		}
 
-		req := &GetListProductRequest{}
-		err = json.Unmarshal(data, req)
-		if err != nil {
-			server.HTTPError(w, r, err)
-			return
-		}
 		resp, err := s.GetListProduct(ctx, req)
 		if err != nil {
 			server.HTTPError(w, r, err)
