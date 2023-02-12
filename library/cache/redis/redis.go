@@ -13,6 +13,14 @@ type Redis struct {
 	expirationSecond time.Duration
 }
 
+type RedisOption = func(r *Redis)
+
+func WithExpireTime(t time.Duration) RedisOption {
+	return func(r *Redis) {
+		r.expirationSecond = t
+	}
+}
+
 func New(addr string, password string, expiration uint32) *Redis {
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     addr,
@@ -38,8 +46,12 @@ func (c *Redis) Get(ctx context.Context, key string) (string, bool) {
 	return result, true
 }
 
-func (c *Redis) Set(ctx context.Context, key string, value any) error {
-	return c.client.Set(ctx, key, value, c.expirationSecond).Err()
+func (c *Redis) Set(ctx context.Context, key string, value any, opts ...RedisOption) error {
+	r := *c
+	for _, opt := range opts {
+		opt(&r)
+	}
+	return r.client.Set(ctx, key, value, c.expirationSecond).Err()
 }
 
 func (c *Redis) GetList(ctx context.Context, keys []string) ([]any, error) {

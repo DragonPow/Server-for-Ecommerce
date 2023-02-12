@@ -18,6 +18,7 @@ const (
 	TypeProductTemplate TypeCache = "product_template"
 	TypeSeller          TypeCache = "seller"
 	TypeUom             TypeCache = "uom"
+	TypePageProduct     TypeCache = "page_product"
 )
 
 // Model

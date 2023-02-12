@@ -15,6 +15,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"sync"
+	"time"
 )
 
 func (s *Service) GetDetailProduct(ctx context.Context, req *api.GetDetailProductRequest) (res *api.GetDetailProductResponse, err error) {
@@ -644,6 +645,20 @@ func getUserOrInsertCache(s *Service, ctx context.Context, ids []int64) (result 
 
 func (s *Service) GetListProduct(ctx context.Context, req *api.GetListProductRequest) (res *api.GetListProductResponse, err error) {
 	logger := s.log.WithName("GetListProduct").WithValues("request", req)
+	isCacheRedisPage := req.Page < s.cfg.RedisConfig.NumberCachePage
+	if isCacheRedisPage {
+		res = &api.GetListProductResponse{}
+		pageCache, ok := s.localCache.GetPageProduct(req.Page, req.PageSize, req.Key)
+		if ok {
+			err := json.Unmarshal([]byte(pageCache), res)
+			if err != nil {
+				logger.Error(err, "Unmarshall pageCache fail")
+				return nil, err
+			}
+			logger.Info("Get page product from cache")
+			return res, nil
+		}
+	}
 
 	limit := req.PageSize
 	offset := (req.Page - 1) * req.PageSize
@@ -656,18 +671,41 @@ func (s *Service) GetListProduct(ctx context.Context, req *api.GetListProductReq
 		logger.Error(err, "GetProductsByKeyword fail")
 		return nil, err
 	}
+	res = &api.GetListProductResponse{
+		Code:    0,
+		Message: "OK",
+		Data: &api.GetListProductResponse_Data{
+			TotalItems: 0,
+			Page:       int32(req.Page),
+			PageSize:   int32(req.PageSize),
+			Items:      nil,
+		},
+	}
+
+	if isCacheRedisPage {
+		go func(logger logr.Logger) {
+			data, err := json.Marshal(res)
+			if err != nil {
+				logger.Error(err, "Marshal res fail")
+				return
+			}
+			err = s.localCache.SetPageProduct(
+				req.Page, req.PageSize, req.Key,
+				string(data),
+				time.Duration(s.cfg.RedisConfig.ExpireCachePageInSecond)*time.Second,
+			)
+			if err != nil {
+				logger.Error(err, "Set page product fail")
+				return
+			}
+			logger.Info("Set page product success")
+		}(logger)
+
+	}
+
 	if len(rows) == util.ZeroLength {
 		logger.Info("Not found items")
-		return &api.GetListProductResponse{
-			Code:    0,
-			Message: "OK",
-			Data: &api.GetListProductResponse_Data{
-				TotalItems: 0,
-				Page:       int32(req.Page),
-				PageSize:   int32(req.PageSize),
-				Items:      nil,
-			},
-		}, nil
+		return res, nil
 	}
 
 	totalItems := rows[0].Total

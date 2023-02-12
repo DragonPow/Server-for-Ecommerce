@@ -6,11 +6,15 @@ import (
 	"Server-for-Ecommerce/library/math"
 	"Server-for-Ecommerce/library/slice"
 	"context"
+	"fmt"
+	"time"
 )
 
 type RedisCache interface {
 	cache.Cache
 	Close() error
+	GetPageProduct(page, pageSize int64, keyword string) (string, bool)
+	SetPageProduct(page, pageSize int64, keyword string, data string, expireTime time.Duration) error
 }
 
 type redisCache struct {
@@ -83,4 +87,14 @@ func (r *redisCache) GetUom(id int64) (cache.Uom, bool) {
 func (r *redisCache) Delete(typeCache cache.TypeCache, ids []int64) error {
 	keys := slice.Map(ids, func(i int64) string { return parseKey(typeCache, i) })
 	return r.base.Delete(context.Background(), keys)
+}
+
+func (r *redisCache) GetPageProduct(page, pageSize int64, keyword string) (string, bool) {
+	key := parseKey(cache.TypePageProduct, fmt.Sprintf("%d_%d_%s", page, pageSize, keyword))
+	return r.base.Get(context.Background(), key)
+}
+
+func (r *redisCache) SetPageProduct(page, pageSize int64, keyword string, data string, expireTime time.Duration) error {
+	key := parseKey(cache.TypePageProduct, fmt.Sprintf("%d_%d_%s", page, pageSize, keyword))
+	return r.base.Set(context.Background(), key, data, redis.WithExpireTime(expireTime))
 }
