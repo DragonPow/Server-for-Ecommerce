@@ -16,4 +16,5 @@ type Cache interface {
 	GetUom(id int64) (value Uom, ok bool)
 
 	SetMultiple(objects map[int64]ModelValue) error
+	Delete(typeCache TypeCache, ids []int64) error
 }

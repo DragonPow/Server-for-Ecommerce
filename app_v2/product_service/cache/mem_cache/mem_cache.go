@@ -155,3 +155,13 @@ func (m *memCache) SetProductByAttr(object cache.Product, attrs []byte, version 
 	m.Store(object.GetType(), object.GetId(), product)
 	return nil
 }
+
+func (m *memCache) Delete(typeCache cache.TypeCache, ids []int64) error {
+	m.mu.Lock()
+	for _, id := range ids {
+		key := parseKey(typeCache, id)
+		m.Map.Delete(key)
+	}
+	m.mu.Unlock()
+	return nil
+}

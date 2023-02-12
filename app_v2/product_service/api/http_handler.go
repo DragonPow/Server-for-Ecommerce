@@ -5,7 +5,9 @@ import (
 	"Server-for-Ecommerce/library/encode/gzip"
 	"Server-for-Ecommerce/library/server"
 	"context"
+	"encoding/json"
 	"github.com/gorilla/mux"
+	"io"
 	"net/http"
 	"strconv"
 	"time"
@@ -21,6 +23,7 @@ const (
 type HttpServer interface {
 	GetDetailProduct(ctx context.Context, req *GetDetailProductRequest) (res *GetDetailProductResponse, err error)
 	GetListProduct(ctx context.Context, req *GetListProductRequest) (res *GetListProductResponse, err error)
+	DeleteCache(ctx context.Context, req *DeleteCacheRequest) (res *DeleteCacheResponse, err error)
 }
 
 func NewHttpHandler(httpPattern string, s HttpServer) *mux.Router {
@@ -36,6 +39,7 @@ func NewHttpHandler(httpPattern string, s HttpServer) *mux.Router {
 	}).Methods(GET, http.MethodOptions)
 	r.HandleFunc("/products/{id}", getDetailProductHandler(s)).Methods(GET, http.MethodOptions)
 	r.HandleFunc("/products", getListProductHandler(s)).Methods(GET, http.MethodOptions)
+	r.HandleFunc("/cache", deleteCacheHandler(s)).Methods(DELETE, http.MethodOptions)
 	r.Use(mux.CORSMethodMiddleware(r))
 	return r
 }
@@ -98,6 +102,28 @@ func getListProductHandler(s HttpServer) func(w http.ResponseWriter, r *http.Req
 		w.Header().Set("Cache-Control", "max-age:120, public")
 		w.Header().Set("Last-Modified", cacheSince)
 		w.Header().Set("Expires", cacheUntil)
+		server.ForwardResponseMessage(ctx, gzip.NewGzipEncoder(), w, r, resp)
+	}
+}
+
+func deleteCacheHandler(s HttpServer) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+
+		decode := json.NewDecoder(r.Body)
+		req := &DeleteCacheRequest{}
+		err := decode.Decode(req)
+		if err != nil && err != io.EOF {
+			server.HTTPError(w, r, err)
+			return
+		}
+
+		resp, err := s.DeleteCache(ctx, req)
+		if err != nil {
+			server.HTTPError(w, r, err)
+			return
+		}
 		server.ForwardResponseMessage(ctx, gzip.NewGzipEncoder(), w, r, resp)
 	}
 }

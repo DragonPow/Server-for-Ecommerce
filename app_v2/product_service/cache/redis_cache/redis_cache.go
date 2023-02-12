@@ -4,6 +4,7 @@ import (
 	"Server-for-Ecommerce/app_v2/product_service/cache"
 	"Server-for-Ecommerce/library/cache/redis"
 	"Server-for-Ecommerce/library/math"
+	"Server-for-Ecommerce/library/slice"
 	"context"
 )
 
@@ -77,4 +78,9 @@ func (r *redisCache) GetSeller(id int64) (cache.Seller, bool) {
 
 func (r *redisCache) GetUom(id int64) (cache.Uom, bool) {
 	return GetOne[cache.Uom](r, id)
+}
+
+func (r *redisCache) Delete(typeCache cache.TypeCache, ids []int64) error {
+	keys := slice.Map(ids, func(i int64) string { return parseKey(typeCache, i) })
+	return r.base.Delete(context.Background(), keys)
 }

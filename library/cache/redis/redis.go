@@ -60,3 +60,7 @@ func (c *Redis) SetList(ctx context.Context, values map[string]any) error {
 	}
 	return nil
 }
+
+func (c *Redis) Delete(ctx context.Context, keys []string) error {
+	return c.client.Del(ctx, keys...).Err()
+}

@@ -125,3 +125,21 @@ message ProductOverview {
   // Image
   string image = 5;
 }
+
+// DeleteCacheRequest
+message DeleteCacheRequest {
+  // TypeModel
+  string type_model = 1;
+  // Ids
+  repeated int64 ids = 2;
+  // Level
+  string level = 3;
+}
+
+// DeleteCacheResponse
+message DeleteCacheResponse {
+  // Code
+  uint32 code = 1;
+  // Message
+  string message = 2;
+}

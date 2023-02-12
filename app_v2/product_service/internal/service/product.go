@@ -15,7 +15,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"sync"
-	"time"
 )
 
 func (s *Service) GetDetailProduct(ctx context.Context, req *api.GetDetailProductRequest) (res *api.GetDetailProductResponse, err error) {
@@ -52,8 +51,6 @@ func (s *Service) GetDetailProduct(ctx context.Context, req *api.GetDetailProduc
 		return s.computeGetDetailProduct(ctx, logger, localCacheProduct)
 	}
 
-	time.Sleep(15 * time.Second)
-
 	type funcCallDb struct {
 		wg  *sync.WaitGroup
 		res *api.GetDetailProductResponse
@@ -80,7 +77,6 @@ func (s *Service) GetDetailProduct(ctx context.Context, req *api.GetDetailProduc
 		s.lockCache.mu.Unlock()
 		// Get from database
 		rs.res, rs.err = s.FetchFromDb(ctx, req, logger)
-		time.Sleep(2 * time.Second)
 		rs.wg.Done()
 		return rs.res, rs.err
 	}
