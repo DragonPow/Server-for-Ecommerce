@@ -6,4 +6,4 @@
 cd ../../
 
 # docker-compose
-docker-compose -f docker-compose.dev.yaml -p server_ecom up --remove-orphans -d
+docker-compose -f docker-compose.yaml -p server_ecom up --remove-orphans -d

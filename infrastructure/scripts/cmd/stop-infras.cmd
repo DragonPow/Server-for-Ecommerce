@@ -4,7 +4,7 @@ title 'Stop ktpm-server-infrastructure'
 cd ../
 
 :: compose up
-docker-compose -f docker-compose.infras.dev.yaml -p ktpm-server-infra down --remove-orphans
+docker-compose -f docker-compose.yaml -p ktpm-server-infra down --remove-orphans
 
 :: post-action
 @echo off
