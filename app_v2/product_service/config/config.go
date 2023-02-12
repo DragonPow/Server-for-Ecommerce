@@ -1,10 +1,10 @@
 package config
 
 import (
+	"Server-for-Ecommerce/library/config"
+	"Server-for-Ecommerce/library/database"
 	"bytes"
 	"encoding/json"
-	"github.com/DragonPow/Server-for-Ecommerce/library/config"
-	"github.com/DragonPow/Server-for-Ecommerce/library/database"
 	"github.com/spf13/viper"
 	"log"
 	"strings"
@@ -20,9 +20,11 @@ type Config struct {
 }
 
 type RedisConfig struct {
-	Addr           string `json:"addr" mapstructure:"addr"`
-	Password       string `json:"password" mapstructure:"password"`
-	ExpiredDefault uint32 `json:"expired_default" mapstructure:"expired_default"`
+	Addr                    string `json:"addr" mapstructure:"addr"`
+	Password                string `json:"password" mapstructure:"password"`
+	ExpiredDefault          uint32 `json:"expired_default" mapstructure:"expired_default"`
+	NumberCachePage         int64  `json:"number_cache_page" mapstructure:"number_cache_page"`
+	ExpireCachePageInSecond int    `json:"expire_cache_page_in_second" mapstructure:"expire_cache_page_in_second"`
 }
 
 type KafkaConfig struct {
@@ -80,9 +82,11 @@ func loadDefaultConfig() *Config {
 		MigrationFolder:  "file://app_v2/product_service/database/migrations",
 		ProductServiceDB: database.PostgresSQLDefaultConfig(),
 		RedisConfig: RedisConfig{
-			Addr:           "localhost:6379",
-			Password:       "redis@123",
-			ExpiredDefault: 180,
+			Addr:                    "localhost:6379",
+			Password:                "redis@123",
+			ExpiredDefault:          180,
+			NumberCachePage:         5,
+			ExpireCachePageInSecond: 60 * 10,
 		},
 		KafkaConfig: KafkaConfig{
 			UpdateDbConsumer: Consumer{

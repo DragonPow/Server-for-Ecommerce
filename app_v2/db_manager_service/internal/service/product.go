@@ -1,15 +1,15 @@
 package service
 
 import (
+	"Server-for-Ecommerce/app_v2/db_manager_service/api"
+	"Server-for-Ecommerce/app_v2/db_manager_service/internal/database/store"
+	"Server-for-Ecommerce/app_v2/db_manager_service/producer"
+	"Server-for-Ecommerce/app_v2/db_manager_service/util"
 	"bytes"
 	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"github.com/DragonPow/Server-for-Ecommerce/app_v2/db_manager_service/api"
-	"github.com/DragonPow/Server-for-Ecommerce/app_v2/db_manager_service/internal/database/store"
-	"github.com/DragonPow/Server-for-Ecommerce/app_v2/db_manager_service/producer"
-	"github.com/DragonPow/Server-for-Ecommerce/app_v2/db_manager_service/util"
 	"github.com/go-logr/logr"
 	"github.com/tabbed/pqtype"
 	"google.golang.org/grpc/codes"
@@ -25,6 +25,7 @@ func (s *Service) AddProduct(ctx context.Context, req *api.AddProductRequest) (*
 	}
 	id, err := s.storeDb.CreateProduct(ctx, store.CreateProductParams{
 		TemplateID:  sql.NullInt64{Int64: req.TemplateId, Valid: true},
+		Image:       req.Image,
 		Name:        req.Name,
 		OriginPrice: req.OriginPrice,
 		SalePrice:   req.SalePrice,

@@ -26,7 +26,7 @@ type CreateSellerParams struct {
 	Phone       sql.NullString `json:"phone"`
 	Address     sql.NullString `json:"address"`
 	LogoUrl     sql.NullString `json:"logo_url"`
-	ManagerID   int64          `json:"manager_id"`
+	ManagerID   sql.NullInt64  `json:"manager_id"`
 	CreateUid   int64          `json:"create_uid"`
 }
 
@@ -64,7 +64,7 @@ type UpdateSellerParams struct {
 	Phone       sql.NullString `json:"phone"`
 	Address     sql.NullString `json:"address"`
 	LogoUrl     sql.NullString `json:"logo_url"`
-	ManagerID   int64          `json:"manager_id"`
+	ManagerID   sql.NullInt64  `json:"manager_id"`
 	CreateUid   int64          `json:"create_uid"`
 	ID          int64          `json:"id"`
 }

@@ -1,8 +1,8 @@
 package redis
 
 import (
+	"Server-for-Ecommerce/library/cache"
 	"context"
-	"github.com/DragonPow/Server-for-Ecommerce/library/cache"
 	"github.com/go-redis/redis/v8"
 	"time"
 )
@@ -11,6 +11,14 @@ type Redis struct {
 	cache.Cache
 	client           *redis.Client
 	expirationSecond time.Duration
+}
+
+type RedisOption = func(r *Redis)
+
+func WithExpireTime(t time.Duration) RedisOption {
+	return func(r *Redis) {
+		r.expirationSecond = t
+	}
 }
 
 func New(addr string, password string, expiration uint32) *Redis {
@@ -38,8 +46,12 @@ func (c *Redis) Get(ctx context.Context, key string) (string, bool) {
 	return result, true
 }
 
-func (c *Redis) Set(ctx context.Context, key string, value any) error {
-	return c.client.Set(ctx, key, value, c.expirationSecond).Err()
+func (c *Redis) Set(ctx context.Context, key string, value any, opts ...RedisOption) error {
+	r := *c
+	for _, opt := range opts {
+		opt(&r)
+	}
+	return r.client.Set(ctx, key, value, c.expirationSecond).Err()
 }
 
 func (c *Redis) GetList(ctx context.Context, keys []string) ([]any, error) {
@@ -59,4 +71,8 @@ func (c *Redis) SetList(ctx context.Context, values map[string]any) error {
 		}
 	}
 	return nil
+}
+
+func (c *Redis) Delete(ctx context.Context, keys []string) error {
+	return c.client.Del(ctx, keys...).Err()
 }

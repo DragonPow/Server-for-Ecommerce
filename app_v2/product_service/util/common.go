@@ -1,8 +1,8 @@
 package util
 
 import (
+	"Server-for-Ecommerce/app_v2/product_service/cache"
 	"database/sql"
-	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/cache"
 	"time"
 )
 

@@ -1,12 +1,12 @@
 package main
 
 import (
-	"github.com/DragonPow/Server-for-Ecommerce/app/account_service/config"
-	"github.com/DragonPow/Server-for-Ecommerce/app/account_service/internal/service"
-	"github.com/DragonPow/Server-for-Ecommerce/app/account_service/internal/store"
-	"github.com/DragonPow/Server-for-Ecommerce/library/database/migrate"
-	"github.com/DragonPow/Server-for-Ecommerce/library/log"
-	"github.com/DragonPow/Server-for-Ecommerce/library/server"
+	"Server-for-Ecommerce/app/account_service/config"
+	"Server-for-Ecommerce/app/account_service/internal/service"
+	"Server-for-Ecommerce/app/account_service/internal/store"
+	"Server-for-Ecommerce/library/database/migrate"
+	"Server-for-Ecommerce/library/log"
+	"Server-for-Ecommerce/library/server"
 	"github.com/go-logr/logr"
 	"github.com/jmoiron/sqlx"
 	"github.com/urfave/cli/v2"

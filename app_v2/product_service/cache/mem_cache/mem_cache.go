@@ -1,15 +1,14 @@
 package mem_cache
 
 import (
+	"Server-for-Ecommerce/app_v2/product_service/cache"
 	"encoding/json"
 	"fmt"
-	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/cache"
 	"sync"
 )
 
 type MemCache interface {
 	cache.Cache
-	IsMaxMiss(storeKey string) bool
 	CheckAndSet(objects map[int64]cache.ModelValue) (bool, error)
 	SetProductByAttr(object cache.Product, attrs []byte, version string) error
 }
@@ -153,5 +152,15 @@ func (m *memCache) SetProductByAttr(object cache.Product, attrs []byte, version 
 	}
 
 	m.Store(object.GetType(), object.GetId(), product)
+	return nil
+}
+
+func (m *memCache) Delete(typeCache cache.TypeCache, ids []int64) error {
+	m.mu.Lock()
+	for _, id := range ids {
+		key := parseKey(typeCache, id)
+		m.Map.Delete(key)
+	}
+	m.mu.Unlock()
 	return nil
 }

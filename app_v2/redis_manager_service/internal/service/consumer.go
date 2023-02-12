@@ -1,13 +1,13 @@
 package service
 
 import (
+	producerDb "Server-for-Ecommerce/app_v2/db_manager_service/producer"
+	"Server-for-Ecommerce/app_v2/product_service/cache"
+	"Server-for-Ecommerce/app_v2/redis_manager_service/util"
+	"Server-for-Ecommerce/library/ring"
 	"context"
 	"encoding/json"
 	"errors"
-	producerDb "github.com/DragonPow/Server-for-Ecommerce/app_v2/db_manager_service/producer"
-	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/cache"
-	"github.com/DragonPow/Server-for-Ecommerce/app_v2/redis_manager_service/util"
-	"github.com/DragonPow/Server-for-Ecommerce/library/ring"
 	"github.com/segmentio/kafka-go"
 	"time"
 )

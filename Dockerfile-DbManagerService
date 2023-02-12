@@ -1,0 +1,26 @@
+FROM golang:1.18-alpine as builder
+RUN go version
+ARG PROJECT_VERSION=1.0
+WORKDIR /go/src/Server-for-Ecommerce
+# Copy source & dependencies
+COPY ["./go.mod", "./go.sum", "./"]
+COPY ./app_v2/db_manager_service ./app_v2/db_manager_service
+COPY ./library ./library
+COPY ./third_party ./third_party
+# Config GO Env
+ENV GOOS=linux
+ENV GOARCH=amd64
+ENV GO111MODULE=on
+ENV CGO_ENABLED=0
+# Run build step
+RUN apk update -qq && apk add git
+RUN go mod tidy
+RUN go mod vendor
+RUN go build -o app ./app_v2/db_manager_service/cmd/main.go
+
+FROM gcr.io/distroless/base-debian11 as publisher
+WORKDIR /
+# Copy golang executable file from builder
+COPY --from=builder /go/src/Server-for-Ecommerce/app .
+EXPOSE 10000
+ENTRYPOINT ["./app", "server"]

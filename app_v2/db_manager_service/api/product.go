@@ -1,10 +1,10 @@
 package api
 
 import (
+	"Server-for-Ecommerce/library/encode/gzip"
+	"Server-for-Ecommerce/library/server"
 	"context"
 	"encoding/json"
-	"github.com/DragonPow/Server-for-Ecommerce/library/encode/gzip"
-	"github.com/DragonPow/Server-for-Ecommerce/library/server"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -12,9 +12,9 @@ import (
 
 func (r *myRouter) RegisterProductHandler() {
 	p := r.PathPrefix(productRouter).Subrouter()
-	p.HandleFunc("", r.addProductHandler).Methods(POST)
-	p.HandleFunc("/{id}", r.updateProductHandler).Methods(PUT)
-	p.HandleFunc("/{id}", r.deleteProductHandler).Methods(DELETE)
+	p.HandleFunc("", r.addProductHandler).Methods(POST, http.MethodOptions)
+	p.HandleFunc("/{id}", r.updateProductHandler).Methods(PUT, http.MethodOptions)
+	p.HandleFunc("/{id}", r.deleteProductHandler).Methods(DELETE, http.MethodOptions)
 }
 
 func (r *myRouter) addProductHandler(w http.ResponseWriter, req *http.Request) {

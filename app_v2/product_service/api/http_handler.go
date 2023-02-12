@@ -1,14 +1,16 @@
 package api
 
 import (
+	"Server-for-Ecommerce/app_v2/product_service/util"
+	"Server-for-Ecommerce/library/encode/gzip"
+	"Server-for-Ecommerce/library/server"
 	"context"
-	"github.com/DragonPow/Server-for-Ecommerce/library/encode/gzip"
-	"github.com/DragonPow/Server-for-Ecommerce/library/server"
+	"encoding/json"
+	"github.com/gorilla/mux"
+	"io"
 	"net/http"
 	"strconv"
-
-	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/util"
-	"github.com/gorilla/mux"
+	"time"
 )
 
 const (
@@ -21,6 +23,7 @@ const (
 type HttpServer interface {
 	GetDetailProduct(ctx context.Context, req *GetDetailProductRequest) (res *GetDetailProductResponse, err error)
 	GetListProduct(ctx context.Context, req *GetListProductRequest) (res *GetListProductResponse, err error)
+	DeleteCache(ctx context.Context, req *DeleteCacheRequest) (res *DeleteCacheResponse, err error)
 }
 
 func NewHttpHandler(httpPattern string, s HttpServer) *mux.Router {
@@ -33,10 +36,11 @@ func NewHttpHandler(httpPattern string, s HttpServer) *mux.Router {
 			server.HTTPError(w, r, err)
 			return
 		}
-	}).Methods(GET)
-	r.HandleFunc("/products/{id}", getDetailProductHandler(s)).Methods(GET)
-	r.HandleFunc("/products", getListProductHandler(s)).Methods(GET)
-
+	}).Methods(GET, http.MethodOptions)
+	r.HandleFunc("/products/{id}", getDetailProductHandler(s)).Methods(GET, http.MethodOptions)
+	r.HandleFunc("/products", getListProductHandler(s)).Methods(GET, http.MethodOptions)
+	r.HandleFunc("/cache", deleteCacheHandler(s)).Methods(DELETE, http.MethodOptions)
+	r.Use(mux.CORSMethodMiddleware(r))
 	return r
 }
 
@@ -56,6 +60,11 @@ func getDetailProductHandler(s HttpServer) func(http.ResponseWriter, *http.Reque
 			server.HTTPError(w, r, err)
 			return
 		}
+		cacheSince := time.Now().Format(http.TimeFormat)
+		cacheUntil := time.Now().Add(60 * time.Second).Format(http.TimeFormat)
+		w.Header().Set("Cache-Control", "max-age:60, public")
+		w.Header().Set("Last-Modified", cacheSince)
+		w.Header().Set("Expires", cacheUntil)
 		server.ForwardResponseMessage(ctx, gzip.NewGzipEncoder(), w, r, resp)
 	}
 }
@@ -84,6 +93,33 @@ func getListProductHandler(s HttpServer) func(w http.ResponseWriter, r *http.Req
 		}
 
 		resp, err := s.GetListProduct(ctx, req)
+		if err != nil {
+			server.HTTPError(w, r, err)
+			return
+		}
+		cacheSince := time.Now().Format(http.TimeFormat)
+		cacheUntil := time.Now().Add(120 * time.Second).Format(http.TimeFormat)
+		w.Header().Set("Cache-Control", "max-age:120, public")
+		w.Header().Set("Last-Modified", cacheSince)
+		w.Header().Set("Expires", cacheUntil)
+		server.ForwardResponseMessage(ctx, gzip.NewGzipEncoder(), w, r, resp)
+	}
+}
+
+func deleteCacheHandler(s HttpServer) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+
+		decode := json.NewDecoder(r.Body)
+		req := &DeleteCacheRequest{}
+		err := decode.Decode(req)
+		if err != nil && err != io.EOF {
+			server.HTTPError(w, r, err)
+			return
+		}
+
+		resp, err := s.DeleteCache(ctx, req)
 		if err != nil {
 			server.HTTPError(w, r, err)
 			return

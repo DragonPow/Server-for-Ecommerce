@@ -1,14 +1,14 @@
 package main
 
 import (
-	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/cache/mem_cache"
-	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/cache/redis_cache"
-	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/config"
-	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/database/store"
-	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/internal/service"
-	"github.com/DragonPow/Server-for-Ecommerce/library/database/migrate"
-	"github.com/DragonPow/Server-for-Ecommerce/library/log"
-	"github.com/DragonPow/Server-for-Ecommerce/library/server"
+	"Server-for-Ecommerce/app_v2/product_service/cache/mem_cache"
+	"Server-for-Ecommerce/app_v2/product_service/cache/redis_cache"
+	"Server-for-Ecommerce/app_v2/product_service/config"
+	"Server-for-Ecommerce/app_v2/product_service/database/store"
+	"Server-for-Ecommerce/app_v2/product_service/internal/service"
+	"Server-for-Ecommerce/library/database/migrate"
+	"Server-for-Ecommerce/library/log"
+	"Server-for-Ecommerce/library/server"
 	"github.com/go-logr/logr"
 	"github.com/jmoiron/sqlx"
 	"github.com/urfave/cli/v2"
@@ -99,7 +99,12 @@ func newService(cfg *config.Config) (*service.Service, error) {
 	)
 
 	// Memory cache
-	memCache := mem_cache.NewCache(cfg.MemCacheConfig.MaxTimeMiss, cfg.MemCacheConfig.MaxNumberCache)
+	//memCache := mem_cache.NewCache(cfg.MemCacheConfig.MaxTimeMiss, cfg.MemCacheConfig.MaxNumberCache)
+	memCache, err := mem_cache.NewBigCache(cfg.MemCacheConfig.MaxTimeMiss, cfg.MemCacheConfig.MaxNumberCache)
+	if err != nil {
+		logger.Error(err, "Error create mem cache")
+		return nil, err
+	}
 
 	return service.NewService(cfg, logger, store, cache, memCache), nil
 }

@@ -49,9 +49,9 @@ FROM seller
 WHERE CASE WHEN array_length(@ids::int8[], 1) > 0 THEN id = ANY(@ids::int8[]) ELSE TRUE END;
 
 -- name: GetProductsByKeyword :many
-SELECT id, COUNT(*) OVER() total
+SELECT id, "name", origin_price, sale_price, image, COUNT(*) OVER() total
 FROM product
-WHERE "name" LIKE @keyword::varchar
+WHERE CASE WHEN CHAR_LENGTH(@keyword::varchar) > 0 THEN "name" LIKE @keyword::varchar ELSE TRUE END
 ORDER BY id DESC
 OFFSET @_offset::int8
 LIMIT @_limit::int8;

@@ -1,10 +1,10 @@
 package store
 
 import (
+	"Server-for-Ecommerce/app/warehouse_service/util"
+	"Server-for-Ecommerce/library/slice"
 	"context"
 	"fmt"
-	"github.com/DragonPow/Server-for-Ecommerce/app/warehouse_service/util"
-	"github.com/DragonPow/Server-for-Ecommerce/library/slice"
 )
 
 func (s *Store) GetImportDataBill(ctx context.Context, params GetImportDataBillParams) (*GetImportDataBillResponse, error) {

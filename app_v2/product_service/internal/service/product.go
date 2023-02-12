@@ -1,19 +1,21 @@
 package service
 
 import (
+	"Server-for-Ecommerce/app_v2/product_service/api"
+	"Server-for-Ecommerce/app_v2/product_service/cache"
+	"Server-for-Ecommerce/app_v2/product_service/database/store"
+	"Server-for-Ecommerce/app_v2/product_service/util"
+	"Server-for-Ecommerce/library/math"
+	"Server-for-Ecommerce/library/slice"
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/api"
-	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/cache"
-	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/database/store"
-	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/util"
-	"github.com/DragonPow/Server-for-Ecommerce/library/math"
 	"github.com/go-logr/logr"
 	"golang.org/x/exp/maps"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"sync"
+	"time"
 )
 
 func (s *Service) GetDetailProduct(ctx context.Context, req *api.GetDetailProductRequest) (res *api.GetDetailProductResponse, err error) {
@@ -50,7 +52,39 @@ func (s *Service) GetDetailProduct(ctx context.Context, req *api.GetDetailProduc
 		return s.computeGetDetailProduct(ctx, logger, localCacheProduct)
 	}
 
-	// Get from database
+	type funcCallDb struct {
+		wg  *sync.WaitGroup
+		res *api.GetDetailProductResponse
+		err error
+	}
+
+	keyLoad := fmt.Sprintf("product:%d", req.Id)
+	s.lockCache.mu.Lock()
+	v, ok := s.lockCache.list.Load(keyLoad)
+	if ok {
+		rs := v.(*funcCallDb)
+		s.lockCache.mu.Unlock()
+		logger.Info("Wait lockCache")
+		rs.wg.Wait()
+		return rs.res, rs.err
+	} else {
+		rs := &funcCallDb{
+			wg:  &sync.WaitGroup{},
+			res: nil,
+			err: nil,
+		}
+		rs.wg.Add(1)
+		s.lockCache.list.Store(keyLoad, rs)
+		s.lockCache.mu.Unlock()
+		// Get from database
+		rs.res, rs.err = s.FetchFromDb(ctx, req, logger)
+		rs.wg.Done()
+		return rs.res, rs.err
+	}
+
+}
+
+func (s *Service) FetchFromDb(ctx context.Context, req *api.GetDetailProductRequest, logger logr.Logger) (*api.GetDetailProductResponse, error) {
 	products, err := s.storeDb.GetProductDetails(ctx, []int64{req.Id})
 	if err != nil {
 		logger.Error(err, "GetProductDetails fail")
@@ -225,6 +259,7 @@ func (s *Service) computeGetDetailProduct(ctx context.Context, logger logr.Logge
 				CategoryName:        category.Name,
 				UomId:               uom.ID,
 				UomName:             uom.Name,
+				Image:               cacheModel.Image,
 			},
 		}, nil
 	}
@@ -610,6 +645,20 @@ func getUserOrInsertCache(s *Service, ctx context.Context, ids []int64) (result 
 
 func (s *Service) GetListProduct(ctx context.Context, req *api.GetListProductRequest) (res *api.GetListProductResponse, err error) {
 	logger := s.log.WithName("GetListProduct").WithValues("request", req)
+	isCacheRedisPage := req.Page < s.cfg.RedisConfig.NumberCachePage
+	if isCacheRedisPage {
+		res = &api.GetListProductResponse{}
+		pageCache, ok := s.localCache.GetPageProduct(req.Page, req.PageSize, req.Key)
+		if ok {
+			err := json.Unmarshal([]byte(pageCache), res)
+			if err != nil {
+				logger.Error(err, "Unmarshall pageCache fail")
+				return nil, err
+			}
+			logger.Info("Get page product from cache")
+			return res, nil
+		}
+	}
 
 	limit := req.PageSize
 	offset := (req.Page - 1) * req.PageSize
@@ -622,31 +671,54 @@ func (s *Service) GetListProduct(ctx context.Context, req *api.GetListProductReq
 		logger.Error(err, "GetProductsByKeyword fail")
 		return nil, err
 	}
+	res = &api.GetListProductResponse{
+		Code:    0,
+		Message: "OK",
+		Data: &api.GetListProductResponse_Data{
+			TotalItems: 0,
+			Page:       int32(req.Page),
+			PageSize:   int32(req.PageSize),
+			Items:      nil,
+		},
+	}
+
+	if isCacheRedisPage {
+		go func(logger logr.Logger) {
+			data, err := json.Marshal(res)
+			if err != nil {
+				logger.Error(err, "Marshal res fail")
+				return
+			}
+			err = s.localCache.SetPageProduct(
+				req.Page, req.PageSize, req.Key,
+				string(data),
+				time.Duration(s.cfg.RedisConfig.ExpireCachePageInSecond)*time.Second,
+			)
+			if err != nil {
+				logger.Error(err, "Set page product fail")
+				return
+			}
+			logger.Info("Set page product success")
+		}(logger)
+
+	}
+
 	if len(rows) == util.ZeroLength {
 		logger.Info("Not found items")
-		return &api.GetListProductResponse{
-			Code:    0,
-			Message: "OK",
-			Data: &api.GetListProductResponse_Data{
-				TotalItems: 0,
-				Page:       int32(req.Page),
-				PageSize:   int32(req.PageSize),
-				Items:      nil,
-			},
-		}, nil
+		return res, nil
 	}
 
 	totalItems := rows[0].Total
-	productIds := math.Convert(rows, func(row store.GetProductsByKeywordRow) int64 { return row.ID })
-	products, err := getProductOrInsertCache(s, ctx, productIds)
-	if err != nil {
-		logger.Error(err, "getProductOrInsertCache fail")
-		return nil, err
-	}
-	items, err := s.computeGetListProduct(ctx, logger, products)
-	if err != nil {
-		return nil, err
-	}
+	items := math.Convert(rows, func(row store.GetProductsByKeywordRow) *api.ProductOverview {
+		return &api.ProductOverview{
+			Id:          row.ID,
+			Name:        row.Name,
+			OriginPrice: row.OriginPrice,
+			SalePrice:   row.SalePrice,
+			Image:       row.Image,
+		}
+	})
+	logger.Info("Get list product success", "ids", slice.Map(rows, func(row store.GetProductsByKeywordRow) int64 { return row.ID }))
 	return &api.GetListProductResponse{
 		Code:    0,
 		Message: "OK",
@@ -657,85 +729,4 @@ func (s *Service) GetListProduct(ctx context.Context, req *api.GetListProductReq
 			Items:      items,
 		},
 	}, nil
-}
-
-func (s *Service) computeGetListProduct(ctx context.Context, logger logr.Logger, cacheModel map[int64]cache.Product) ([]*api.ProductOverview, error) {
-	wg := &sync.WaitGroup{}
-	errChan := make(chan error)
-	doneChan := make(chan struct{})
-	wg.Add(4)
-	var (
-		templates  map[int64]cache.ProductTemplate
-		uoms       map[int64]cache.Uom
-		categories map[int64]cache.Category
-		sellers    map[int64]cache.Seller
-	)
-
-	// Get Template
-	go func() {
-		defer wg.Done()
-		var err error
-		templateIds := math.Uniq(math.Convert(maps.Values(cacheModel), func(p cache.Product) int64 { return p.TemplateID }))
-		templates, err = getProductTemplateOrInsertCache(s, ctx, templateIds)
-		if err != nil {
-			logger.Error(err, "getProductTemplateOrInsertCache")
-			errChan <- err
-			return
-		}
-	}()
-
-	// Get Category
-	go func() {
-		defer wg.Done()
-		var err error
-		categoryIds := math.Uniq(math.Convert(maps.Values(cacheModel), func(p cache.Product) int64 { return p.CategoryID }))
-		categories, err = getCategoryOrInsertCache(s, ctx, categoryIds)
-		if err != nil {
-			logger.Error(err, "getCategoryOrInsertCache")
-			errChan <- err
-		}
-	}()
-
-	// Get Uom
-	go func() {
-		defer wg.Done()
-		var err error
-		uomIds := math.Uniq(math.Convert(maps.Values(cacheModel), func(p cache.Product) int64 { return p.UomID }))
-		uoms, err = getUomOrInsertCache(s, ctx, uomIds)
-		if err != nil {
-			logger.Error(err, "getUomOrInsertCache")
-			errChan <- err
-		}
-	}()
-
-	// Get Seller
-	go func() {
-		defer wg.Done()
-		var err error
-		sellerIds := math.Uniq(math.Convert(maps.Values(cacheModel), func(p cache.Product) int64 { return p.SellerID }))
-		sellers, err = getSellerOrInsertCache(s, ctx, sellerIds)
-		if err != nil {
-			logger.Error(err, "getSellerOrInsertCache")
-			errChan <- err
-		}
-	}()
-
-	go func() {
-		wg.Wait()
-		doneChan <- struct{}{}
-	}()
-
-	select {
-	case err := <-errChan:
-		return nil, err
-	case <-doneChan:
-		productsResp := make([]*api.ProductOverview, 0, len(cacheModel))
-		for _, product := range cacheModel {
-			p := &api.ProductOverview{}
-			p.FromCache(product, templates[product.TemplateID], categories[product.CategoryID], uoms[product.UomID], sellers[product.SellerID])
-			productsResp = append(productsResp, p)
-		}
-
-		return productsResp, nil
-	}
 }

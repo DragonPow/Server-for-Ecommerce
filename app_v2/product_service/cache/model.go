@@ -1,8 +1,8 @@
 package cache
 
 import (
+	"Server-for-Ecommerce/app_v2/product_service/database/store"
 	"encoding/json"
-	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/database/store"
 	"time"
 )
 
@@ -18,6 +18,7 @@ const (
 	TypeProductTemplate TypeCache = "product_template"
 	TypeSeller          TypeCache = "seller"
 	TypeUom             TypeCache = "uom"
+	TypePageProduct     TypeCache = "page_product"
 )
 
 // Model
@@ -60,6 +61,7 @@ func (u *User) FromDb(model store.User) {
 // Product ...
 type Product struct {
 	ID          int64          `json:"id"`
+	Image       string         `json:"image"`
 	Name        string         `json:"name"`
 	OriginPrice float64        `json:"origin_price"`
 	SalePrice   float64        `json:"sale_price"`
@@ -102,6 +104,7 @@ func (p *Product) FromDb(model store.Product, categoryId, uomId, sellerId int64)
 	json.Unmarshal(model.Variants.RawMessage, &variants)
 	*p = Product{
 		ID:          model.ID,
+		Image:       model.Image,
 		Name:        model.Name,
 		OriginPrice: model.OriginPrice,
 		SalePrice:   model.SalePrice,
@@ -124,6 +127,7 @@ func (p *Product) FromDbV2(model store.GetProductAndRelationsRow) {
 	json.Unmarshal(model.Variants.RawMessage, &variants)
 	*p = Product{
 		ID:          model.ID,
+		Image:       model.Image,
 		Name:        model.Name,
 		OriginPrice: model.OriginPrice,
 		SalePrice:   model.SalePrice,

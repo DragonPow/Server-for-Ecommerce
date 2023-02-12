@@ -402,7 +402,9 @@ type ProductDetail struct {
 	// UomId
 	UomId int64 `protobuf:"varint,23,opt,name=uom_id,json=uomId,proto3" json:"uom_id,omitempty"`
 	// UomName
-	UomName              string   `protobuf:"bytes,24,opt,name=uom_name,json=uomName,proto3" json:"uom_name,omitempty"`
+	UomName string `protobuf:"bytes,24,opt,name=uom_name,json=uomName,proto3" json:"uom_name,omitempty"`
+	// Image
+	Image                string   `protobuf:"bytes,25,opt,name=image,proto3" json:"image,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -609,6 +611,13 @@ func (m *ProductDetail) GetUomName() string {
 	return ""
 }
 
+func (m *ProductDetail) GetImage() string {
+	if m != nil {
+		return m.Image
+	}
+	return ""
+}
+
 // ProductOverview
 type ProductOverview struct {
 	// Id
@@ -619,32 +628,8 @@ type ProductOverview struct {
 	OriginPrice float64 `protobuf:"fixed64,3,opt,name=origin_price,json=originPrice,proto3" json:"origin_price,omitempty"`
 	// SalePrice
 	SalePrice float64 `protobuf:"fixed64,4,opt,name=sale_price,json=salePrice,proto3" json:"sale_price,omitempty"`
-	// Variants
-	Variants string `protobuf:"bytes,5,opt,name=variants,proto3" json:"variants,omitempty"`
-	// TemplateId
-	TemplateId int64 `protobuf:"varint,6,opt,name=template_id,json=templateId,proto3" json:"template_id,omitempty"`
-	// TemplateName
-	TemplateName string `protobuf:"bytes,7,opt,name=template_name,json=templateName,proto3" json:"template_name,omitempty"`
-	// SoldQuantity
-	SoldQuantity float64 `protobuf:"fixed64,8,opt,name=sold_quantity,json=soldQuantity,proto3" json:"sold_quantity,omitempty"`
-	// RemainQuantity
-	RemainQuantity float64 `protobuf:"fixed64,9,opt,name=remain_quantity,json=remainQuantity,proto3" json:"remain_quantity,omitempty"`
-	// Rating
-	Rating float64 `protobuf:"fixed64,10,opt,name=Rating,proto3" json:"Rating,omitempty"`
-	// SellerId
-	SellerId int64 `protobuf:"varint,11,opt,name=seller_id,json=sellerId,proto3" json:"seller_id,omitempty"`
-	// SellerName
-	SellerName string `protobuf:"bytes,12,opt,name=seller_name,json=sellerName,proto3" json:"seller_name,omitempty"`
-	// SellerLogo
-	SellerLogo string `protobuf:"bytes,13,opt,name=seller_logo,json=sellerLogo,proto3" json:"seller_logo,omitempty"`
-	// CategoryId
-	CategoryId int64 `protobuf:"varint,14,opt,name=category_id,json=categoryId,proto3" json:"category_id,omitempty"`
-	// CategoryName
-	CategoryName string `protobuf:"bytes,15,opt,name=category_name,json=categoryName,proto3" json:"category_name,omitempty"`
-	// UomId
-	UomId int64 `protobuf:"varint,16,opt,name=uom_id,json=uomId,proto3" json:"uom_id,omitempty"`
-	// UomName
-	UomName              string   `protobuf:"bytes,17,opt,name=uom_name,json=uomName,proto3" json:"uom_name,omitempty"`
+	// Image
+	Image                string   `protobuf:"bytes,5,opt,name=image,proto3" json:"image,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -711,93 +696,134 @@ func (m *ProductOverview) GetSalePrice() float64 {
 	return 0
 }
 
-func (m *ProductOverview) GetVariants() string {
+func (m *ProductOverview) GetImage() string {
 	if m != nil {
-		return m.Variants
+		return m.Image
 	}
 	return ""
 }
 
-func (m *ProductOverview) GetTemplateId() int64 {
-	if m != nil {
-		return m.TemplateId
-	}
-	return 0
+// DeleteCacheRequest
+type DeleteCacheRequest struct {
+	// TypeModel
+	TypeModel string `protobuf:"bytes,1,opt,name=type_model,json=typeModel,proto3" json:"type_model,omitempty"`
+	// Ids
+	Ids []int64 `protobuf:"varint,2,rep,packed,name=ids,proto3" json:"ids,omitempty"`
+	// Level
+	Level                string   `protobuf:"bytes,3,opt,name=level,proto3" json:"level,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *ProductOverview) GetTemplateName() string {
-	if m != nil {
-		return m.TemplateName
+func (m *DeleteCacheRequest) Reset()         { *m = DeleteCacheRequest{} }
+func (m *DeleteCacheRequest) String() string { return proto.CompactTextString(m) }
+func (*DeleteCacheRequest) ProtoMessage()    {}
+func (*DeleteCacheRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_d137c3de5263a2b0, []int{6}
+}
+func (m *DeleteCacheRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *DeleteCacheRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_DeleteCacheRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
 	}
-	return ""
+}
+func (m *DeleteCacheRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_DeleteCacheRequest.Merge(m, src)
+}
+func (m *DeleteCacheRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *DeleteCacheRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_DeleteCacheRequest.DiscardUnknown(m)
 }
 
-func (m *ProductOverview) GetSoldQuantity() float64 {
-	if m != nil {
-		return m.SoldQuantity
-	}
-	return 0
-}
+var xxx_messageInfo_DeleteCacheRequest proto.InternalMessageInfo
 
-func (m *ProductOverview) GetRemainQuantity() float64 {
+func (m *DeleteCacheRequest) GetTypeModel() string {
 	if m != nil {
-		return m.RemainQuantity
-	}
-	return 0
-}
-
-func (m *ProductOverview) GetRating() float64 {
-	if m != nil {
-		return m.Rating
-	}
-	return 0
-}
-
-func (m *ProductOverview) GetSellerId() int64 {
-	if m != nil {
-		return m.SellerId
-	}
-	return 0
-}
-
-func (m *ProductOverview) GetSellerName() string {
-	if m != nil {
-		return m.SellerName
-	}
-	return ""
-}
-
-func (m *ProductOverview) GetSellerLogo() string {
-	if m != nil {
-		return m.SellerLogo
+		return m.TypeModel
 	}
 	return ""
 }
 
-func (m *ProductOverview) GetCategoryId() int64 {
+func (m *DeleteCacheRequest) GetIds() []int64 {
 	if m != nil {
-		return m.CategoryId
+		return m.Ids
 	}
-	return 0
+	return nil
 }
 
-func (m *ProductOverview) GetCategoryName() string {
+func (m *DeleteCacheRequest) GetLevel() string {
 	if m != nil {
-		return m.CategoryName
+		return m.Level
 	}
 	return ""
 }
 
-func (m *ProductOverview) GetUomId() int64 {
+// DeleteCacheResponse
+type DeleteCacheResponse struct {
+	// Code
+	Code uint32 `protobuf:"varint,1,opt,name=code,proto3" json:"code,omitempty"`
+	// Message
+	Message              string   `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *DeleteCacheResponse) Reset()         { *m = DeleteCacheResponse{} }
+func (m *DeleteCacheResponse) String() string { return proto.CompactTextString(m) }
+func (*DeleteCacheResponse) ProtoMessage()    {}
+func (*DeleteCacheResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_d137c3de5263a2b0, []int{7}
+}
+func (m *DeleteCacheResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *DeleteCacheResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_DeleteCacheResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *DeleteCacheResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_DeleteCacheResponse.Merge(m, src)
+}
+func (m *DeleteCacheResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *DeleteCacheResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_DeleteCacheResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_DeleteCacheResponse proto.InternalMessageInfo
+
+func (m *DeleteCacheResponse) GetCode() uint32 {
 	if m != nil {
-		return m.UomId
+		return m.Code
 	}
 	return 0
 }
 
-func (m *ProductOverview) GetUomName() string {
+func (m *DeleteCacheResponse) GetMessage() string {
 	if m != nil {
-		return m.UomName
+		return m.Message
 	}
 	return ""
 }
@@ -810,6 +836,8 @@ func init() {
 	proto.RegisterType((*GetListProductResponse_Data)(nil), "app_v2.product_service.api.GetListProductResponse.Data")
 	proto.RegisterType((*ProductDetail)(nil), "app_v2.product_service.api.ProductDetail")
 	proto.RegisterType((*ProductOverview)(nil), "app_v2.product_service.api.ProductOverview")
+	proto.RegisterType((*DeleteCacheRequest)(nil), "app_v2.product_service.api.DeleteCacheRequest")
+	proto.RegisterType((*DeleteCacheResponse)(nil), "app_v2.product_service.api.DeleteCacheResponse")
 }
 
 func init() {
@@ -817,60 +845,61 @@ func init() {
 }
 
 var fileDescriptor_d137c3de5263a2b0 = []byte{
-	// 838 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xcc, 0x56, 0xdd, 0x6e, 0xe3, 0x44,
-	0x14, 0xc6, 0x4d, 0x9a, 0xc6, 0x27, 0x3f, 0xed, 0xce, 0xf6, 0xc7, 0x64, 0xa1, 0x94, 0x20, 0x44,
-	0x57, 0x20, 0x47, 0x94, 0x0b, 0xae, 0xb8, 0xd8, 0x55, 0xa5, 0x55, 0xc4, 0x0a, 0x16, 0x73, 0xb7,
-	0x37, 0xd6, 0xd4, 0x33, 0x32, 0x23, 0x6c, 0x8f, 0xd7, 0x33, 0x0e, 0xca, 0xbe, 0x00, 0x6f, 0x00,
-	0x48, 0x3c, 0x05, 0x6f, 0xc1, 0x25, 0x8f, 0x80, 0xca, 0x8b, 0xa0, 0x39, 0x33, 0x4e, 0xb6, 0x6e,
-	0xd2, 0xae, 0xb8, 0xe2, 0x2a, 0x33, 0xdf, 0xf9, 0xe6, 0x3b, 0x3f, 0xf3, 0x4d, 0x12, 0x08, 0x69,
-	0x59, 0xc6, 0x8b, 0x8b, 0x59, 0x59, 0x49, 0x56, 0x27, 0x3a, 0x56, 0xbc, 0x5a, 0x88, 0x84, 0xcf,
-	0x68, 0x29, 0x1a, 0x2c, 0xcc, 0x25, 0xe3, 0x59, 0x58, 0x56, 0x52, 0x4b, 0x32, 0xb1, 0xfc, 0xb0,
-	0xc5, 0x0f, 0x69, 0x29, 0x26, 0x27, 0x0b, 0x9a, 0x09, 0x46, 0x35, 0x9f, 0x35, 0x0b, 0x7b, 0x68,
-	0x72, 0x94, 0x4a, 0x99, 0x66, 0x7c, 0x56, 0x95, 0xc9, 0x2c, 0x91, 0xac, 0x0d, 0x9b, 0x5c, 0x3f,
-	0x68, 0x5d, 0x3a, 0xf8, 0xbd, 0x37, 0x60, 0x5a, 0x14, 0x52, 0x53, 0x2d, 0x64, 0xa1, 0x5c, 0xf4,
-	0x30, 0x95, 0xa9, 0xc4, 0xe5, 0xcc, 0xac, 0x2c, 0x3a, 0x7d, 0x0c, 0x27, 0xcf, 0xb8, 0xbe, 0xe4,
-	0x9a, 0x8a, 0xec, 0x85, 0x2d, 0x2d, 0xe2, 0xaf, 0x6a, 0xae, 0x34, 0x19, 0xc3, 0x8e, 0x60, 0x81,
-	0x77, 0xe6, 0x9d, 0x77, 0xa2, 0x1d, 0xc1, 0xa6, 0x3f, 0x7b, 0x10, 0xdc, 0xe6, 0xaa, 0x52, 0x16,
-	0x8a, 0x13, 0x02, 0x5d, 0x53, 0x20, 0xd2, 0x47, 0x11, 0xae, 0x49, 0x00, 0x7b, 0x39, 0x57, 0x8a,
-	0xa6, 0x3c, 0xd8, 0x39, 0xf3, 0xce, 0xfd, 0xa8, 0xd9, 0x92, 0xaf, 0xa0, 0xcb, 0xa8, 0xa6, 0x41,
-	0xe7, 0xcc, 0x3b, 0x1f, 0x5c, 0x3c, 0x0e, 0xb7, 0xcf, 0x26, 0x74, 0x89, 0x6c, 0xd6, 0x08, 0x8f,
-	0x4d, 0x5f, 0xc2, 0xd1, 0x33, 0xae, 0x9f, 0x0b, 0xa5, 0x5b, 0x25, 0x13, 0xe8, 0x96, 0x26, 0x9d,
-	0x2d, 0x1a, 0xd7, 0xe4, 0x11, 0xf8, 0xe6, 0x33, 0x56, 0xe2, 0xb5, 0xad, 0xa3, 0x13, 0xf5, 0x0d,
-	0xf0, 0xbd, 0x78, 0xcd, 0xc9, 0x01, 0x74, 0x7e, 0xe4, 0x4b, 0xac, 0xc3, 0x8f, 0xcc, 0x72, 0xfa,
-	0xc7, 0x0e, 0x1c, 0xb7, 0xc5, 0xff, 0x53, 0x8f, 0x5f, 0xdf, 0xe8, 0xf1, 0xcb, 0xbb, 0x7a, 0xdc,
-	0x9c, 0x2f, 0xbc, 0xa4, 0x9a, 0xda, 0x8e, 0x27, 0xbf, 0x7b, 0xd0, 0x35, 0x5b, 0xf2, 0x01, 0x0c,
-	0xb4, 0xd4, 0x34, 0x8b, 0x85, 0xe6, 0xb9, 0x72, 0x8d, 0x02, 0x42, 0x73, 0x83, 0xac, 0x46, 0x60,
-	0xaa, 0xd9, 0xdd, 0x34, 0x82, 0x0e, 0x06, 0xd6, 0x23, 0x78, 0x02, 0xbb, 0x56, 0xab, 0x7b, 0xd6,
-	0x39, 0x1f, 0x5c, 0x7c, 0xfa, 0x16, 0x97, 0xf1, 0xed, 0xc2, 0x60, 0xfc, 0xa7, 0xc8, 0x9e, 0x9c,
-	0xfe, 0xda, 0x83, 0xd1, 0x8d, 0x7b, 0x6a, 0x7b, 0xc7, 0x54, 0x55, 0xd0, 0xbc, 0x99, 0x11, 0xae,
-	0xc9, 0x87, 0x30, 0x94, 0x95, 0x48, 0x45, 0x11, 0x97, 0x95, 0x48, 0x6c, 0x61, 0x5e, 0x34, 0xb0,
-	0xd8, 0x0b, 0x03, 0x91, 0xf7, 0x01, 0x14, 0xcd, 0xb8, 0x23, 0x74, 0x91, 0xe0, 0x1b, 0xc4, 0x86,
-	0x27, 0xd0, 0x5f, 0xd0, 0x4a, 0xd0, 0x42, 0xab, 0x60, 0x17, 0x95, 0x57, 0x7b, 0x73, 0x34, 0xa9,
-	0x38, 0xd5, 0x9c, 0xc5, 0x57, 0xcb, 0xa0, 0x87, 0x51, 0xdf, 0x21, 0x4f, 0x97, 0x26, 0x79, 0x13,
-	0x36, 0xef, 0x2d, 0xd8, 0x43, 0xc2, 0xc0, 0x61, 0x97, 0x54, 0x63, 0xf2, 0xba, 0x64, 0x8d, 0x42,
-	0xdf, 0x2a, 0x38, 0xc4, 0x2a, 0x34, 0x61, 0x54, 0xf0, 0xad, 0x82, 0xc3, 0x50, 0xc1, 0x5c, 0x16,
-	0xcf, 0xcb, 0x8c, 0x6a, 0x1e, 0x0b, 0x16, 0x80, 0xbb, 0x2c, 0x07, 0xcd, 0x19, 0xf9, 0x08, 0x46,
-	0x2b, 0x02, 0xce, 0x67, 0x80, 0x22, 0xc3, 0x06, 0xfc, 0xc6, 0xcc, 0xe9, 0x73, 0x38, 0x5c, 0x91,
-	0x18, 0x57, 0x49, 0x25, 0x4a, 0xf3, 0xae, 0x83, 0x21, 0x72, 0x1f, 0x36, 0xb1, 0xcb, 0x75, 0xc8,
-	0xe8, 0x2a, 0x99, 0xb1, 0xf8, 0x55, 0x4d, 0x0b, 0x2d, 0xf4, 0x32, 0x18, 0xe1, 0xe8, 0x86, 0x06,
-	0xfc, 0xce, 0x61, 0xe4, 0x13, 0xd8, 0xaf, 0x78, 0x4e, 0x45, 0xb1, 0xa6, 0x8d, 0x91, 0x36, 0xb6,
-	0xf0, 0x8a, 0x78, 0x0c, 0xbd, 0x8a, 0x6a, 0x51, 0xa4, 0xc1, 0x3e, 0xc6, 0xdd, 0xce, 0x64, 0x29,
-	0xea, 0xfc, 0x8a, 0x57, 0xb1, 0x0b, 0x1f, 0xa0, 0xb5, 0x86, 0x16, 0x8c, 0x2c, 0xe9, 0x11, 0xf8,
-	0x8a, 0x67, 0x19, 0xaf, 0xcc, 0x04, 0x1e, 0xd8, 0xe7, 0x67, 0x81, 0x39, 0x33, 0x03, 0x72, 0x41,
-	0xec, 0x9e, 0x60, 0x47, 0x60, 0x21, 0xec, 0x7d, 0x4d, 0xc8, 0x64, 0x2a, 0x83, 0x87, 0x6f, 0x12,
-	0x9e, 0xcb, 0x54, 0x92, 0x8f, 0x61, 0xec, 0x08, 0x94, 0xb1, 0x8a, 0x2b, 0x15, 0x1c, 0x22, 0x67,
-	0x64, 0xd1, 0x27, 0x16, 0x34, 0x3a, 0x09, 0xd5, 0x3c, 0x95, 0xd5, 0xd2, 0xd4, 0x71, 0x64, 0x6f,
-	0xa2, 0x81, 0xec, 0x4d, 0xac, 0x08, 0x58, 0xcb, 0xb1, 0xbd, 0x89, 0x06, 0xc4, 0x6a, 0x8e, 0xa0,
-	0x57, 0xcb, 0xdc, 0x08, 0x9c, 0xa0, 0xc0, 0x6e, 0x2d, 0xf3, 0x39, 0x23, 0xef, 0x42, 0xdf, 0xc0,
-	0x78, 0x2c, 0xb0, 0x5f, 0x02, 0xb5, 0xcc, 0xcd, 0x89, 0xe9, 0x2f, 0x5d, 0xd8, 0x6f, 0x3d, 0x9a,
-	0xff, 0xc1, 0xdb, 0x68, 0xf9, 0xb2, 0x77, 0xbf, 0x2f, 0xf7, 0x36, 0xf8, 0xf2, 0x96, 0xc9, 0xfa,
-	0x6f, 0x67, 0x32, 0x7f, 0x9b, 0xc9, 0xac, 0x63, 0xf0, 0x99, 0x78, 0x51, 0x6f, 0x93, 0x7f, 0x06,
-	0x77, 0xfb, 0x67, 0x78, 0x9f, 0x7f, 0x46, 0xb7, 0xfc, 0xd3, 0x32, 0xc6, 0xf8, 0x7e, 0x63, 0xec,
-	0xdf, 0x69, 0x8c, 0x83, 0x6d, 0xc6, 0x78, 0x70, 0xc3, 0x18, 0x4f, 0x3f, 0xfb, 0xf3, 0xfa, 0xd4,
-	0xfb, 0xeb, 0xfa, 0xd4, 0xfb, 0xfb, 0xfa, 0xd4, 0xfb, 0xed, 0x9f, 0xd3, 0x77, 0x5e, 0x4e, 0xb6,
-	0xff, 0xa1, 0xb8, 0xea, 0xe1, 0x8f, 0xf5, 0x17, 0xff, 0x06, 0x00, 0x00, 0xff, 0xff, 0x02, 0x16,
-	0xfe, 0x97, 0x75, 0x08, 0x00, 0x00,
+	// 855 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xbc, 0x95, 0xcd, 0x8e, 0x1b, 0x45,
+	0x10, 0xc7, 0x99, 0xf5, 0x47, 0xd6, 0x65, 0x7b, 0x37, 0xf4, 0x7e, 0x4d, 0x1c, 0xb2, 0x18, 0x23,
+	0x84, 0x23, 0x90, 0x2d, 0x96, 0x03, 0x27, 0x0e, 0x49, 0x2c, 0x45, 0x2b, 0x02, 0x84, 0xe1, 0x16,
+	0x0e, 0xa3, 0xde, 0xe9, 0xd2, 0xa4, 0xc5, 0xcc, 0xf4, 0x64, 0xba, 0x6d, 0xe4, 0xbc, 0x00, 0x27,
+	0xee, 0x48, 0x3c, 0x03, 0x07, 0xde, 0x82, 0x23, 0x8f, 0x80, 0x96, 0x17, 0x41, 0x55, 0x3d, 0xe3,
+	0xdd, 0x35, 0x09, 0x42, 0x39, 0x70, 0x72, 0xf7, 0xaf, 0xfe, 0xfd, 0xef, 0xaa, 0x6a, 0x77, 0x0f,
+	0xcc, 0x64, 0x59, 0xc6, 0xab, 0xb3, 0x79, 0x59, 0x19, 0xb5, 0x4c, 0x5c, 0x6c, 0xb1, 0x5a, 0xe9,
+	0x04, 0xe7, 0xb2, 0xd4, 0x0d, 0x9b, 0xe5, 0x46, 0x61, 0x36, 0x2b, 0x2b, 0xe3, 0x8c, 0x18, 0x79,
+	0xfd, 0x6c, 0x4b, 0x3f, 0x93, 0xa5, 0x1e, 0x9d, 0xac, 0x64, 0xa6, 0x95, 0x74, 0x38, 0x6f, 0x06,
+	0x7e, 0xd1, 0xe8, 0x28, 0x35, 0x26, 0xcd, 0x70, 0x5e, 0x95, 0xc9, 0x3c, 0x31, 0x6a, 0x1b, 0xd3,
+	0x5e, 0xcf, 0x9d, 0x2b, 0x6b, 0xfc, 0xce, 0x35, 0x2c, 0x8b, 0xc2, 0x38, 0xe9, 0xb4, 0x29, 0x6c,
+	0x1d, 0x3d, 0x4c, 0x4d, 0x6a, 0x78, 0x38, 0xa7, 0x91, 0xa7, 0x93, 0xfb, 0x70, 0xf2, 0x18, 0xdd,
+	0x02, 0x9d, 0xd4, 0xd9, 0x53, 0x9f, 0x5a, 0x84, 0x2f, 0x96, 0x68, 0x9d, 0xd8, 0x83, 0x1d, 0xad,
+	0xc2, 0x60, 0x1c, 0x4c, 0x5b, 0xd1, 0x8e, 0x56, 0x93, 0x1f, 0x03, 0x08, 0xff, 0xa9, 0xb5, 0xa5,
+	0x29, 0x2c, 0x0a, 0x01, 0x6d, 0x4a, 0x90, 0xe5, 0xc3, 0x88, 0xc7, 0x22, 0x84, 0x5b, 0x39, 0x5a,
+	0x2b, 0x53, 0x0c, 0x77, 0xc6, 0xc1, 0xb4, 0x17, 0x35, 0x53, 0xf1, 0x39, 0xb4, 0x95, 0x74, 0x32,
+	0x6c, 0x8d, 0x83, 0x69, 0xff, 0xec, 0xfe, 0xec, 0xf5, 0xbd, 0x99, 0xd5, 0x1b, 0xf9, 0x5d, 0x23,
+	0x5e, 0x36, 0x79, 0x06, 0x47, 0x8f, 0xd1, 0x3d, 0xd1, 0xd6, 0x6d, 0xa5, 0x2c, 0xa0, 0x5d, 0xd2,
+	0x76, 0x3e, 0x69, 0x1e, 0x8b, 0xbb, 0xd0, 0xa3, 0xdf, 0xd8, 0xea, 0x97, 0x3e, 0x8f, 0x56, 0xb4,
+	0x4b, 0xe0, 0x5b, 0xfd, 0x12, 0xc5, 0x6d, 0x68, 0x7d, 0x8f, 0x6b, 0xce, 0xa3, 0x17, 0xd1, 0x70,
+	0xf2, 0xdb, 0x0e, 0x1c, 0x6f, 0x9b, 0xbf, 0x51, 0x8d, 0x5f, 0xdc, 0xa8, 0xf1, 0xb3, 0x7f, 0xab,
+	0xf1, 0xd5, 0xfb, 0xcd, 0x16, 0xd2, 0x49, 0x5f, 0xf1, 0xe8, 0x97, 0x00, 0xda, 0x34, 0x15, 0xef,
+	0x42, 0xdf, 0x19, 0x27, 0xb3, 0x58, 0x3b, 0xcc, 0x6d, 0x5d, 0x28, 0x30, 0x3a, 0x27, 0xb2, 0x69,
+	0x01, 0x65, 0xd3, 0x79, 0x55, 0x0b, 0x5a, 0x1c, 0xb8, 0x6a, 0xc1, 0x03, 0xe8, 0x78, 0xaf, 0xf6,
+	0xb8, 0x35, 0xed, 0x9f, 0x7d, 0xf4, 0x1f, 0x0e, 0xe3, 0xeb, 0x15, 0x31, 0xfc, 0x21, 0xf2, 0x2b,
+	0x27, 0xbf, 0x76, 0x61, 0x78, 0xe3, 0x9c, 0xb6, 0xff, 0x3b, 0x94, 0x55, 0x21, 0xf3, 0xa6, 0x47,
+	0x3c, 0x16, 0xef, 0xc1, 0xc0, 0x54, 0x3a, 0xd5, 0x45, 0x5c, 0x56, 0x3a, 0xf1, 0x89, 0x05, 0x51,
+	0xdf, 0xb3, 0xa7, 0x84, 0xc4, 0x3d, 0x00, 0x2b, 0x33, 0xac, 0x05, 0x6d, 0x16, 0xf4, 0x88, 0xf8,
+	0xf0, 0x08, 0x76, 0x57, 0xb2, 0xd2, 0xb2, 0x70, 0x36, 0xec, 0xb0, 0xf3, 0x66, 0x4e, 0x4b, 0x93,
+	0x0a, 0xa5, 0x43, 0x15, 0x5f, 0xac, 0xc3, 0x2e, 0x47, 0x7b, 0x35, 0x79, 0xb8, 0xa6, 0xcd, 0x9b,
+	0x30, 0xdd, 0xb7, 0xf0, 0x16, 0x0b, 0xfa, 0x35, 0x5b, 0x48, 0xc7, 0x9b, 0x2f, 0x4b, 0xd5, 0x38,
+	0xec, 0x7a, 0x87, 0x9a, 0x78, 0x87, 0x26, 0xcc, 0x0e, 0x3d, 0xef, 0x50, 0x33, 0x76, 0xa0, 0xc3,
+	0xc2, 0xbc, 0xcc, 0xa4, 0xc3, 0x58, 0xab, 0x10, 0xea, 0xc3, 0xaa, 0xd1, 0xb9, 0x12, 0xef, 0xc3,
+	0x70, 0x23, 0xe0, 0xfe, 0xf4, 0xd9, 0x64, 0xd0, 0xc0, 0xaf, 0xa8, 0x4f, 0x9f, 0xc0, 0xe1, 0x46,
+	0xa4, 0xd0, 0x26, 0x95, 0x2e, 0xe9, 0x5e, 0x87, 0x03, 0xd6, 0x1e, 0x34, 0xb1, 0xc5, 0x55, 0x88,
+	0x7c, 0xad, 0xc9, 0x54, 0xfc, 0x62, 0x29, 0x0b, 0xa7, 0xdd, 0x3a, 0x1c, 0x72, 0xeb, 0x06, 0x04,
+	0xbf, 0xa9, 0x99, 0xf8, 0x10, 0xf6, 0x2b, 0xcc, 0xa5, 0x2e, 0xae, 0x64, 0x7b, 0x2c, 0xdb, 0xf3,
+	0x78, 0x23, 0x3c, 0x86, 0x6e, 0x25, 0x9d, 0x2e, 0xd2, 0x70, 0x9f, 0xe3, 0xf5, 0x8c, 0x76, 0x29,
+	0x96, 0xf9, 0x05, 0x56, 0x71, 0x1d, 0xbe, 0xcd, 0x7f, 0xad, 0x81, 0x87, 0x91, 0x17, 0xdd, 0x85,
+	0x9e, 0xc5, 0x2c, 0xc3, 0x8a, 0x3a, 0xf0, 0xb6, 0xbf, 0x7e, 0x1e, 0x9c, 0x2b, 0x6a, 0x50, 0x1d,
+	0xe4, 0xea, 0x05, 0x57, 0x04, 0x1e, 0x71, 0xed, 0x57, 0x82, 0xcc, 0xa4, 0x26, 0x3c, 0xb8, 0x2e,
+	0x78, 0x62, 0x52, 0x23, 0x3e, 0x80, 0xbd, 0x5a, 0x20, 0x95, 0xaa, 0xd0, 0xda, 0xf0, 0x90, 0x35,
+	0x43, 0x4f, 0x1f, 0x78, 0x48, 0x3e, 0x89, 0x74, 0x98, 0x9a, 0x6a, 0x4d, 0x79, 0x1c, 0xf9, 0x93,
+	0x68, 0x90, 0x3f, 0x89, 0x8d, 0x80, 0x73, 0x39, 0xf6, 0x27, 0xd1, 0x40, 0xce, 0xe6, 0x08, 0xba,
+	0x4b, 0x93, 0x93, 0xc1, 0x09, 0x1b, 0x74, 0x96, 0x26, 0x3f, 0x57, 0xe2, 0x0e, 0xec, 0x12, 0xe6,
+	0x65, 0xa1, 0x7f, 0x04, 0x96, 0x26, 0xe7, 0x15, 0x87, 0xd0, 0xd1, 0x39, 0x5d, 0xc7, 0x3b, 0xcc,
+	0xfd, 0x64, 0xf2, 0x53, 0x00, 0xfb, 0x5b, 0x57, 0xe9, 0x7f, 0xba, 0x31, 0x9b, 0x7c, 0x3a, 0xd7,
+	0xf3, 0xf9, 0x0e, 0xc4, 0x02, 0x33, 0x74, 0xf8, 0x48, 0x26, 0xcf, 0xb1, 0x79, 0x4c, 0xef, 0x01,
+	0xb8, 0x75, 0x89, 0x31, 0x7f, 0xc5, 0x38, 0xb3, 0x5e, 0xd4, 0x23, 0xf2, 0x25, 0x01, 0x7a, 0x3a,
+	0xb5, 0xb2, 0xe1, 0xce, 0xb8, 0x35, 0x6d, 0x45, 0x34, 0x24, 0xf3, 0x0c, 0x57, 0x98, 0xd5, 0xcf,
+	0xa9, 0x9f, 0x4c, 0x1e, 0xc1, 0xc1, 0x0d, 0xf3, 0x37, 0x79, 0x4c, 0x1f, 0x7e, 0xfc, 0xfb, 0xe5,
+	0x69, 0xf0, 0xc7, 0xe5, 0x69, 0xf0, 0xe7, 0xe5, 0x69, 0xf0, 0xf3, 0x5f, 0xa7, 0x6f, 0x3d, 0x1b,
+	0xbd, 0xfe, 0xfb, 0x7b, 0xd1, 0xe5, 0x6f, 0xdb, 0xa7, 0x7f, 0x07, 0x00, 0x00, 0xff, 0xff, 0xac,
+	0x07, 0x0c, 0x8e, 0xa4, 0x07, 0x00, 0x00,
 }
 
 func (m *GetDetailProductRequest) Marshal() (dAtA []byte, err error) {
@@ -1131,6 +1160,15 @@ func (m *ProductDetail) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i -= len(m.XXX_unrecognized)
 		copy(dAtA[i:], m.XXX_unrecognized)
 	}
+	if len(m.Image) > 0 {
+		i -= len(m.Image)
+		copy(dAtA[i:], m.Image)
+		i = encodeVarintProductModel(dAtA, i, uint64(len(m.Image)))
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0xca
+	}
 	if len(m.UomName) > 0 {
 		i -= len(m.UomName)
 		copy(dAtA[i:], m.UomName)
@@ -1327,87 +1365,10 @@ func (m *ProductOverview) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i -= len(m.XXX_unrecognized)
 		copy(dAtA[i:], m.XXX_unrecognized)
 	}
-	if len(m.UomName) > 0 {
-		i -= len(m.UomName)
-		copy(dAtA[i:], m.UomName)
-		i = encodeVarintProductModel(dAtA, i, uint64(len(m.UomName)))
-		i--
-		dAtA[i] = 0x1
-		i--
-		dAtA[i] = 0x8a
-	}
-	if m.UomId != 0 {
-		i = encodeVarintProductModel(dAtA, i, uint64(m.UomId))
-		i--
-		dAtA[i] = 0x1
-		i--
-		dAtA[i] = 0x80
-	}
-	if len(m.CategoryName) > 0 {
-		i -= len(m.CategoryName)
-		copy(dAtA[i:], m.CategoryName)
-		i = encodeVarintProductModel(dAtA, i, uint64(len(m.CategoryName)))
-		i--
-		dAtA[i] = 0x7a
-	}
-	if m.CategoryId != 0 {
-		i = encodeVarintProductModel(dAtA, i, uint64(m.CategoryId))
-		i--
-		dAtA[i] = 0x70
-	}
-	if len(m.SellerLogo) > 0 {
-		i -= len(m.SellerLogo)
-		copy(dAtA[i:], m.SellerLogo)
-		i = encodeVarintProductModel(dAtA, i, uint64(len(m.SellerLogo)))
-		i--
-		dAtA[i] = 0x6a
-	}
-	if len(m.SellerName) > 0 {
-		i -= len(m.SellerName)
-		copy(dAtA[i:], m.SellerName)
-		i = encodeVarintProductModel(dAtA, i, uint64(len(m.SellerName)))
-		i--
-		dAtA[i] = 0x62
-	}
-	if m.SellerId != 0 {
-		i = encodeVarintProductModel(dAtA, i, uint64(m.SellerId))
-		i--
-		dAtA[i] = 0x58
-	}
-	if m.Rating != 0 {
-		i -= 8
-		encoding_binary.LittleEndian.PutUint64(dAtA[i:], uint64(math.Float64bits(float64(m.Rating))))
-		i--
-		dAtA[i] = 0x51
-	}
-	if m.RemainQuantity != 0 {
-		i -= 8
-		encoding_binary.LittleEndian.PutUint64(dAtA[i:], uint64(math.Float64bits(float64(m.RemainQuantity))))
-		i--
-		dAtA[i] = 0x49
-	}
-	if m.SoldQuantity != 0 {
-		i -= 8
-		encoding_binary.LittleEndian.PutUint64(dAtA[i:], uint64(math.Float64bits(float64(m.SoldQuantity))))
-		i--
-		dAtA[i] = 0x41
-	}
-	if len(m.TemplateName) > 0 {
-		i -= len(m.TemplateName)
-		copy(dAtA[i:], m.TemplateName)
-		i = encodeVarintProductModel(dAtA, i, uint64(len(m.TemplateName)))
-		i--
-		dAtA[i] = 0x3a
-	}
-	if m.TemplateId != 0 {
-		i = encodeVarintProductModel(dAtA, i, uint64(m.TemplateId))
-		i--
-		dAtA[i] = 0x30
-	}
-	if len(m.Variants) > 0 {
-		i -= len(m.Variants)
-		copy(dAtA[i:], m.Variants)
-		i = encodeVarintProductModel(dAtA, i, uint64(len(m.Variants)))
+	if len(m.Image) > 0 {
+		i -= len(m.Image)
+		copy(dAtA[i:], m.Image)
+		i = encodeVarintProductModel(dAtA, i, uint64(len(m.Image)))
 		i--
 		dAtA[i] = 0x2a
 	}
@@ -1432,6 +1393,105 @@ func (m *ProductOverview) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	}
 	if m.Id != 0 {
 		i = encodeVarintProductModel(dAtA, i, uint64(m.Id))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *DeleteCacheRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *DeleteCacheRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *DeleteCacheRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
+	}
+	if len(m.Level) > 0 {
+		i -= len(m.Level)
+		copy(dAtA[i:], m.Level)
+		i = encodeVarintProductModel(dAtA, i, uint64(len(m.Level)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.Ids) > 0 {
+		dAtA4 := make([]byte, len(m.Ids)*10)
+		var j3 int
+		for _, num1 := range m.Ids {
+			num := uint64(num1)
+			for num >= 1<<7 {
+				dAtA4[j3] = uint8(uint64(num)&0x7f | 0x80)
+				num >>= 7
+				j3++
+			}
+			dAtA4[j3] = uint8(num)
+			j3++
+		}
+		i -= j3
+		copy(dAtA[i:], dAtA4[:j3])
+		i = encodeVarintProductModel(dAtA, i, uint64(j3))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.TypeModel) > 0 {
+		i -= len(m.TypeModel)
+		copy(dAtA[i:], m.TypeModel)
+		i = encodeVarintProductModel(dAtA, i, uint64(len(m.TypeModel)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *DeleteCacheResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *DeleteCacheResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *DeleteCacheResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
+	}
+	if len(m.Message) > 0 {
+		i -= len(m.Message)
+		copy(dAtA[i:], m.Message)
+		i = encodeVarintProductModel(dAtA, i, uint64(len(m.Message)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.Code != 0 {
+		i = encodeVarintProductModel(dAtA, i, uint64(m.Code))
 		i--
 		dAtA[i] = 0x8
 	}
@@ -1650,6 +1710,10 @@ func (m *ProductDetail) Size() (n int) {
 	if l > 0 {
 		n += 2 + l + sovProductModel(uint64(l))
 	}
+	l = len(m.Image)
+	if l > 0 {
+		n += 2 + l + sovProductModel(uint64(l))
+	}
 	if m.XXX_unrecognized != nil {
 		n += len(m.XXX_unrecognized)
 	}
@@ -1675,50 +1739,55 @@ func (m *ProductOverview) Size() (n int) {
 	if m.SalePrice != 0 {
 		n += 9
 	}
-	l = len(m.Variants)
+	l = len(m.Image)
 	if l > 0 {
 		n += 1 + l + sovProductModel(uint64(l))
 	}
-	if m.TemplateId != 0 {
-		n += 1 + sovProductModel(uint64(m.TemplateId))
+	if m.XXX_unrecognized != nil {
+		n += len(m.XXX_unrecognized)
 	}
-	l = len(m.TemplateName)
+	return n
+}
+
+func (m *DeleteCacheRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.TypeModel)
 	if l > 0 {
 		n += 1 + l + sovProductModel(uint64(l))
 	}
-	if m.SoldQuantity != 0 {
-		n += 9
+	if len(m.Ids) > 0 {
+		l = 0
+		for _, e := range m.Ids {
+			l += sovProductModel(uint64(e))
+		}
+		n += 1 + sovProductModel(uint64(l)) + l
 	}
-	if m.RemainQuantity != 0 {
-		n += 9
-	}
-	if m.Rating != 0 {
-		n += 9
-	}
-	if m.SellerId != 0 {
-		n += 1 + sovProductModel(uint64(m.SellerId))
-	}
-	l = len(m.SellerName)
+	l = len(m.Level)
 	if l > 0 {
 		n += 1 + l + sovProductModel(uint64(l))
 	}
-	l = len(m.SellerLogo)
+	if m.XXX_unrecognized != nil {
+		n += len(m.XXX_unrecognized)
+	}
+	return n
+}
+
+func (m *DeleteCacheResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Code != 0 {
+		n += 1 + sovProductModel(uint64(m.Code))
+	}
+	l = len(m.Message)
 	if l > 0 {
 		n += 1 + l + sovProductModel(uint64(l))
-	}
-	if m.CategoryId != 0 {
-		n += 1 + sovProductModel(uint64(m.CategoryId))
-	}
-	l = len(m.CategoryName)
-	if l > 0 {
-		n += 1 + l + sovProductModel(uint64(l))
-	}
-	if m.UomId != 0 {
-		n += 2 + sovProductModel(uint64(m.UomId))
-	}
-	l = len(m.UomName)
-	if l > 0 {
-		n += 2 + l + sovProductModel(uint64(l))
 	}
 	if m.XXX_unrecognized != nil {
 		n += len(m.XXX_unrecognized)
@@ -2970,6 +3039,38 @@ func (m *ProductDetail) Unmarshal(dAtA []byte) error {
 			}
 			m.UomName = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
+		case 25:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Image", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowProductModel
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthProductModel
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthProductModel
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Image = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipProductModel(dAtA[iNdEx:])
@@ -3099,7 +3200,7 @@ func (m *ProductOverview) Unmarshal(dAtA []byte) error {
 			m.SalePrice = float64(math.Float64frombits(v))
 		case 5:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Variants", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Image", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -3127,13 +3228,261 @@ func (m *ProductOverview) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Variants = string(dAtA[iNdEx:postIndex])
+			m.Image = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-		case 6:
+		default:
+			iNdEx = preIndex
+			skippy, err := skipProductModel(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if skippy < 0 {
+				return ErrInvalidLengthProductModel
+			}
+			if (iNdEx + skippy) < 0 {
+				return ErrInvalidLengthProductModel
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *DeleteCacheRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowProductModel
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: DeleteCacheRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: DeleteCacheRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TypeModel", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowProductModel
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthProductModel
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthProductModel
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.TypeModel = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType == 0 {
+				var v int64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return ErrIntOverflowProductModel
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					v |= int64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				m.Ids = append(m.Ids, v)
+			} else if wireType == 2 {
+				var packedLen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return ErrIntOverflowProductModel
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					packedLen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if packedLen < 0 {
+					return ErrInvalidLengthProductModel
+				}
+				postIndex := iNdEx + packedLen
+				if postIndex < 0 {
+					return ErrInvalidLengthProductModel
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				var elementCount int
+				var count int
+				for _, integer := range dAtA[iNdEx:postIndex] {
+					if integer < 128 {
+						count++
+					}
+				}
+				elementCount = count
+				if elementCount != 0 && len(m.Ids) == 0 {
+					m.Ids = make([]int64, 0, elementCount)
+				}
+				for iNdEx < postIndex {
+					var v int64
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return ErrIntOverflowProductModel
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						v |= int64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+					m.Ids = append(m.Ids, v)
+				}
+			} else {
+				return fmt.Errorf("proto: wrong wireType = %d for field Ids", wireType)
+			}
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Level", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowProductModel
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthProductModel
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthProductModel
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Level = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipProductModel(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if skippy < 0 {
+				return ErrInvalidLengthProductModel
+			}
+			if (iNdEx + skippy) < 0 {
+				return ErrInvalidLengthProductModel
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *DeleteCacheResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowProductModel
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: DeleteCacheResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: DeleteCacheResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field TemplateId", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Code", wireType)
 			}
-			m.TemplateId = 0
+			m.Code = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowProductModel
@@ -3143,14 +3492,14 @@ func (m *ProductOverview) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.TemplateId |= int64(b&0x7F) << shift
+				m.Code |= uint32(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-		case 7:
+		case 2:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field TemplateName", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Message", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -3178,225 +3527,7 @@ func (m *ProductOverview) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.TemplateName = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 8:
-			if wireType != 1 {
-				return fmt.Errorf("proto: wrong wireType = %d for field SoldQuantity", wireType)
-			}
-			var v uint64
-			if (iNdEx + 8) > l {
-				return io.ErrUnexpectedEOF
-			}
-			v = uint64(encoding_binary.LittleEndian.Uint64(dAtA[iNdEx:]))
-			iNdEx += 8
-			m.SoldQuantity = float64(math.Float64frombits(v))
-		case 9:
-			if wireType != 1 {
-				return fmt.Errorf("proto: wrong wireType = %d for field RemainQuantity", wireType)
-			}
-			var v uint64
-			if (iNdEx + 8) > l {
-				return io.ErrUnexpectedEOF
-			}
-			v = uint64(encoding_binary.LittleEndian.Uint64(dAtA[iNdEx:]))
-			iNdEx += 8
-			m.RemainQuantity = float64(math.Float64frombits(v))
-		case 10:
-			if wireType != 1 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Rating", wireType)
-			}
-			var v uint64
-			if (iNdEx + 8) > l {
-				return io.ErrUnexpectedEOF
-			}
-			v = uint64(encoding_binary.LittleEndian.Uint64(dAtA[iNdEx:]))
-			iNdEx += 8
-			m.Rating = float64(math.Float64frombits(v))
-		case 11:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field SellerId", wireType)
-			}
-			m.SellerId = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowProductModel
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.SellerId |= int64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 12:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field SellerName", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowProductModel
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthProductModel
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthProductModel
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.SellerName = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 13:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field SellerLogo", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowProductModel
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthProductModel
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthProductModel
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.SellerLogo = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 14:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field CategoryId", wireType)
-			}
-			m.CategoryId = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowProductModel
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.CategoryId |= int64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 15:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field CategoryName", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowProductModel
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthProductModel
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthProductModel
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.CategoryName = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 16:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field UomId", wireType)
-			}
-			m.UomId = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowProductModel
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.UomId |= int64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 17:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field UomName", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowProductModel
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthProductModel
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthProductModel
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.UomName = string(dAtA[iNdEx:postIndex])
+			m.Message = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex

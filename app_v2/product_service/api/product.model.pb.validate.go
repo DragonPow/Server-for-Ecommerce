@@ -393,6 +393,8 @@ func (m *ProductDetail) Validate() error {
 
 	// no validation rules for UomName
 
+	// no validation rules for Image
+
 	return nil
 }
 
@@ -466,31 +468,7 @@ func (m *ProductOverview) Validate() error {
 
 	// no validation rules for SalePrice
 
-	// no validation rules for Variants
-
-	// no validation rules for TemplateId
-
-	// no validation rules for TemplateName
-
-	// no validation rules for SoldQuantity
-
-	// no validation rules for RemainQuantity
-
-	// no validation rules for Rating
-
-	// no validation rules for SellerId
-
-	// no validation rules for SellerName
-
-	// no validation rules for SellerLogo
-
-	// no validation rules for CategoryId
-
-	// no validation rules for CategoryName
-
-	// no validation rules for UomId
-
-	// no validation rules for UomName
+	// no validation rules for Image
 
 	return nil
 }
@@ -548,6 +526,148 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = ProductOverviewValidationError{}
+
+// Validate checks the field values on DeleteCacheRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, an error is returned.
+func (m *DeleteCacheRequest) Validate() error {
+	if m == nil {
+		return nil
+	}
+
+	// no validation rules for TypeModel
+
+	// no validation rules for Level
+
+	return nil
+}
+
+// DeleteCacheRequestValidationError is the validation error returned by
+// DeleteCacheRequest.Validate if the designated constraints aren't met.
+type DeleteCacheRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e DeleteCacheRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e DeleteCacheRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e DeleteCacheRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e DeleteCacheRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e DeleteCacheRequestValidationError) ErrorName() string {
+	return "DeleteCacheRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e DeleteCacheRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sDeleteCacheRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = DeleteCacheRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = DeleteCacheRequestValidationError{}
+
+// Validate checks the field values on DeleteCacheResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, an error is returned.
+func (m *DeleteCacheResponse) Validate() error {
+	if m == nil {
+		return nil
+	}
+
+	// no validation rules for Code
+
+	// no validation rules for Message
+
+	return nil
+}
+
+// DeleteCacheResponseValidationError is the validation error returned by
+// DeleteCacheResponse.Validate if the designated constraints aren't met.
+type DeleteCacheResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e DeleteCacheResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e DeleteCacheResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e DeleteCacheResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e DeleteCacheResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e DeleteCacheResponseValidationError) ErrorName() string {
+	return "DeleteCacheResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e DeleteCacheResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sDeleteCacheResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = DeleteCacheResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = DeleteCacheResponseValidationError{}
 
 // Validate checks the field values on GetListProductResponse_Data with the
 // rules defined in the proto definition for this message. If any rules are

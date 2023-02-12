@@ -1,10 +1,10 @@
 package config
 
 import (
+	"Server-for-Ecommerce/library/config"
+	"Server-for-Ecommerce/library/database"
 	"bytes"
 	"encoding/json"
-	"github.com/DragonPow/Server-for-Ecommerce/library/config"
-	"github.com/DragonPow/Server-for-Ecommerce/library/database"
 	"github.com/spf13/viper"
 	"log"
 	"strings"
@@ -73,7 +73,7 @@ func Load() (*Config, error) {
 func loadDefaultConfig() *Config {
 	return &Config{
 		Server:           config.DefaultServerConfig(),
-		MigrationFolder:  "file://app_v2/product_service/internal/database/migrations",
+		MigrationFolder:  "file://app_v2/redis_manager_service/internal/database/migrations",
 		ProductServiceDB: database.PostgresSQLDefaultConfig(),
 		RedisConfig: RedisConfig{
 			Addr:                      "localhost:6379",
