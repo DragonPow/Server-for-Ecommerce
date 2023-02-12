@@ -15,29 +15,16 @@ networks:
 services:
   ## POSTGRESQL
 
-  # postgres account database
-  account-db:
-    image: bitnami/postgresql:12-debian-11
-    ports:
-      - "10100:5432"
-    networks:
-      - infrastructure_nw
-    restart: on-failure
-    environment:
-      - POSTGRESQL_USERNAME=postgres
-      - POSTGRESQL_PASSWORD=postgres123
-      - POSTGRESQL_DATABASE=account
-    volumes:
-      - account-postgresql-data:/bitnami/postgresql
-
   # postgresql product master db
   product-master-db:
     image: bitnami/postgresql:12-debian-11
-    ports:
-      - "10101:5432"
     networks:
       - infrastructure_nw
+    ports:
+      - "5432"
     restart: on-failure
+    volumes:
+      - product-postgresql-data:/bitnami/postgresql
     environment:
       - POSTGRESQL_REPLICATION_MODE=master
       - POSTGRESQL_REPLICATION_USER=product_repl_postgres
@@ -45,8 +32,6 @@ services:
       - POSTGRESQL_USERNAME=postgres
       - POSTGRESQL_PASSWORD=postgres123
       - POSTGRESQL_DATABASE=product
-    volumes:
-      - product-postgresql-data:/bitnami/postgresql
 
   # postgresql product slave db
   product-slave-db:
@@ -54,7 +39,7 @@ services:
     networks:
       - infrastructure_nw
     ports:
-      - "10102:5432"
+      - "5432"
     restart: on-failure
     depends_on:
       - product-master-db
@@ -65,6 +50,33 @@ services:
       - POSTGRESQL_MASTER_HOST=product-master-db
       - POSTGRESQL_MASTER_PORT_NUMBER=5432
       - POSTGRESQL_PASSWORD=postgres123
+
+  # pgpool
+  pg-pool:
+    image: bitnami/pgpool:4-debian-11
+    networks:
+      - infrastructure_nw
+    ports:
+      - "10102:5432"
+    depends_on:
+      - product-master-db
+    volumes:
+      - ./pgpool.conf:/config/pgpool.conf
+    environment:
+      - PGPOOL_USER_CONF_FILE=/config/pgpool.conf
+      - PGPOOL_BACKEND_NODES=0:product-master-db:5432,1:product-slave-db:5432
+      - PGPOOL_SR_CHECK_USER=postgres
+      - PGPOOL_SR_CHECK_PASSWORD=postgres123
+      - PGPOOL_ENABLE_LDAP=no
+      - PGPOOL_POSTGRES_USERNAME=postgres
+      - PGPOOL_POSTGRES_PASSWORD=postgres123
+      - PGPOOL_ADMIN_USERNAME=admin
+      - PGPOOL_ADMIN_PASSWORD=s3cret
+      - PGPOOL_ENABLE_LOAD_BALANCING=yes
+      - PGPOOL_ENABLE_STATEMENT_LOAD_BALANCING=yes
+      - PGPOOL_NUM_INIT_CHILDREN=10
+      - PGPOOL_MAX_POOL=1
+      - PGPOOL_EXTRA_FLAGS=-d
 
   ## REDIS
 
