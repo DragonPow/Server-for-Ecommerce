@@ -1,10 +1,10 @@
 package gzip
 
 import (
+	"Server-for-Ecommerce/library/encode"
 	"bytes"
 	"compress/gzip"
 	"encoding/json"
-	"github.com/DragonPow/Server-for-Ecommerce/library/encode"
 	"io/ioutil"
 )
 

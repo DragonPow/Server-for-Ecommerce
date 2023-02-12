@@ -1,11 +1,11 @@
 package service
 
 import (
+	"Server-for-Ecommerce/app/order_service/api"
+	"Server-for-Ecommerce/app/order_service/config"
+	"Server-for-Ecommerce/app/order_service/internal/cache"
+	"Server-for-Ecommerce/app/order_service/internal/store"
 	"context"
-	"github.com/DragonPow/Server-for-Ecommerce/app/order_service/api"
-	"github.com/DragonPow/Server-for-Ecommerce/app/order_service/config"
-	"github.com/DragonPow/Server-for-Ecommerce/app/order_service/internal/cache"
-	"github.com/DragonPow/Server-for-Ecommerce/app/order_service/internal/store"
 	"github.com/go-logr/logr"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"google.golang.org/grpc"

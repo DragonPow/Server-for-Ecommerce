@@ -1,4 +1,4 @@
-module github.com/DragonPow/Server-for-Ecommerce
+module Server-for-Ecommerce
 
 go 1.18
 

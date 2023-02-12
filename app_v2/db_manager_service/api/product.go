@@ -1,10 +1,10 @@
 package api
 
 import (
+	"Server-for-Ecommerce/library/encode/gzip"
+	"Server-for-Ecommerce/library/server"
 	"context"
 	"encoding/json"
-	"github.com/DragonPow/Server-for-Ecommerce/library/encode/gzip"
-	"github.com/DragonPow/Server-for-Ecommerce/library/server"
 	"io"
 	"io/ioutil"
 	"net/http"

@@ -1,10 +1,10 @@
 package config
 
 import (
+	"Server-for-Ecommerce/library/config"
+	"Server-for-Ecommerce/library/database"
 	"bytes"
 	"encoding/json"
-	"github.com/DragonPow/Server-for-Ecommerce/library/config"
-	"github.com/DragonPow/Server-for-Ecommerce/library/database"
 	"github.com/spf13/viper"
 	"log"
 	"strings"

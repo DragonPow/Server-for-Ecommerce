@@ -1,11 +1,11 @@
 package service
 
 import (
+	"Server-for-Ecommerce/app_v2/db_manager_service/api"
+	"Server-for-Ecommerce/app_v2/db_manager_service/config"
+	"Server-for-Ecommerce/app_v2/db_manager_service/internal/database/store"
+	"Server-for-Ecommerce/app_v2/db_manager_service/producer"
 	"context"
-	"github.com/DragonPow/Server-for-Ecommerce/app_v2/db_manager_service/api"
-	"github.com/DragonPow/Server-for-Ecommerce/app_v2/db_manager_service/config"
-	"github.com/DragonPow/Server-for-Ecommerce/app_v2/db_manager_service/internal/database/store"
-	"github.com/DragonPow/Server-for-Ecommerce/app_v2/db_manager_service/producer"
 	"github.com/go-logr/logr"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"google.golang.org/grpc"

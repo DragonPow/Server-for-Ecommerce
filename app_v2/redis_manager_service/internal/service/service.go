@@ -1,13 +1,13 @@
 package service
 
 import (
+	"Server-for-Ecommerce/app_v2/redis_manager_service/internal/redis"
 	"context"
-	"github.com/DragonPow/Server-for-Ecommerce/app_v2/redis_manager_service/internal/redis"
 	"github.com/gorilla/mux"
 	"net/http"
 
-	"github.com/DragonPow/Server-for-Ecommerce/app_v2/redis_manager_service/config"
-	"github.com/DragonPow/Server-for-Ecommerce/app_v2/redis_manager_service/internal/database/store"
+	"Server-for-Ecommerce/app_v2/redis_manager_service/config"
+	"Server-for-Ecommerce/app_v2/redis_manager_service/internal/database/store"
 	"github.com/go-logr/logr"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"google.golang.org/grpc"

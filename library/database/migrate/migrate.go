@@ -1,8 +1,8 @@
 package migrate
 
 import (
+	log "Server-for-Ecommerce/library/log"
 	"fmt"
-	log "github.com/DragonPow/Server-for-Ecommerce/library/log"
 	migrateV4 "github.com/golang-migrate/migrate/v4"
 	"github.com/urfave/cli/v2"
 	"io/ioutil"

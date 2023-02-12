@@ -1,15 +1,15 @@
 package service
 
 import (
+	"Server-for-Ecommerce/app_v2/product_service/api"
+	"Server-for-Ecommerce/app_v2/product_service/cache"
+	"Server-for-Ecommerce/app_v2/product_service/database/store"
+	"Server-for-Ecommerce/app_v2/product_service/util"
+	"Server-for-Ecommerce/library/math"
+	"Server-for-Ecommerce/library/slice"
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/api"
-	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/cache"
-	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/database/store"
-	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/util"
-	"github.com/DragonPow/Server-for-Ecommerce/library/math"
-	"github.com/DragonPow/Server-for-Ecommerce/library/slice"
 	"github.com/go-logr/logr"
 	"golang.org/x/exp/maps"
 	"google.golang.org/grpc/codes"

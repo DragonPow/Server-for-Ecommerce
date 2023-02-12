@@ -1,10 +1,10 @@
 package api
 
 import (
+	"Server-for-Ecommerce/app_v2/db_manager_service/util"
+	"Server-for-Ecommerce/library/server"
 	"context"
 	"fmt"
-	"github.com/DragonPow/Server-for-Ecommerce/app_v2/db_manager_service/util"
-	"github.com/DragonPow/Server-for-Ecommerce/library/server"
 	"github.com/gorilla/mux"
 	"net/http"
 	"strconv"
@@ -61,15 +61,17 @@ func NewHttpHandler(httpPattern string, s HttpServer) http.Handler {
 }
 
 // GetField
-//  Get fieldName from request, return string
+//
+//	Get fieldName from request, return string
 func GetField(req *http.Request, fieldName string) (string, bool) {
 	m, ok := mux.Vars(req)[fieldName]
 	return m, ok
 }
 
 // ParseInt64FromReq
-//  Get params with specific fieldName Ex: /get/products/{field_name}
-//  Parse from string to int64
+//
+//	Get params with specific fieldName Ex: /get/products/{field_name}
+//	Parse from string to int64
 func ParseInt64FromReq(req *http.Request, fieldName string) (int64, error) {
 	v, ok := GetField(req, fieldName)
 	if !ok {
