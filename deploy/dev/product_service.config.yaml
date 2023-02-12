@@ -7,7 +7,7 @@ SERVER:
 MIGRATION_FOLDER: file://database/migrations
 
 PRODUCT_SERVICE_DB:
-  HOST: localhost
+  HOST: host.docker.internal
   PORT: 10102
   USERNAME: postgres
   PASSWORD: postgres123
