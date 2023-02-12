@@ -9,6 +9,7 @@ replace github.com/spf13/viper => github.com/spf13/viper v1.7.1
 replace gorm.io/driver/postgres => gorm.io/driver/postgres v1.3.10
 
 require (
+	github.com/allegro/bigcache/v3 v3.1.0
 	github.com/envoyproxy/protoc-gen-validate v0.6.2
 	github.com/go-logr/logr v1.2.2
 	github.com/go-logr/zapr v1.2.3
