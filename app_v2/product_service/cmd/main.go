@@ -99,7 +99,12 @@ func newService(cfg *config.Config) (*service.Service, error) {
 	)
 
 	// Memory cache
-	memCache := mem_cache.NewCache(cfg.MemCacheConfig.MaxTimeMiss, cfg.MemCacheConfig.MaxNumberCache)
+	//memCache := mem_cache.NewCache(cfg.MemCacheConfig.MaxTimeMiss, cfg.MemCacheConfig.MaxNumberCache)
+	memCache, err := mem_cache.NewBigCache(cfg.MemCacheConfig.MaxTimeMiss, cfg.MemCacheConfig.MaxNumberCache)
+	if err != nil {
+		logger.Error(err, "Error create mem cache")
+		return nil, err
+	}
 
 	return service.NewService(cfg, logger, store, cache, memCache), nil
 }
