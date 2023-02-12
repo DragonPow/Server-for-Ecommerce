@@ -9,7 +9,6 @@ import (
 
 type MemCache interface {
 	cache.Cache
-	IsMaxMiss(storeKey string) bool
 	CheckAndSet(objects map[int64]cache.ModelValue) (bool, error)
 	SetProductByAttr(object cache.Product, attrs []byte, version string) error
 }
