@@ -1,11 +1,11 @@
 package service
 
 import (
+	"Server-for-Ecommerce/app/account_service/api"
+	"Server-for-Ecommerce/app/account_service/internal/store"
+	"Server-for-Ecommerce/app/account_service/util"
+	"Server-for-Ecommerce/library/slice"
 	"context"
-	"github.com/DragonPow/Server-for-Ecommerce/app/account_service/api"
-	"github.com/DragonPow/Server-for-Ecommerce/app/account_service/internal/store"
-	"github.com/DragonPow/Server-for-Ecommerce/app/account_service/util"
-	"github.com/DragonPow/Server-for-Ecommerce/library/slice"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"strconv"

@@ -1,9 +1,9 @@
 package api
 
 import (
-	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/cache"
-	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/database/store"
-	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/util"
+	"Server-for-Ecommerce/app_v2/product_service/cache"
+	"Server-for-Ecommerce/app_v2/product_service/database/store"
+	"Server-for-Ecommerce/app_v2/product_service/util"
 )
 
 func (p *ProductDetail) FromEntity(product store.GetProductDetailsRow) {

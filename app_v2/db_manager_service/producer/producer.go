@@ -1,12 +1,12 @@
 package producer
 
 import (
+	"Server-for-Ecommerce/app_v2/db_manager_service/config"
+	"Server-for-Ecommerce/app_v2/db_manager_service/util"
+	"Server-for-Ecommerce/library/math"
 	"context"
 	"errors"
 	"fmt"
-	"github.com/DragonPow/Server-for-Ecommerce/app_v2/db_manager_service/config"
-	"github.com/DragonPow/Server-for-Ecommerce/app_v2/db_manager_service/util"
-	"github.com/DragonPow/Server-for-Ecommerce/library/math"
 	"github.com/go-logr/logr"
 	"github.com/segmentio/kafka-go"
 	"time"

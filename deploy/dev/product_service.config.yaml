@@ -1,0 +1,15 @@
+SERVER:
+  GRPC:
+    PORT: 11000
+  HTTP:
+    PORT: 10000
+
+MIGRATION_FOLDER: file://database/migrations
+
+PRODUCT_SERVICE_DB:
+  HOST: localhost
+  PORT: 10102
+  USERNAME: postgres
+  PASSWORD: postgres123
+  DATABASE: product
+  OPTIONS: ?sslmode=disable

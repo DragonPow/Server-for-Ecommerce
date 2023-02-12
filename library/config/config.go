@@ -1,6 +1,6 @@
 package config
 
-import "github.com/DragonPow/Server-for-Ecommerce/library/server"
+import "Server-for-Ecommerce/library/server"
 
 type ServerConfig struct {
 	GRPC server.Listen `json:"grpc" mapstructure:"grpc" yaml:"grpc"`

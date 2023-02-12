@@ -1,9 +1,9 @@
 package mem_cache
 
 import (
+	"Server-for-Ecommerce/app_v2/product_service/cache"
 	"encoding/json"
 	"fmt"
-	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/cache"
 	"sync"
 )
 

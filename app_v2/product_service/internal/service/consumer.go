@@ -1,10 +1,10 @@
 package service
 
 import (
+	producerDb "Server-for-Ecommerce/app_v2/db_manager_service/producer"
+	"Server-for-Ecommerce/app_v2/product_service/cache"
 	"context"
 	"encoding/json"
-	producerDb "github.com/DragonPow/Server-for-Ecommerce/app_v2/db_manager_service/producer"
-	"github.com/DragonPow/Server-for-Ecommerce/app_v2/product_service/cache"
 	"github.com/segmentio/kafka-go"
 )
 
