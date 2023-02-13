@@ -27,7 +27,11 @@ type RedisConfig struct {
 }
 
 type KafkaConfig struct {
-	UpdateDbConsumer Consumer `json:"update_db_consumer" mapstructure:"update_db_consumer"`
+	UpdateDbConsumer             Consumer `json:"update_db_consumer" mapstructure:"update_db_consumer"`
+	Connections                  []string `json:"connections" mapstructure:"connections"`
+	MaxPublishTimeoutSecond      int      `json:"max_publish_timeout_second" mapstructure:"max_publish_timeout_second"`
+	MaxNumberRetry               int      `json:"max_number_retry" mapstructure:"max_number_retry"`
+	TimeSleepPerRetryMillisecond int      `json:"time_sleep_per_retry_millisecond" mapstructure:"time_sleep_per_retry_millisecond"`
 }
 
 type Consumer struct {
@@ -88,6 +92,10 @@ func loadDefaultConfig() *Config {
 				Connections: []string{"localhost:9092", "localhost:9093"},
 				Group:       "update_product_consumer",
 			},
+			Connections:                  []string{"localhost:9092"},
+			MaxPublishTimeoutSecond:      10,
+			MaxNumberRetry:               3,
+			TimeSleepPerRetryMillisecond: 200,
 		},
 	}
 }

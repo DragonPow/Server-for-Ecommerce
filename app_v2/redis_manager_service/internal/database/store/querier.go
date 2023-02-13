@@ -10,7 +10,7 @@ import (
 
 type Querier interface {
 	GetCategories(ctx context.Context, ids []int64) ([]Category, error)
-	GetProductAndRelation(ctx context.Context, id int64) (GetProductAndRelationRow, error)
+	GetProductAndRelations(ctx context.Context, ids []int64) ([]GetProductAndRelationsRow, error)
 	GetProductTemplates(ctx context.Context, ids []int64) ([]ProductTemplate, error)
 	GetProducts(ctx context.Context, ids []int64) ([]Product, error)
 	GetSellers(ctx context.Context, ids []int64) ([]Seller, error)

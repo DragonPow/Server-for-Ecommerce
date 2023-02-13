@@ -4,7 +4,7 @@ import (
 	"Server-for-Ecommerce/app_v2/db_manager_service/api"
 	"Server-for-Ecommerce/app_v2/db_manager_service/config"
 	"Server-for-Ecommerce/app_v2/db_manager_service/internal/database/store"
-	"Server-for-Ecommerce/app_v2/db_manager_service/producer"
+	producer "Server-for-Ecommerce/library/kafka/pub"
 	"context"
 	"github.com/go-logr/logr"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"

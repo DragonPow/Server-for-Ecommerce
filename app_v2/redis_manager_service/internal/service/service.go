@@ -2,6 +2,7 @@ package service
 
 import (
 	"Server-for-Ecommerce/app_v2/redis_manager_service/internal/redis"
+	producer "Server-for-Ecommerce/library/kafka/pub"
 	"context"
 	"github.com/gorilla/mux"
 	"net/http"
@@ -14,10 +15,11 @@ import (
 )
 
 type Service struct {
-	cfg     *config.Config
-	log     logr.Logger
-	storeDb store.StoreQuerier
-	redis   *redis.Redis
+	cfg      *config.Config
+	log      logr.Logger
+	storeDb  store.StoreQuerier
+	redis    *redis.Redis
+	producer producer.Producer
 	//api.UnimplementedOrderServiceServer
 }
 
@@ -26,12 +28,14 @@ func NewService(
 	log logr.Logger,
 	storeDb store.StoreQuerier,
 	redis *redis.Redis,
+	producer producer.Producer,
 ) *Service {
 	return &Service{
-		cfg:     cfg,
-		log:     log,
-		storeDb: storeDb,
-		redis:   redis,
+		cfg:      cfg,
+		log:      log,
+		storeDb:  storeDb,
+		redis:    redis,
+		producer: producer,
 	}
 }
 

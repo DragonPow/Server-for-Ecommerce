@@ -7,3 +7,7 @@ const (
 	ZeroLength  = 0
 	EmptyString = ""
 )
+
+const (
+	TopicUpdateCache = "update_cache"
+)

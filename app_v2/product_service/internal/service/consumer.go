@@ -1,11 +1,13 @@
 package service
 
 import (
-	producerDb "Server-for-Ecommerce/app_v2/db_manager_service/producer"
 	"Server-for-Ecommerce/app_v2/product_service/cache"
+	pubEvent "Server-for-Ecommerce/app_v2/redis_manager_service/util"
+	"Server-for-Ecommerce/library/slice"
 	"context"
 	"encoding/json"
 	"github.com/segmentio/kafka-go"
+	"time"
 )
 
 func (s *Service) Consume() error {
@@ -17,14 +19,20 @@ func (s *Service) Consume() error {
 	go func() {
 		// create a new reader to the topic "my-topic"
 		r := kafka.NewReader(kafka.ReaderConfig{
-			Brokers:     updateConsumer.Connections,
-			Topic:       updateConsumer.Topic,
-			GroupID:     updateConsumer.Group,
-			MinBytes:    10e3, // 10KB
-			MaxBytes:    10e6, // 10MB
-			StartOffset: kafka.LastOffset,
+			Brokers: updateConsumer.Connections,
+			Topic:   updateConsumer.Topic,
+			//GroupID:                updateConsumer.Group,
+			MinBytes:               10e3, // 10KB
+			MaxBytes:               10e6, // 10MB
+			StartOffset:            kafka.LastOffset,
+			MaxWait:                1 * time.Second,
+			PartitionWatchInterval: 1 * time.Second,
 		})
-		err := s.ProcessConsume(r, s.UpdateMemoryCache)
+		//err := s.ProcessConsume(r, s.UpdateMemoryCache)
+		//if err != nil {
+		//	errChan <- err
+		//}
+		err := s.ProcessConsume(r, s.UpdateMemoryCacheV2)
 		if err != nil {
 			errChan <- err
 		}
@@ -55,26 +63,47 @@ func (s *Service) ProcessConsume(r *kafka.Reader, process func(ctx context.Conte
 	}
 }
 
-func (s *Service) UpdateMemoryCache(ctx context.Context, message kafka.Message) error {
-	logger := s.log.WithName("UpdateMemoryCache").WithValues("message", message)
+//func (s *Service) UpdateMemoryCache(ctx context.Context, message kafka.Message) error {
+//	logger := s.log.WithName("UpdateMemoryCache").WithValues("message", message)
+//	logger.Info("Start process")
+//	var payload producerDb.UpdateDatabaseEventValue
+//	err := json.Unmarshal(message.Value, &payload)
+//	if err != nil {
+//		logger.Error(err, "Message value must be UpdateDatabaseEventValue")
+//		return err
+//	}
+//	//products, err := s.storeDb.GetProducts(ctx, []int64{payload.Id})
+//	//if err != nil {
+//	//	logger.Error(err, "Call db get products fail")
+//	//}
+//	//if len(products) == util.ZeroLength {
+//	//	err = fmt.Errorf("not found product with id %v", payload.Id)
+//	//	logger.Error(err, "Product not exists")
+//	//	return err
+//	//}
+//
+//	err = s.memCache.SetProductByAttr(cache.Product{ID: payload.Id}, payload.Variants, payload.GetVersion())
+//	if err != nil {
+//		logger.Error(err, "Fail to SetProductByAttr")
+//		return err
+//	}
+//	logger.Info("Success")
+//	return nil
+//}
+
+func (s *Service) UpdateMemoryCacheV2(ctx context.Context, message kafka.Message) error {
+	logger := s.log.WithName("UpdateMemoryCacheV2").WithValues("message", message)
 	logger.Info("Start process")
-	var payload producerDb.UpdateDatabaseEventValue
+	var payload pubEvent.UpdateCacheEventValue
 	err := json.Unmarshal(message.Value, &payload)
 	if err != nil {
-		logger.Error(err, "Message value must be UpdateDatabaseEventValue")
+		logger.Error(err, "Message value must be UpdateCacheEventValue")
 		return err
 	}
-	//products, err := s.storeDb.GetProducts(ctx, []int64{payload.Id})
-	//if err != nil {
-	//	logger.Error(err, "Call db get products fail")
-	//}
-	//if len(products) == util.ZeroLength {
-	//	err = fmt.Errorf("not found product with id %v", payload.Id)
-	//	logger.Error(err, "Product not exists")
-	//	return err
-	//}
 
-	err = s.memCache.SetProductByAttr(cache.Product{ID: payload.Id}, payload.Variants, payload.GetVersion())
+	err = s.memCache.SetMultiple(slice.KeyBy(payload.Objects, func(o cache.Product) (int64, cache.ModelValue) {
+		return o.GetId(), o
+	}))
 	if err != nil {
 		logger.Error(err, "Fail to SetProductByAttr")
 		return err

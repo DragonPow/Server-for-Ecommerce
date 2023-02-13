@@ -1,11 +1,6 @@
-package producer
+package util
 
 import "time"
-
-type ProducerEvent struct {
-	Key   string
-	Value any
-}
 
 type InsertDatabaseEventValue int64 // id of new model
 

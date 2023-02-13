@@ -90,7 +90,7 @@ func loadDefaultConfig() *Config {
 		},
 		KafkaConfig: KafkaConfig{
 			UpdateDbConsumer: Consumer{
-				Topic:       "update_product",
+				Topic:       "update_cache",
 				Connections: []string{"localhost:9092", "localhost:9093"},
 				Group:       "product_consume_update_product_consumer",
 			},
