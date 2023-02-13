@@ -18,41 +18,23 @@ type Producer interface {
 }
 
 type producer struct {
-	topics            map[string]*kafka.Writer
-	log               logr.Logger
-	maxNumberRetry    int
-	maxPublishTimeOut time.Duration
-	connections       []string
-	timeSleepPerRetry time.Duration
+	topics      map[string]*kafka.Writer
+	log         *logr.Logger
+	cfg         *producerConfig
+	connections []string
 }
 
-func NewProducer(cfg config.KafkaConfig, log logr.Logger) (p Producer, err error) {
+func NewProducer(connections []string, log *logr.Logger, options ...ConfigOption) (p Producer, err error) {
+	cfg := loadDefaultConfig()
+	for _, opt := range options {
+		opt(cfg)
+	}
 	result := &producer{
-		log:               log,
-		connections:       cfg.Connections,
-		topics:            make(map[string]*kafka.Writer),
-		maxNumberRetry:    cfg.MaxNumberRetry,
-		timeSleepPerRetry: time.Duration(cfg.TimeSleepPerRetryMillisecond) * time.Millisecond,
-		maxPublishTimeOut: time.Duration(cfg.MaxPublishTimeoutSecond) * time.Second,
+		log:         log,
+		connections: connections,
+		topics:      make(map[string]*kafka.Writer),
+		cfg:         cfg,
 	}
-	// Register topic
-	//for _, producer := range cfg.ListProducer {
-	//	err := result.RegisterTopic(producer)
-	//	if err != nil {
-	//		return result, err
-	//	}
-	//}
-
-	// Register topic
-	err = result.Register(util.TopicInsertProduct)
-	if err != nil {
-		return result, err
-	}
-	err = result.Register(util.TopicUpdateProduct)
-	if err != nil {
-		return result, err
-	}
-
 	return result, nil
 }
 
@@ -64,7 +46,7 @@ func (p *producer) RegisterTopic(producer config.Producer) error {
 		Addr:                   kafka.TCP(p.connections...),
 		Topic:                  producer.Topic,
 		Balancer:               &kafka.RoundRobin{},
-		WriteTimeout:           p.maxPublishTimeOut,
+		WriteTimeout:           p.cfg.maxPublishTimeOut,
 		Async:                  true,
 		Completion:             nil,
 		AllowAutoTopicCreation: true,
@@ -81,7 +63,7 @@ func (p *producer) Register(topicName string) error {
 		Addr:                   kafka.TCP(p.connections...),
 		Topic:                  topicName,
 		Balancer:               &kafka.RoundRobin{},
-		WriteTimeout:           p.maxPublishTimeOut,
+		WriteTimeout:           p.cfg.maxPublishTimeOut,
 		Async:                  true,
 		Completion:             nil,
 		AllowAutoTopicCreation: true,
@@ -105,8 +87,8 @@ func (p *producer) Publish(ctx context.Context, topicName string, events ...Prod
 	//defer topic.Close()
 	var retry int
 	// Begin publish with retry
-	for retry = 0; retry < p.maxNumberRetry; retry++ {
-		newCtx, cancel := context.WithTimeout(ctx, p.maxPublishTimeOut)
+	for retry = 0; retry < p.cfg.maxNumberRetry; retry++ {
+		newCtx, cancel := context.WithTimeout(ctx, p.cfg.maxPublishTimeOut)
 		defer cancel()
 
 		// Push Message
@@ -114,7 +96,7 @@ func (p *producer) Publish(ctx context.Context, topicName string, events ...Prod
 		err := topic.WriteMessages(newCtx, messages...)
 		if errors.Is(err, kafka.LeaderNotAvailable) || errors.Is(err, context.DeadlineExceeded) {
 			logger.Error(err, "Push message fail, sleep and retry")
-			time.Sleep(p.timeSleepPerRetry)
+			time.Sleep(p.cfg.timeSleepPerRetry)
 			continue
 		}
 		if err != nil {
@@ -123,7 +105,7 @@ func (p *producer) Publish(ctx context.Context, topicName string, events ...Prod
 		}
 		break
 	}
-	if retry == p.maxNumberRetry {
+	if retry == p.cfg.maxNumberRetry {
 		logger.Info("Push message fail, get max number retry")
 		return nil
 	}

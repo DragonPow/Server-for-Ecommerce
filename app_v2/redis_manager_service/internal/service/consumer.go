@@ -1,14 +1,19 @@
 package service
 
 import (
-	producerDb "Server-for-Ecommerce/app_v2/db_manager_service/producer"
+	producerDb "Server-for-Ecommerce/app_v2/db_manager_service/util"
 	"Server-for-Ecommerce/app_v2/product_service/cache"
+	storeProduct "Server-for-Ecommerce/app_v2/product_service/database/store"
+	"Server-for-Ecommerce/app_v2/redis_manager_service/internal/database/store"
 	"Server-for-Ecommerce/app_v2/redis_manager_service/util"
+	producer "Server-for-Ecommerce/library/kafka/pub"
 	"Server-for-Ecommerce/library/ring"
+	"Server-for-Ecommerce/library/slice"
 	"context"
 	"encoding/json"
 	"errors"
 	"github.com/segmentio/kafka-go"
+	"golang.org/x/exp/maps"
 	"time"
 )
 
@@ -38,13 +43,14 @@ func (s *Service) Consume() error {
 	go func() {
 		// create a new reader to the topic "update-db"
 		r := kafka.NewReader(kafka.ReaderConfig{
-			Brokers:     updateConsumer.Connections,
-			Topic:       updateConsumer.Topic,
-			GroupID:     updateConsumer.Group,
-			MinBytes:    10e3, // 10KB
-			MaxBytes:    10e6, // 10MB
-			StartOffset: kafka.LastOffset,
-			MaxWait:     1 * time.Second,
+			Brokers:                updateConsumer.Connections,
+			Topic:                  updateConsumer.Topic,
+			GroupID:                updateConsumer.Group,
+			MinBytes:               10e3, // 10KB
+			MaxBytes:               10e6, // 10MB
+			StartOffset:            kafka.LastOffset,
+			MaxWait:                1 * time.Second,
+			PartitionWatchInterval: 1 * time.Second,
 		})
 		err := s.ProcessConsume(r, s.AddUpdateMessageToRing)
 		if err != nil {
@@ -104,7 +110,6 @@ func (s *Service) WaitRing(timeout <-chan time.Time) error {
 		case <-s.redis.Ring.SignalWrite:
 		}
 	}
-
 }
 
 func (s *Service) updateRedisFromRing() error {
@@ -125,7 +130,7 @@ func (s *Service) updateRedisFromRing() error {
 		return err
 	}
 	// Compute all message in ring
-	err = s.computeMessagesUpdate(buf)
+	err = s.computeMessagesUpdateV2(buf)
 	if err != nil {
 		logger.Error(err, "computeMessagesUpdate fail")
 		return err
@@ -145,8 +150,73 @@ func (s *Service) AddUpdateMessageToRing(ctx context.Context, message kafka.Mess
 	return nil
 }
 
-func (s *Service) computeMessagesUpdate(buf []kafka.Message) error {
-	mapBuf := make(map[int64]*producerDb.UpdateDatabaseEventValue, len(buf))
+//func (s *Service) computeMessagesUpdate(buf []kafka.Message) error {
+//	mapBuf := make(map[int64]*producerDb.UpdateDatabaseEventValue, len(buf))
+//	for _, message := range buf {
+//		// Marshal from message
+//		var payload producerDb.UpdateDatabaseEventValue
+//		err := json.Unmarshal(message.Value, &payload)
+//		if err != nil {
+//			return err
+//		}
+//
+//		// Check if mapBuf exists id, append to variants
+//		// Else add to mapBuf
+//		m, ok := mapBuf[payload.Id]
+//		if !ok {
+//			mapBuf[payload.Id] = &payload
+//			continue
+//		}
+//
+//		// Compute variants
+//		variants := make(map[string]any)
+//		mVariants := make(map[string]any)
+//		var isAppend bool
+//		err = json.Unmarshal(payload.Variants, &variants)
+//		if err != nil {
+//			return err
+//		}
+//		err = json.Unmarshal(m.Variants, &mVariants)
+//		if err != nil {
+//			return err
+//		}
+//
+//		// Merge prev_variants and payload Variants
+//		// Only merge when old message
+//		for k, v := range variants {
+//			isAppend = true
+//			_, ok := mVariants[k]
+//			if ok {
+//				// If exists in mapBuf and version is lower, change in mapBuf
+//				if m.GetVersion() < payload.GetVersion() {
+//					mVariants[k] = v
+//				}
+//				continue
+//			}
+//			mVariants[k] = v
+//		}
+//		// If merge, update in mapBuf variants
+//		if isAppend {
+//			b, err := json.Marshal(mVariants)
+//			if err != nil {
+//				return err
+//			}
+//			m.Variants = b
+//		}
+//		continue
+//	}
+//
+//	for _, payload := range mapBuf {
+//		go func(payload producerDb.UpdateDatabaseEventValue) {
+//			ctx := context.Background()
+//			_ = s.UpdateRedis(ctx, payload) // ignore if error
+//		}(*payload)
+//	}
+//	return nil
+//}
+
+func (s *Service) computeMessagesUpdateV2(buf []kafka.Message) error {
+	mapBuf := make(map[int64]struct{}, len(buf))
 	for _, message := range buf {
 		// Marshal from message
 		var payload producerDb.UpdateDatabaseEventValue
@@ -157,115 +227,112 @@ func (s *Service) computeMessagesUpdate(buf []kafka.Message) error {
 
 		// Check if mapBuf exists id, append to variants
 		// Else add to mapBuf
-		m, ok := mapBuf[payload.Id]
-		if !ok {
-			mapBuf[payload.Id] = &payload
-			continue
-		}
-
-		// Compute variants
-		variants := make(map[string]any)
-		mVariants := make(map[string]any)
-		var isAppend bool
-		err = json.Unmarshal(payload.Variants, &variants)
-		if err != nil {
-			return err
-		}
-		err = json.Unmarshal(m.Variants, &mVariants)
-		if err != nil {
-			return err
-		}
-
-		// Merge prev_variants and payload Variants
-		// Only merge when old message
-		for k, v := range variants {
-			isAppend = true
-			_, ok := mVariants[k]
-			if ok {
-				// If exists in mapBuf and version is lower, change in mapBuf
-				if m.GetVersion() < payload.GetVersion() {
-					mVariants[k] = v
-				}
-				continue
-			}
-			mVariants[k] = v
-		}
-		// If merge, update in mapBuf variants
-		if isAppend {
-			b, err := json.Marshal(mVariants)
-			if err != nil {
-				return err
-			}
-			m.Variants = b
-		}
-		continue
+		mapBuf[payload.Id] = struct{}{}
 	}
 
-	for _, payload := range mapBuf {
-		go func(payload producerDb.UpdateDatabaseEventValue) {
-			ctx := context.Background()
-			_ = s.UpdateRedis(ctx, payload) // ignore if error
-		}(*payload)
-	}
-	return nil
+	return s.UpdateRedisV2(context.Background(), maps.Keys(mapBuf))
 }
 
-func (s *Service) UpdateRedis(ctx context.Context, payload producerDb.UpdateDatabaseEventValue) error {
-	logger := s.log.WithName("UpdateMemoryCache").WithValues("payload", payload)
-	logger.Info("Start process")
+//func (s *Service) UpdateRedis(ctx context.Context, payload producerDb.UpdateDatabaseEventValue) error {
+//	logger := s.log.WithName("UpdateMemoryCache").WithValues("payload", payload)
+//	logger.Info("Start process")
+//
+//	// Way 1: Call db to enrich data
+//	//products, err := s.storeDb.GetProducts(ctx, []int64{payload.Id})
+//	//if err != nil {
+//	//	logger.Error(err, "Call db get products fail")
+//	//}
+//	//if len(products) == util.ZeroLength {
+//	//	err = fmt.Errorf("not found product with id %v", payload.Id)
+//	//	logger.Error(err, "Product not exists")
+//	//	return err
+//	//}
+//	//product := products[0]
+//	//templates, err := s.storeDb.GetProductTemplates(ctx, []int64{product.TemplateID.Int64})
+//	//if err != nil {
+//	//	logger.Error(err, "Call db get product templates fail")
+//	//}
+//	//if len(templates) == util.ZeroLength {
+//	//	err = fmt.Errorf("not found product template with id %v", payload.Id)
+//	//	logger.Error(err, "Product not exists")
+//	//	return err
+//	//}
+//	//template := templates[0]
+//	//var cacheModel cache.Product
+//	//cacheModel.FromDb(storeProduct.Product(product), template.CategoryID.Int64, template.UomID.Int64, template.SellerID.Int64)
+//
+//	// Way 2: update from variants
+//	cacheModel, ok := util.GetOne[cache.Product](s.redis.Redis, payload.Id)
+//	if !ok {
+//		logger.Info("Product not in cache, ignore", "id", payload.Id)
+//		return nil
+//	}
+//	if cacheModel.GetVersion() >= payload.GetVersion() {
+//		logger.Info("Product have version greater than request, ignore", "cacheModel", cacheModel)
+//		return nil
+//	}
+//
+//	err := json.Unmarshal(payload.Variants, &cacheModel)
+//	if err != nil {
+//		logger.Error(err, "Fail unmarshal variants")
+//		return err
+//	}
+//	// Update version
+//	err = cacheModel.UpdateVersion(payload.GetVersion())
+//	if err != nil {
+//		logger.Error(err, "Update version fail") // ignore if fail
+//	}
+//
+//	key, value := util.FuncConvertModel2Cache(payload.Id, cacheModel)
+//	err = s.redis.Set(ctx, key, value)
+//	if err != nil {
+//		logger.Error(err, "Update to redis fail")
+//		return err
+//	}
+//	logger.Info("Success")
+//	return nil
+//}
 
-	// Way 1: Call db to enrich data
-	//products, err := s.storeDb.GetProducts(ctx, []int64{payload.Id})
-	//if err != nil {
-	//	logger.Error(err, "Call db get products fail")
-	//}
-	//if len(products) == util.ZeroLength {
-	//	err = fmt.Errorf("not found product with id %v", payload.Id)
-	//	logger.Error(err, "Product not exists")
-	//	return err
-	//}
-	//product := products[0]
-	//templates, err := s.storeDb.GetProductTemplates(ctx, []int64{product.TemplateID.Int64})
-	//if err != nil {
-	//	logger.Error(err, "Call db get product templates fail")
-	//}
-	//if len(templates) == util.ZeroLength {
-	//	err = fmt.Errorf("not found product template with id %v", payload.Id)
-	//	logger.Error(err, "Product not exists")
-	//	return err
-	//}
-	//template := templates[0]
-	//var cacheModel cache.Product
-	//cacheModel.FromDb(storeProduct.Product(product), template.CategoryID.Int64, template.UomID.Int64, template.SellerID.Int64)
+func (s *Service) UpdateRedisV2(ctx context.Context, ids []int64) error {
+	logger := s.log.WithName("UpdateMemoryCache")
+	logger.Info("Start process", "ids", ids)
 
-	// Way 2: update from variants
-	cacheModel, ok := util.GetOne[cache.Product](s.redis.Redis, payload.Id)
-	if !ok {
-		logger.Info("Product not in cache, ignore", "id", payload.Id)
+	values, _ := util.GetMultiple[cache.Product](s.redis.Redis, ids)
+	if len(values) == util.ZeroLength {
 		return nil
 	}
-	if cacheModel.GetVersion() >= payload.GetVersion() {
-		logger.Info("Product have version greater than request, ignore", "cacheModel", cacheModel)
+
+	products, err := s.storeDb.GetProductAndRelations(ctx, maps.Keys(values))
+	if err != nil {
+		logger.Error(err, "Call db get products fail")
+	}
+	if len(products) == util.ZeroLength {
+		logger.Info("Not found products", "values", maps.Keys(values))
 		return nil
 	}
 
-	err := json.Unmarshal(payload.Variants, &cacheModel)
-	if err != nil {
-		logger.Error(err, "Fail unmarshal variants")
-		return err
-	}
-	// Update version
-	err = cacheModel.UpdateVersion(payload.GetVersion())
-	if err != nil {
-		logger.Error(err, "Update version fail") // ignore if fail
-	}
-
-	key, value := util.FuncConvertModel2Cache(payload.Id, cacheModel)
-	err = s.redis.Set(ctx, key, value)
+	cacheModels := slice.Map(products, func(product store.GetProductAndRelationsRow) cache.Product {
+		var cacheModel cache.Product
+		cacheModel.FromDbV2(storeProduct.GetProductAndRelationsRow(product))
+		return cacheModel
+	})
+	err = s.redis.SetList(ctx, slice.KeyBy(cacheModels, util.FuncConvertModel2Cache[cache.Product]))
 	if err != nil {
 		logger.Error(err, "Update to redis fail")
 		return err
 	}
+	go func(cacheModels []cache.Product) {
+		ctx := context.Background()
+		t := time.Now()
+		err = s.producer.Publish(ctx, util.TopicUpdateCache, producer.ProducerEvent{
+			Key:   t.Format(time.RFC3339),
+			Value: util.UpdateCacheEventValue{Objects: cacheModels},
+		})
+		if err != nil {
+			s.log.Error(err, "Publish event fail")
+			return
+		}
+	}(cacheModels)
 	logger.Info("Success")
 	return nil
 }

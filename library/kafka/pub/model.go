@@ -6,6 +6,11 @@ import (
 	"time"
 )
 
+type ProducerEvent struct {
+	Key   string
+	Value any
+}
+
 func funcConvertEvent2Message(topicName string) func(e ProducerEvent) kafka.Message {
 	return func(e ProducerEvent) kafka.Message {
 		v, err := json.Marshal(e.Value)

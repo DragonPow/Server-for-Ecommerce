@@ -2,8 +2,8 @@ create table if not exists "user"
 (
     id bigserial primary key,
     "name" varchar not null,
-    user_name varchar not null,
-    passwrod varchar not null,
+    user_name varchar not null default '',
+    passwrod varchar not null default '',
     create_date timestamp not null default now(),
     write_date timestamp not null default now()
 );
@@ -27,7 +27,7 @@ create table if not exists seller
     phone varchar,
     address varchar,
     logo_url varchar,
-    manager_id int8 not null,
+    manager_id int8,
     create_uid int8 not null default 1,
     write_uid int8 not null default 1,
     create_date timestamp not null default now(),
@@ -38,7 +38,7 @@ create table if not exists uom
 (
     id bigserial primary key,
     name varchar not null,
-    seller_id int8 not null
+    seller_id int8 not null default 1
         constraint uom_seller_id_fkey
             references seller
             on delete cascade,
@@ -64,15 +64,15 @@ create table if not exists product_template
     create_date timestamp not null default now(),
     write_date timestamp not null default now(),
     variants json,
-    seller_id int8
+    seller_id int8 default 1
         constraint product_template_seller_id_fkey
             references seller
             on delete set null,
-    category_id int8
+    category_id int8 default 1
         constraint product_template_category_id_fkey
             references category
             on delete set null,
-    uom_id int8
+    uom_id int8 default 1
         constraint product_template_uom_id_fkey
             references uom
             on delete set null
@@ -81,6 +81,7 @@ create table if not exists product_template
 create table if not exists product
 (
     id bigserial primary key,
+    image varchar not null default '',
     template_id int8
         constraint product_product_template_id_fkey
             references product_template

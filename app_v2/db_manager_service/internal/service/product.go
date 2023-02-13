@@ -3,8 +3,8 @@ package service
 import (
 	"Server-for-Ecommerce/app_v2/db_manager_service/api"
 	"Server-for-Ecommerce/app_v2/db_manager_service/internal/database/store"
-	"Server-for-Ecommerce/app_v2/db_manager_service/producer"
 	"Server-for-Ecommerce/app_v2/db_manager_service/util"
+	producer "Server-for-Ecommerce/library/kafka/pub"
 	"bytes"
 	"context"
 	"database/sql"
@@ -42,7 +42,7 @@ func (s *Service) AddProduct(ctx context.Context, req *api.AddProductRequest) (*
 		ctx := context.Background()
 		err := s.producer.Publish(ctx, util.TopicInsertProduct, producer.ProducerEvent{
 			Key:   fmt.Sprintf("product/%v", id),
-			Value: producer.InsertDatabaseEventValue(id),
+			Value: util.InsertDatabaseEventValue(id),
 		})
 		if err != nil {
 			logger.Error(err, "Publish message fail")
@@ -82,7 +82,7 @@ func (s *Service) UpdateProduct(ctx context.Context, req *api.UpdateProductReque
 		ctx := context.Background()
 		err = s.producer.Publish(ctx, util.TopicUpdateProduct, producer.ProducerEvent{
 			Key: fmt.Sprintf("product/%v", req.Id),
-			Value: producer.UpdateDatabaseEventValue{
+			Value: util.UpdateDatabaseEventValue{
 				Id:         id,
 				Variants:   variants,
 				TimeUpdate: writeTime,
