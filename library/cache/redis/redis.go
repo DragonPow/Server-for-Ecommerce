@@ -3,6 +3,7 @@ package redis
 import (
 	"Server-for-Ecommerce/library/cache"
 	"context"
+	"errors"
 	"github.com/go-redis/redis/v8"
 	"time"
 )
@@ -56,6 +57,9 @@ func (c *Redis) Set(ctx context.Context, key string, value any, opts ...RedisOpt
 
 func (c *Redis) GetList(ctx context.Context, keys []string) ([]any, error) {
 	results, err := c.client.MGet(ctx, keys...).Result()
+	if len(results) > 0 && results[0] == nil {
+		return nil, errors.New("not found")
+	}
 	return results, err
 }
 
