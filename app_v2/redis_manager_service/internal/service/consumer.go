@@ -297,7 +297,7 @@ func (s *Service) UpdateRedisV2(ctx context.Context, ids []int64) error {
 	logger := s.log.WithName("UpdateMemoryCache")
 	logger.Info("Start process", "ids", ids)
 
-	values, _ := util.GetMultiple[cache.Product](s.redis.Redis, ids)
+	values, _ := util.GetMultiple[cache.Product](s.redis, ids)
 	if len(values) == util.ZeroLength {
 		return nil
 	}
@@ -310,13 +310,30 @@ func (s *Service) UpdateRedisV2(ctx context.Context, ids []int64) error {
 		logger.Info("Not found products", "values", maps.Keys(values))
 		return nil
 	}
-
+	// Convert list to map
 	cacheModels := slice.Map(products, func(product store.GetProductAndRelationsRow) cache.Product {
 		var cacheModel cache.Product
 		cacheModel.FromDbV2(storeProduct.GetProductAndRelationsRow(product))
 		return cacheModel
 	})
-	err = s.redis.SetList(ctx, slice.KeyBy(cacheModels, util.FuncConvertModel2Cache[cache.Product]))
+	// Check version
+	mapCacheModel := slice.KeyBy(cacheModels, func(c cache.Product) (int64, cache.Product) { return c.GetId(), c })
+	oldObjects, _ := util.GetMultiple[cache.Product](s.redis, slice.Map(products, func(p store.GetProductAndRelationsRow) int64 { return p.ID }))
+	needUpdateObject := make(map[string]any)
+	for _, o := range oldObjects {
+		newCache := mapCacheModel[o.GetId()]
+		if newCache.GetVersion() > o.GetVersion() {
+			k, v := util.FuncConvertModel2Cache(newCache)
+			needUpdateObject[k] = v
+		} else {
+			delete(mapCacheModel, o.GetId())
+		}
+	}
+	if len(needUpdateObject) == util.ZeroLength {
+		return nil
+	}
+
+	err = s.redis.SetList(ctx, needUpdateObject)
 	if err != nil {
 		logger.Error(err, "Update to redis fail")
 		return err
@@ -332,7 +349,7 @@ func (s *Service) UpdateRedisV2(ctx context.Context, ids []int64) error {
 			s.log.Error(err, "Publish event fail")
 			return
 		}
-	}(cacheModels)
+	}(maps.Values(mapCacheModel))
 	logger.Info("Success")
 	return nil
 }

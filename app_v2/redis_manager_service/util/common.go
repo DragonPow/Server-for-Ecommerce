@@ -2,7 +2,7 @@ package util
 
 import (
 	"Server-for-Ecommerce/app_v2/product_service/cache"
-	"Server-for-Ecommerce/library/cache/redis"
+	"Server-for-Ecommerce/app_v2/redis_manager_service/internal/redis"
 	"Server-for-Ecommerce/library/slice"
 	"context"
 	"encoding/json"
@@ -11,7 +11,7 @@ import (
 	"strconv"
 )
 
-func parseKey(t cache.TypeCache, k any) (storeKey string) {
+func ParseKey(t cache.TypeCache, k any) (storeKey string) {
 	return fmt.Sprintf("%s/%v", t, k)
 }
 
@@ -20,13 +20,13 @@ func FuncConvertModel2Cache[T cache.ModelValue](v T) (string, any) {
 	if err != nil {
 		panic(fmt.Sprintf("Marshal model2Cache fail: %v", err.Error()))
 	}
-	return parseKey(v.GetType(), v.GetId()), data
+	return ParseKey(v.GetType(), v.GetId()), data
 }
 
 func funcConvertId2Key[T cache.ModelValue](id int64) string {
 	var t T
 	v := strconv.FormatInt(id, cache.Base10Int)
-	return parseKey(t.GetType(), v)
+	return ParseKey(t.GetType(), v)
 }
 
 func funcConvertCache2Model[T cache.ModelValue](v any) (int64, T) {
@@ -49,7 +49,7 @@ func GetOne[T cache.ModelValue](r *redis.Redis, id int64) (T, bool) {
 
 func GetMultiple[T cache.ModelValue](r *redis.Redis, ids []int64) (values map[int64]T, missingIds []int64) {
 	rs, err := r.GetList(context.Background(), slice.Map(ids, funcConvertId2Key[T]))
-	if err != nil {
+	if err != nil || len(rs) == ZeroLength {
 		return nil, ids
 	}
 	values = slice.KeyBy(rs, funcConvertCache2Model[T])
