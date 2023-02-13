@@ -51,19 +51,19 @@ func (q *Queries) GetCategories(ctx context.Context, ids []int64) ([]Category, e
 	return items, nil
 }
 
-const getProductAndRelation = `-- name: GetProductAndRelation :one
-SELECT p.id, p.template_id, p.name, p.origin_price, p.sale_price, p.state, p.variants, p.create_uid, p.write_uid, p.create_date, p.write_date,
-       c.id category_id, u.id uom_id, s.id seller_id
+const getProductAndRelations = `-- name: GetProductAndRelations :many
+SELECT p.id, p.image, p.template_id, p.name, p.origin_price, p.sale_price, p.state, p.variants, p.create_uid, p.write_uid, p.create_date, p.write_date, c.id category_id, u.id uom_id, s.id seller_id
 FROM product p
          JOIN product_template pt on pt.id = p.template_id
          JOIN category c on c.id = pt.category_id
          JOIN uom u on u.id = pt.uom_id
          JOIN seller s on s.id = pt.seller_id
-WHERE p.id = $1::int8
+WHERE CASE WHEN array_length($1::int8[], 1) > 0 THEN p.id = ANY($1::int8[]) ELSE TRUE END
 `
 
-type GetProductAndRelationRow struct {
+type GetProductAndRelationsRow struct {
 	ID          int64                 `json:"id"`
+	Image       string                `json:"image"`
 	TemplateID  sql.NullInt64         `json:"template_id"`
 	Name        string                `json:"name"`
 	OriginPrice float64               `json:"origin_price"`
@@ -79,26 +79,43 @@ type GetProductAndRelationRow struct {
 	SellerID    int64                 `json:"seller_id"`
 }
 
-func (q *Queries) GetProductAndRelation(ctx context.Context, id int64) (GetProductAndRelationRow, error) {
-	row := q.queryRow(ctx, q.getProductAndRelationStmt, getProductAndRelation, id)
-	var i GetProductAndRelationRow
-	err := row.Scan(
-		&i.ID,
-		&i.TemplateID,
-		&i.Name,
-		&i.OriginPrice,
-		&i.SalePrice,
-		&i.State,
-		&i.Variants,
-		&i.CreateUid,
-		&i.WriteUid,
-		&i.CreateDate,
-		&i.WriteDate,
-		&i.CategoryID,
-		&i.UomID,
-		&i.SellerID,
-	)
-	return i, err
+func (q *Queries) GetProductAndRelations(ctx context.Context, ids []int64) ([]GetProductAndRelationsRow, error) {
+	rows, err := q.query(ctx, q.getProductAndRelationsStmt, getProductAndRelations, pq.Array(ids))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetProductAndRelationsRow{}
+	for rows.Next() {
+		var i GetProductAndRelationsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Image,
+			&i.TemplateID,
+			&i.Name,
+			&i.OriginPrice,
+			&i.SalePrice,
+			&i.State,
+			&i.Variants,
+			&i.CreateUid,
+			&i.WriteUid,
+			&i.CreateDate,
+			&i.WriteDate,
+			&i.CategoryID,
+			&i.UomID,
+			&i.SellerID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getProductTemplates = `-- name: GetProductTemplates :many
@@ -148,7 +165,7 @@ func (q *Queries) GetProductTemplates(ctx context.Context, ids []int64) ([]Produ
 }
 
 const getProducts = `-- name: GetProducts :many
-SELECT id, template_id, name, origin_price, sale_price, state, variants, create_uid, write_uid, create_date, write_date
+SELECT id, image, template_id, name, origin_price, sale_price, state, variants, create_uid, write_uid, create_date, write_date
 FROM product
 WHERE CASE WHEN array_length($1::int8[], 1) > 0 THEN id = ANY($1::int8[]) ELSE TRUE END
 `
@@ -164,6 +181,7 @@ func (q *Queries) GetProducts(ctx context.Context, ids []int64) ([]Product, erro
 		var i Product
 		if err := rows.Scan(
 			&i.ID,
+			&i.Image,
 			&i.TemplateID,
 			&i.Name,
 			&i.OriginPrice,

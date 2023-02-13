@@ -4,14 +4,16 @@ import (
 	"Server-for-Ecommerce/app_v2/db_manager_service/config"
 	"Server-for-Ecommerce/app_v2/db_manager_service/internal/database/store"
 	"Server-for-Ecommerce/app_v2/db_manager_service/internal/service"
-	"Server-for-Ecommerce/app_v2/db_manager_service/producer"
+	"Server-for-Ecommerce/app_v2/db_manager_service/util"
 	"Server-for-Ecommerce/library/database/migrate"
+	pub "Server-for-Ecommerce/library/kafka/pub"
 	"Server-for-Ecommerce/library/log"
 	"Server-for-Ecommerce/library/server"
 	"github.com/go-logr/logr"
 	"github.com/jmoiron/sqlx"
 	"github.com/urfave/cli/v2"
 	"os"
+	"time"
 )
 
 var (
@@ -84,8 +86,26 @@ func newService(cfg *config.Config) (*service.Service, error) {
 	store := store.NewStore(db, logger)
 
 	// Producer
-	producer, err := producer.NewProducer(cfg.KafkaConfig, logger)
+	producerCfg := cfg.KafkaConfig
+	producer, err := pub.NewProducer(
+		producerCfg.Connections,
+		&logger,
+		pub.WithPublishTimeout(time.Duration(producerCfg.MaxPublishTimeoutSecond)*time.Second),
+		pub.WithMaxNumberRetry(producerCfg.MaxNumberRetry),
+		pub.WithTimeSleepPerRetry(time.Duration(producerCfg.TimeSleepPerRetryMillisecond)*time.Millisecond),
+	)
 	if err != nil {
+		logger.Error(err, "Create producer fail")
+		return nil, err
+	}
+	err = producer.Register(util.TopicInsertProduct)
+	if err != nil {
+		logger.Error(err, "Register topic producer fail", "topicName", util.TopicInsertProduct)
+		return nil, err
+	}
+	err = producer.Register(util.TopicUpdateProduct)
+	if err != nil {
+		logger.Error(err, "Register topic producer fail", "topicName", util.TopicUpdateProduct)
 		return nil, err
 	}
 

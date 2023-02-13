@@ -8,7 +8,7 @@ MIGRATION_FOLDER: file://internal/database/migrations
 
 PRODUCT_SERVICE_DB:
   HOST: 127.0.0.1
-  PORT: 10101
+  PORT: 10102
   USERNAME: postgres
   PASSWORD: postgres123
   DATABASE: product
