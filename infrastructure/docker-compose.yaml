@@ -60,10 +60,7 @@ services:
       - "10102:5432"
     depends_on:
       - product-master-db
-    volumes:
-      - ./pgpool.conf:/config/pgpool.conf
     environment:
-      - PGPOOL_USER_CONF_FILE=/config/pgpool.conf
       - PGPOOL_BACKEND_NODES=0:product-master-db:5432,1:product-slave-db:5432
       - PGPOOL_SR_CHECK_USER=postgres
       - PGPOOL_SR_CHECK_PASSWORD=postgres123

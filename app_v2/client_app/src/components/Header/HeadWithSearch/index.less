@@ -1,0 +1,44 @@
+@import "../../../global.less";
+
+.header-with-search {
+  height: @header-with-search-height;
+  display: flex;
+  align-items: center;
+}
+
+.header-with-search__logo-box {
+  width: @logo-box-width;
+  .pointer-hover;
+  height: 100%;
+}
+
+.header-with-search__box {
+  width: @search-box-width;
+  height: 40px;
+  padding: 2px 8px;
+  border-radius: 2px;
+  background-color: @white-color;
+  border: none;
+  display: flex;
+  align-items: center;
+  font-size: @font-1-6rem;
+}
+
+.header-with-search__box-input {
+  outline: none;
+  border: none;
+  border-radius: 2px;
+  flex: 1;
+  color: @text-color;
+}
+
+.header-with-search__btn {
+  height: 100%;
+  padding: 0 16px;
+  margin-right: -4px;
+  margin-left: 8px;
+  background-color: @primary-color;
+  border: none;
+  border-radius: 2px;
+  color: @white-color;
+}

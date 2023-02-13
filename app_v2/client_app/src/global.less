@@ -1,0 +1,36 @@
+// Color
+@primary-color: #1677ff;
+@text-color: #333;
+@white-color: #fff;
+@black-color: #000;
+
+// Height
+@header-height: 120px;
+@navbar-height: 36px;
+@header-with-search-height: @header-height - @navbar-height;
+
+// Width
+@logo-box-width: 20%;
+@search-box-width: 70%;
+
+// Font
+@font-1-4rem: 1.4rem;
+@font-1-5rem: 1.5rem;
+@font-1-6rem: 1.6rem;
+@font-w-300: 300;
+@font-w-400: 400;
+@font-w-500: 500;
+
+// Hover
+.colored-hover(@color) {
+  color: @color;
+  &:hover {
+    color: lighten(@color, 10%);
+  }
+}
+
+.pointer-hover {
+  &:hover {
+    cursor: pointer;
+  }
+}
