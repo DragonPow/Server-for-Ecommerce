@@ -54,7 +54,7 @@ func GetOne[T cache.ModelValue](r *redisCache, id int64) (T, bool) {
 func GetList[T cache.ModelValue](r *redisCache, ids []int64) (map[int64]T, []int64) {
 	results, err := r.base.GetList(context.Background(), math.Convert(ids, funcConvertId2Key[T]))
 	if err != nil {
-		return nil, nil
+		return nil, ids
 	}
 
 	list := make([]any, 0, len(ids))

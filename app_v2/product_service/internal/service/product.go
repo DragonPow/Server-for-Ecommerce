@@ -128,6 +128,7 @@ func (s *Service) SetCacheAPIGetDetailProduct(data *api.ProductDetail) {
 			return
 		}
 		s.log.Info("Set multiple local cache success", "productId", data.Id)
+		s.computeGetDetailProduct(ctx, s.log, productCache)
 	}()
 	// Insert mem cache
 	go func() {
@@ -139,6 +140,7 @@ func (s *Service) SetCacheAPIGetDetailProduct(data *api.ProductDetail) {
 		if ok {
 			s.log.Info("Set multiple mem cache success", "productId", data.Id)
 		}
+		s.computeGetDetailProduct(ctx, s.log, productCache)
 	}()
 }
 

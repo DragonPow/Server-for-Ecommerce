@@ -2,6 +2,7 @@ package service
 
 import (
 	"Server-for-Ecommerce/app_v2/product_service/cache"
+	"Server-for-Ecommerce/app_v2/product_service/util"
 	pubEvent "Server-for-Ecommerce/app_v2/redis_manager_service/util"
 	"Server-for-Ecommerce/library/slice"
 	"context"
@@ -22,9 +23,9 @@ func (s *Service) Consume() error {
 			Brokers: updateConsumer.Connections,
 			Topic:   updateConsumer.Topic,
 			//GroupID:                updateConsumer.Group,
-			MinBytes:               10e3, // 10KB
-			MaxBytes:               10e6, // 10MB
-			StartOffset:            kafka.LastOffset,
+			MinBytes: 10e3, // 10KB
+			MaxBytes: 10e6, // 10MB
+			//StartOffset:            kafka.LastOffset,
 			MaxWait:                1 * time.Second,
 			PartitionWatchInterval: 1 * time.Second,
 		})
@@ -101,9 +102,24 @@ func (s *Service) UpdateMemoryCacheV2(ctx context.Context, message kafka.Message
 		return err
 	}
 
-	err = s.memCache.SetMultiple(slice.KeyBy(payload.Objects, func(o cache.Product) (int64, cache.ModelValue) {
-		return o.GetId(), o
+	oldObjects, _ := s.memCache.GetListProduct(slice.Map(payload.Objects, func(o cache.Product) int64 {
+		return o.GetId()
 	}))
+	mapCacheModel := slice.KeyBy(payload.Objects, func(o cache.Product) (int64, cache.ModelValue) {
+		return o.GetId(), o
+	})
+	needUpdateObject := make(map[int64]cache.ModelValue)
+	for _, o := range oldObjects {
+		newCache := mapCacheModel[o.GetId()]
+		if newCache.GetVersion() > o.GetVersion() {
+			needUpdateObject[newCache.GetId()] = newCache
+		}
+	}
+	if len(needUpdateObject) == util.ZeroLength {
+		return nil
+	}
+
+	err = s.memCache.SetMultiple(needUpdateObject)
 	if err != nil {
 		logger.Error(err, "Fail to SetProductByAttr")
 		return err
