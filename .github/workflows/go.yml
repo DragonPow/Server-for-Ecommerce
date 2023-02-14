@@ -33,12 +33,3 @@ jobs:
 
     - name: Build redis
       run: go build -v ./app_v2/redis_manager_service/...
-
-    - name: update product
-      run: cd ./app_v2/product_service && make generate-sqlc && make proto
-
-    - name: update database
-      run: cd ./app_v2/db_manager_service && make generate-sqlc && make proto
-           
-    - name: update redis
-      run: cd ./app_v2/redis_manager_service && make generate-sqlc && make proto
