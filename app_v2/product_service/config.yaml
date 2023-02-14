@@ -13,3 +13,18 @@ PRODUCT_SERVICE_DB:
   PASSWORD: postgres123
   DATABASE: product
   OPTIONS: ?sslmode=disable
+
+KAFKA_CONFIG:
+  UPDATE_DB_CONSUMER:
+    CONNECTIONS:
+      - 'localhost:9092'
+      - 'localhost:9093'
+
+MEM_CACHE_CONFIG:
+  MAX_TIME_MISS: 3
+
+REDIS_CONFIG:
+  ADDR: 'localhost:6379'
+  PASSWORD: 'redis@123'
+  NUMBER_CACHE_PAGE: 5
+  EXPIRE_CACHE_PAGE_IN_SECOND: 600
