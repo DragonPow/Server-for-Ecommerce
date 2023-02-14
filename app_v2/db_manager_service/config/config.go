@@ -18,12 +18,6 @@ type Config struct {
 	KafkaConfig         KafkaConfig         `json:"kafka_config" mapstructure:"kafka_config"`
 }
 
-type RedisConfig struct {
-	Addr           string `json:"addr" mapstructure:"addr"`
-	Password       string `json:"password" mapstructure:"password"`
-	ExpiredDefault uint32 `json:"expired_default" mapstructure:"expired_default"`
-}
-
 type KafkaConfig struct {
 	Connections                  []string `json:"connections" mapstructure:"connections"`
 	MaxPublishTimeoutSecond      int      `json:"max_publish_timeout_second" mapstructure:"max_publish_timeout_second"`
