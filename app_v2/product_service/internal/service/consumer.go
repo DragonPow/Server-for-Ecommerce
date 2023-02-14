@@ -7,6 +7,7 @@ import (
 	"Server-for-Ecommerce/library/slice"
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/segmentio/kafka-go"
 	"time"
 )
@@ -20,11 +21,12 @@ func (s *Service) Consume() error {
 	go func() {
 		// create a new reader to the topic "my-topic"
 		r := kafka.NewReader(kafka.ReaderConfig{
-			Brokers: updateConsumer.Connections,
-			Topic:   updateConsumer.Topic,
-			//GroupID:                updateConsumer.Group,
-			MinBytes: 10e3, // 10KB
-			MaxBytes: 10e6, // 10MB
+			Brokers:     updateConsumer.Connections,
+			Topic:       updateConsumer.Topic,
+			GroupID:     fmt.Sprintf(updateConsumer.Group + time.Now().String()),
+			StartOffset: kafka.LastOffset,
+			MinBytes:    10e3, // 10KB
+			MaxBytes:    10e6, // 10MB
 			//StartOffset:            kafka.LastOffset,
 			MaxWait:                1 * time.Second,
 			PartitionWatchInterval: 1 * time.Second,
