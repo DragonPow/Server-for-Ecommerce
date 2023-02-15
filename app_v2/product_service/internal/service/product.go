@@ -655,10 +655,10 @@ func (s *Service) GetListProduct(ctx context.Context, req *api.GetListProductReq
 			err := json.Unmarshal([]byte(pageCache), res)
 			if err != nil {
 				logger.Error(err, "Unmarshall pageCache fail")
-				return nil, err
+			} else {
+				logger.Info("Get page product from cache")
+				return res, nil
 			}
-			logger.Info("Get page product from cache")
-			return res, nil
 		}
 	}
 
