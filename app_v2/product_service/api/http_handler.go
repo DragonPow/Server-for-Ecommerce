@@ -74,17 +74,35 @@ func getListProductHandler(s HttpServer) func(w http.ResponseWriter, r *http.Req
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
+		var (
+			page     int64
+			pageSize int64
+			err      error
+		)
+
 		query := r.URL.Query()
-		page, err := strconv.ParseInt(query.Get("page"), util.Base10Int, util.BitSize64)
-		if err != nil {
-			server.HTTPError(w, r, err)
-			return
+		pageString := query.Get("page")
+		if pageString != util.EmptyString {
+			page, err = strconv.ParseInt(pageString, util.Base10Int, util.BitSize64)
+			if err != nil {
+				server.HTTPError(w, r, err)
+				return
+			}
+		} else {
+			page = 1
 		}
-		pageSize, err := strconv.ParseInt(query.Get("page_size"), util.Base10Int, util.BitSize64)
-		if err != nil {
-			server.HTTPError(w, r, err)
-			return
+
+		pageSizeString := query.Get("page_size")
+		if pageSizeString != util.EmptyString {
+			pageSize, err = strconv.ParseInt(pageSizeString, util.Base10Int, util.BitSize64)
+			if err != nil {
+				server.HTTPError(w, r, err)
+				return
+			}
+		} else {
+			pageSize = 20
 		}
+
 		key := query.Get("key")
 		req := &GetListProductRequest{
 			Page:     page,

@@ -9,16 +9,16 @@ import (
 
 type Redis struct {
 	*redis.Redis
-	Ring                      *ring.RingBuffer[kafka.Message]
-	MaxRingNumber             int
-	TimeoutRingWriterInSecond int
+	Ring                           *ring.RingBuffer[kafka.Message]
+	MaxRingNumber                  int
+	TimeoutRingWriterInMillisecond int
 }
 
 func New(cfg config.RedisConfig) *Redis {
 	return &Redis{
-		Redis:                     redis.New(cfg.Addr, cfg.Password, cfg.ExpiredDefault),
-		Ring:                      ring.New[kafka.Message](cfg.MaxRingNumber),
-		MaxRingNumber:             cfg.MaxRingNumber,
-		TimeoutRingWriterInSecond: cfg.TimeoutRingWriterInSecond,
+		Redis:                          redis.New(cfg.Addr, cfg.Password, cfg.ExpiredDefault),
+		Ring:                           ring.New[kafka.Message](cfg.MaxRingNumber),
+		MaxRingNumber:                  cfg.MaxRingNumber,
+		TimeoutRingWriterInMillisecond: cfg.TimeoutRingWriterInMillisecond,
 	}
 }

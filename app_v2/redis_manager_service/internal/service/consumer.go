@@ -29,7 +29,7 @@ func (s *Service) Consume() error {
 				<-s.redis.Ring.SignalWrite
 				s.log.Info("Write success, continue")
 			}
-			timeout := time.After(time.Duration(s.redis.TimeoutRingWriterInSecond) * time.Second)
+			timeout := time.After(time.Duration(s.redis.TimeoutRingWriterInMillisecond) * time.Millisecond)
 			err := s.WaitRing(timeout)
 			if err != nil {
 				s.log.Error(err, "WaitRing fail")
