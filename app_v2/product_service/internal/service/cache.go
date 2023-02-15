@@ -30,6 +30,16 @@ func (s *Service) DeleteCache(ctx context.Context, req *api.DeleteCacheRequest) 
 			Code:    0,
 			Message: "OK",
 		}, nil
+	case "page":
+		err = s.localCache.DeletePage(req.Page, req.PageSize, req.Key)
+		if err != nil {
+			return nil, err
+		}
+		logger.Info("Delete page product success")
+		return &api.DeleteCacheResponse{
+			Code:    0,
+			Message: "OK",
+		}, nil
 	default:
 		return nil, errors.New("Level must be mem or  cache")
 	}

@@ -539,6 +539,12 @@ func (m *DeleteCacheRequest) Validate() error {
 
 	// no validation rules for Level
 
+	// no validation rules for Page
+
+	// no validation rules for PageSize
+
+	// no validation rules for Key
+
 	return nil
 }
 

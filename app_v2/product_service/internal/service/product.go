@@ -684,27 +684,6 @@ func (s *Service) GetListProduct(ctx context.Context, req *api.GetListProductReq
 		},
 	}
 
-	if isCacheRedisPage {
-		go func(logger logr.Logger) {
-			data, err := json.Marshal(res)
-			if err != nil {
-				logger.Error(err, "Marshal res fail")
-				return
-			}
-			err = s.localCache.SetPageProduct(
-				req.Page, req.PageSize, req.Key,
-				string(data),
-				time.Duration(s.cfg.RedisConfig.ExpireCachePageInSecond)*time.Second,
-			)
-			if err != nil {
-				logger.Error(err, "Set page product fail")
-				return
-			}
-			logger.Info("Set page product success")
-		}(logger)
-
-	}
-
 	if len(rows) == util.ZeroLength {
 		logger.Info("Not found items")
 		return res, nil
@@ -720,8 +699,8 @@ func (s *Service) GetListProduct(ctx context.Context, req *api.GetListProductReq
 			Image:       row.Image,
 		}
 	})
-	logger.Info("Get list product success", "ids", slice.Map(rows, func(row store.GetProductsByKeywordRow) int64 { return row.ID }))
-	return &api.GetListProductResponse{
+
+	res = &api.GetListProductResponse{
 		Code:    0,
 		Message: "OK",
 		Data: &api.GetListProductResponse_Data{
@@ -730,5 +709,28 @@ func (s *Service) GetListProduct(ctx context.Context, req *api.GetListProductReq
 			PageSize:   int32(req.PageSize),
 			Items:      items,
 		},
-	}, nil
+	}
+
+	if isCacheRedisPage {
+		go func(res *api.GetListProductResponse) {
+			data, errCache := json.Marshal(res)
+			if errCache != nil {
+				logger.Error(errCache, "Marshal res fail")
+				return
+			}
+			errCache = s.localCache.SetPageProduct(
+				req.Page, req.PageSize, req.Key,
+				string(data),
+				time.Duration(s.cfg.RedisConfig.ExpireCachePageInSecond)*time.Second,
+			)
+			if errCache != nil {
+				logger.Error(errCache, "Set page product fail")
+				return
+			}
+			logger.Info("Set page product success", "data", string(data))
+		}(res)
+	}
+
+	logger.Info("Get list product success", "ids", slice.Map(rows, func(row store.GetProductsByKeywordRow) int64 { return row.ID }))
+	return res, nil
 }
