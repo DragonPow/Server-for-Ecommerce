@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/segmentio/kafka-go"
+	"io"
 	"time"
 )
 
@@ -51,6 +52,10 @@ func (s *Service) ProcessConsume(r *kafka.Reader, process func(ctx context.Conte
 		ctx := context.Background()
 		m, err := r.ReadMessage(ctx)
 		if err != nil {
+			if err == io.EOF {
+				s.log.Info("Message EOF")
+				continue
+			}
 			s.log.Error(err, "Read message fail")
 			return err
 		}
