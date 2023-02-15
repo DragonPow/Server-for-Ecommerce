@@ -21,7 +21,7 @@ func (s *Service) Consume() error {
 	go func() {
 		// create a new reader to the topic "my-topic"
 		r := kafka.NewReader(kafka.ReaderConfig{
-			Brokers:     updateConsumer.Connections,
+			Brokers:     kafkaConfig.Connections,
 			Topic:       updateConsumer.Topic,
 			GroupID:     fmt.Sprintf(updateConsumer.Group + time.Now().String()),
 			StartOffset: kafka.LastOffset,

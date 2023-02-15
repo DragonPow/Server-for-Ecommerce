@@ -29,6 +29,7 @@ type RedisConfig struct {
 
 type KafkaConfig struct {
 	UpdateDbConsumer Consumer `json:"update_db_consumer" mapstructure:"update_db_consumer"`
+	Connections      []string `json:"connections" mapstructure:"connections"`
 }
 
 type MemConfig struct {
@@ -37,9 +38,8 @@ type MemConfig struct {
 }
 
 type Consumer struct {
-	Topic       string   `json:"topic" mapstructure:"topic"`
-	Connections []string `json:"connections" mapstructure:"connections"`
-	Group       string   `json:"group" mapstructure:"group"`
+	Topic string `json:"topic" mapstructure:"topic"`
+	Group string `json:"group" mapstructure:"group"`
 }
 
 // Load system env config
@@ -90,10 +90,10 @@ func loadDefaultConfig() *Config {
 		},
 		KafkaConfig: KafkaConfig{
 			UpdateDbConsumer: Consumer{
-				Topic:       "update_cache",
-				Connections: []string{"localhost:9092", "localhost:9093"},
-				Group:       "product_consume_update_product_consumer",
+				Topic: "update_cache",
+				Group: "product_consume_update_product_consumer",
 			},
+			Connections: []string{"localhost:9092", "localhost:9093"},
 		},
 		MemCacheConfig: MemConfig{
 			MaxTimeMiss:    3,

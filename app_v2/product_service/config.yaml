@@ -15,10 +15,9 @@ PRODUCT_SERVICE_DB:
   OPTIONS: ?sslmode=disable
 
 KAFKA_CONFIG:
-  UPDATE_DB_CONSUMER:
-    CONNECTIONS:
-      - 'localhost:9092'
-      - 'localhost:9093'
+  CONNECTIONS:
+    - 'localhost:9092'
+    - 'localhost:9093'
 
 MEM_CACHE_CONFIG:
   MAX_TIME_MISS: 3
