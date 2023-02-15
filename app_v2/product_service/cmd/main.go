@@ -32,6 +32,7 @@ func run(args []string) (err error) {
 	if err != nil {
 		return err
 	}
+	logger.Info("Config success", "cfg", cfg)
 
 	app := cli.NewApp()
 	app.Name = "service"
