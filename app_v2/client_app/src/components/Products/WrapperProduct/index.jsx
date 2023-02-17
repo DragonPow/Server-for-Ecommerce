@@ -18,7 +18,11 @@ const WrapperProduct = () => {
     async function fetchProducts() {
       let filePath = `products?page=${currentPage}&page_size=20`;
       filePath +=
-        searchParams !== undefined ? `&key=${searchParams.get("q")}` : "";
+        searchParams &&
+        searchParams.get("q") !== null &&
+        searchParams.get("q") !== undefined
+          ? `&key=${searchParams.get("q")}`
+          : "";
       const resp = await http.getRequest(filePath);
       setProducts(resp.data?.data?.items);
       setProductTotal(resp.data?.data?.total_items);

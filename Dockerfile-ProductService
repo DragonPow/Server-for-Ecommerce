@@ -6,6 +6,7 @@ WORKDIR /go/src/Server-for-Ecommerce
 COPY ["./go.mod", "./go.sum", "./"]
 COPY ./app_v2/product_service ./app_v2/product_service
 COPY ./app_v2/db_manager_service ./app_v2/db_manager_service
+COPY ./app_v2/redis_manager_service ./app_v2/redis_manager_service
 COPY ./library ./library
 COPY ./third_party ./third_party
 # Config GO Env

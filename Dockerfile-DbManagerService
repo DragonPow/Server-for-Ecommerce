@@ -22,5 +22,5 @@ FROM gcr.io/distroless/base-debian11 as publisher
 WORKDIR /
 # Copy golang executable file from builder
 COPY --from=builder /go/src/Server-for-Ecommerce/app .
-EXPOSE 10000
+EXPOSE 10001
 ENTRYPOINT ["./app", "server"]

@@ -1,7 +1,8 @@
 import axios from "axios";
 
 const apiClient = axios.create();
-apiClient.defaults.baseURL = "http://localhost:10000/http";
+apiClient.defaults.baseURL =
+  "http://uitk14-ktpm-api-lb-c74d9c813b4b2e8f.elb.ap-southeast-1.amazonaws.com/http";
 apiClient.defaults.headers = {
   "Content-Type": "application/json",
   Accept: "application/json"
