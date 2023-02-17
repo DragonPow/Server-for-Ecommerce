@@ -80,19 +80,15 @@ func loadDefaultConfig() *Config {
 		MigrationFolder:  "file://app_v2/redis_manager_service/internal/database/migrations",
 		ProductServiceDB: database.PostgresSQLDefaultConfig(),
 		RedisConfig: RedisConfig{
-			Addr:                           "localhost:6379",
-			Password:                       "redis@123",
 			ExpiredDefault:                 180,
 			MaxRingNumber:                  10,
 			TimeoutRingWriterInMillisecond: 3,
 		},
 		KafkaConfig: KafkaConfig{
 			UpdateDbConsumer: Consumer{
-				Topic:       "update_product",
-				Connections: []string{"localhost:9092", "localhost:9093"},
-				Group:       "update_product_consumer",
+				Topic: "update_product",
+				Group: "update_product_consumer",
 			},
-			Connections:                  []string{"localhost:9092"},
 			MaxPublishTimeoutSecond:      10,
 			MaxNumberRetry:               3,
 			TimeSleepPerRetryMillisecond: 200,

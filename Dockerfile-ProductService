@@ -15,7 +15,6 @@ ENV GOARCH=amd64
 ENV GO111MODULE=on
 ENV CGO_ENABLED=0
 # Run build step
-RUN apk update -qq && apk add git
 RUN go mod tidy
 RUN go mod vendor
 RUN go build -ldflags "-s -w" -o app ./app_v2/product_service/cmd/main.go

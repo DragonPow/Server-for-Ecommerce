@@ -82,8 +82,6 @@ func loadDefaultConfig() *Config {
 		MigrationFolder:  "file://app_v2/product_service/database/migrations",
 		ProductServiceDB: database.PostgresSQLDefaultConfig(),
 		RedisConfig: RedisConfig{
-			Addr:                    "localhost:6379",
-			Password:                "redis@123",
 			ExpiredDefault:          180,
 			NumberCachePage:         5,
 			ExpireCachePageInSecond: 60 * 10,
@@ -93,7 +91,6 @@ func loadDefaultConfig() *Config {
 				Topic: "update_cache",
 				Group: "product_consume_update_product_consumer",
 			},
-			Connections: []string{"localhost:9092", "localhost:9093"},
 		},
 		MemCacheConfig: MemConfig{
 			MaxTimeMiss:    3,
