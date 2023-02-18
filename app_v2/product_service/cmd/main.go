@@ -70,12 +70,14 @@ func serverAction(context *cli.Context) error {
 		return err
 	}
 
-	go func() {
-		err := serviceInstance.Consume()
-		if err != nil {
-			logger.Error(err, "Consume error")
-		}
-	}()
+	if cfg.EnableCache && cfg.EnableRedis {
+		go func() {
+			err := serviceInstance.Consume()
+			if err != nil {
+				logger.Error(err, "Consume error")
+			}
+		}()
+	}
 
 	if err := s.Serve(); err != nil {
 		logger.Error(err, "Error start server")
@@ -92,22 +94,35 @@ func newService(cfg *config.Config) (*service.Service, error) {
 	}
 	store := store.NewStore(db, logger)
 
-	// Redis cache
-	cache := redis_cache.NewCache(
-		cfg.RedisConfig.Addr,
-		cfg.RedisConfig.Password,
-		cfg.RedisConfig.ExpiredDefault,
+	var (
+		redis    redis_cache.RedisCache
+		memCache mem_cache.MemCache
 	)
 
-	// Memory cache
-	//memCache := mem_cache.NewCache(cfg.MemCacheConfig.MaxTimeMiss, cfg.MemCacheConfig.MaxNumberCache)
-	memCache, err := mem_cache.NewBigCache(cfg.MemCacheConfig.MaxTimeMiss, cfg.MemCacheConfig.MaxNumberCache)
-	if err != nil {
-		logger.Error(err, "Error create mem cache")
-		return nil, err
+	// Redis cache
+	if cfg.EnableCache && cfg.EnableRedis {
+		redis = redis_cache.NewCache(
+			cfg.RedisConfig.Addr,
+			cfg.RedisConfig.Password,
+			cfg.RedisConfig.ExpiredDefault,
+		)
+	} else {
+		redis = &redis_cache.NullRedisCache{}
 	}
 
-	return service.NewService(cfg, logger, store, cache, memCache), nil
+	// Memory cache
+	if cfg.EnableCache && cfg.EnableMem {
+		//memCache := mem_cache.NewCache(cfg.MemCacheConfig.MaxTimeMiss, cfg.MemCacheConfig.MaxNumberCache)
+		memCache, err = mem_cache.NewBigCache(cfg.MemCacheConfig)
+		if err != nil {
+			logger.Error(err, "Error create mem cache")
+			return nil, err
+		}
+	} else {
+		memCache = &mem_cache.NullMemCache{}
+	}
+
+	return service.NewService(cfg, logger, store, redis, memCache), nil
 }
 
 func newDB(dsn string) (*sqlx.DB, error) {

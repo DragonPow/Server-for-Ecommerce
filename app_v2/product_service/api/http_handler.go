@@ -28,7 +28,7 @@ type HttpServer interface {
 
 func NewHttpHandler(httpPattern string, s HttpServer) *mux.Router {
 	r := mux.NewRouter().PathPrefix(httpPattern).Subrouter()
-	r.HandleFunc(httpPattern+"/", func(w http.ResponseWriter, r *http.Request) {
+	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		_, cancel := context.WithCancel(context.Background())
 		defer cancel()
 		_, err := w.Write([]byte("Hello world"))
