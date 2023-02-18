@@ -23,6 +23,10 @@ func WithExpireTime(t time.Duration) RedisOption {
 }
 
 func New(addr string, password string, expiration uint32) *Redis {
+	if len(password) == 0 {
+		password = ""
+	}
+
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     addr,
 		Password: password,

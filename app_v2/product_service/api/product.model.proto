@@ -134,6 +134,12 @@ message DeleteCacheRequest {
   repeated int64 ids = 2;
   // Level
   string level = 3;
+  // page
+  int64 page = 5;
+  // PageSize
+  int64 page_size = 6;
+  // key
+  string key = 7;
 }
 
 // DeleteCacheResponse

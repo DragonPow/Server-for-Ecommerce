@@ -27,61 +27,68 @@ func (s *Service) GetDetailProduct(ctx context.Context, req *api.GetDetailProduc
 	)
 
 	// Get from memory cache
-	memCacheProduct, hasCache = s.memCache.GetProduct(req.Id)
-	if hasCache {
-		logger.Info("Get data from mem cache")
-		return s.computeGetDetailProduct(ctx, logger, memCacheProduct)
-	}
-
-	// Get from redis
-	localCacheProduct, hasCache = s.localCache.GetProduct(req.Id)
-	if hasCache {
-		defer func() {
-			go func() {
-				// Check and set to mem cache
-				ok, err := s.memCache.CheckAndSet(map[int64]cache.ModelValue{req.Id: localCacheProduct})
-				if err != nil {
-					s.log.Error(err, "Fail set product to mem cache", "id", req.Id, "local", localCacheProduct)
-				}
-				if ok {
-					s.log.Info("Set multiple mem cache success", "productId", req.Id)
-				}
-			}()
-		}()
-		logger.Info("Get data from local cache")
-		return s.computeGetDetailProduct(ctx, logger, localCacheProduct)
-	}
-
-	type funcCallDb struct {
-		wg  *sync.WaitGroup
-		res *api.GetDetailProductResponse
-		err error
-	}
-
-	keyLoad := fmt.Sprintf("product:%d", req.Id)
-	s.lockCache.mu.Lock()
-	v, ok := s.lockCache.list.Load(keyLoad)
-	if ok {
-		rs := v.(*funcCallDb)
-		s.lockCache.mu.Unlock()
-		logger.Info("Wait lockCache")
-		rs.wg.Wait()
-		return rs.res, rs.err
-	} else {
-		rs := &funcCallDb{
-			wg:  &sync.WaitGroup{},
-			res: nil,
-			err: nil,
+	if s.cfg.EnableCache && s.cfg.EnableMem {
+		memCacheProduct, hasCache = s.memCache.GetProduct(req.Id)
+		if hasCache {
+			logger.Info("Get data from mem cache")
+			return s.computeGetDetailProduct(ctx, logger, memCacheProduct)
 		}
-		rs.wg.Add(1)
-		s.lockCache.list.Store(keyLoad, rs)
-		s.lockCache.mu.Unlock()
-		// Get from database
-		rs.res, rs.err = s.FetchFromDb(ctx, req, logger)
-		rs.wg.Done()
-		return rs.res, rs.err
 	}
 
+	if s.cfg.EnableCache && s.cfg.EnableRedis {
+		// Get from redis
+		localCacheProduct, hasCache = s.localCache.GetProduct(req.Id)
+		if hasCache {
+			if s.cfg.EnableCache && s.cfg.EnableMem {
+				defer func() {
+					go func() {
+						// Check and set to mem cache
+						ok, err := s.memCache.CheckAndSet(map[int64]cache.ModelValue{req.Id: localCacheProduct})
+						if err != nil {
+							s.log.Error(err, "Fail set product to mem cache", "id", req.Id, "local", localCacheProduct)
+						}
+						if ok {
+							s.log.Info("Set multiple mem cache success", "productId", req.Id)
+						}
+					}()
+				}()
+			}
+			logger.Info("Get data from local cache")
+			return s.computeGetDetailProduct(ctx, logger, localCacheProduct)
+		}
+
+		type funcCallDb struct {
+			wg  *sync.WaitGroup
+			res *api.GetDetailProductResponse
+			err error
+		}
+
+		keyLoad := fmt.Sprintf("product:%d", req.Id)
+		s.lockCache.mu.Lock()
+		v, ok := s.lockCache.list.Load(keyLoad)
+		if ok {
+			rs := v.(*funcCallDb)
+			s.lockCache.mu.Unlock()
+			logger.Info("Wait lockCache")
+			rs.wg.Wait()
+			return rs.res, rs.err
+		} else {
+			rs := &funcCallDb{
+				wg:  &sync.WaitGroup{},
+				res: nil,
+				err: nil,
+			}
+			rs.wg.Add(1)
+			s.lockCache.list.Store(keyLoad, rs)
+			s.lockCache.mu.Unlock()
+			// Get from database
+			rs.res, rs.err = s.FetchFromDb(ctx, req, logger)
+			rs.wg.Done()
+			return rs.res, rs.err
+		}
+	}
+
+	return s.FetchFromDb(ctx, req, logger)
 }
 
 func (s *Service) FetchFromDb(ctx context.Context, req *api.GetDetailProductRequest, logger logr.Logger) (*api.GetDetailProductResponse, error) {
@@ -96,7 +103,9 @@ func (s *Service) FetchFromDb(ctx context.Context, req *api.GetDetailProductRequ
 	data := &api.ProductDetail{}
 	data.FromEntity(products[0])
 	// Update cache for local and mem
-	go s.SetCacheAPIGetDetailProduct(data)
+	if s.cfg.EnableCache && (s.cfg.EnableMem || s.cfg.EnableRedis) {
+		go s.SetCacheAPIGetDetailProduct(data)
+	}
 
 	logger.Info("Get data from db")
 	return &api.GetDetailProductResponse{
@@ -120,28 +129,34 @@ func (s *Service) SetCacheAPIGetDetailProduct(data *api.ProductDetail) {
 	}
 	productCache := cache.Product{}
 	productCache.FromDb(p[0], data.CategoryId, data.UomId, data.SellerId)
+
 	// Insert redis cache
-	go func() {
-		err := s.localCache.SetMultiple(map[int64]cache.ModelValue{data.Id: productCache})
-		if err != nil {
-			s.log.Error(err, "Set multiple local cache fail")
-			return
-		}
-		s.log.Info("Set multiple local cache success", "productId", data.Id)
-		s.computeGetDetailProduct(ctx, s.log, productCache)
-	}()
+	if s.cfg.EnableRedis {
+		go func() {
+			err := s.localCache.SetMultiple(map[int64]cache.ModelValue{data.Id: productCache})
+			if err != nil {
+				s.log.Error(err, "Set multiple local cache fail")
+				return
+			}
+			s.log.Info("Set multiple local cache success", "productId", data.Id)
+			s.computeGetDetailProduct(ctx, s.log, productCache)
+		}()
+	}
+
 	// Insert mem cache
-	go func() {
-		ok, err := s.memCache.CheckAndSet(map[int64]cache.ModelValue{data.Id: productCache})
-		if err != nil {
-			s.log.Error(err, "Set multiple mem cache fail")
-			return
-		}
-		if ok {
-			s.log.Info("Set multiple mem cache success", "productId", data.Id)
-		}
-		s.computeGetDetailProduct(ctx, s.log, productCache)
-	}()
+	if s.cfg.EnableMem {
+		go func() {
+			ok, err := s.memCache.CheckAndSet(map[int64]cache.ModelValue{data.Id: productCache})
+			if err != nil {
+				s.log.Error(err, "Set multiple mem cache fail")
+				return
+			}
+			if ok {
+				s.log.Info("Set multiple mem cache success", "productId", data.Id)
+			}
+			s.computeGetDetailProduct(ctx, s.log, productCache)
+		}()
+	}
 }
 
 func (s *Service) computeGetDetailProduct(ctx context.Context, logger logr.Logger, cacheModel cache.Product) (*api.GetDetailProductResponse, error) {
@@ -287,11 +302,15 @@ func getProductOrInsertCache(s *Service, ctx context.Context, ids []int64) (resu
 
 	// Get from mem cache
 	mem, missMemIds = funcMemGetList(ids)
-	logger.Info("Get from mem cache", "mem", maps.Keys(mem))
+	if len(mem) > util.ZeroLength {
+		logger.Info("Get from mem cache", "mem", maps.Keys(mem))
+	}
 	if len(missMemIds) > util.ZeroLength {
 		// Get from redis
 		local, missLocalIds = funcLocalGetList(missMemIds)
-		logger.Info("Get from local cache", "local", maps.Keys(local))
+		if len(local) > util.ZeroLength {
+			logger.Info("Get from local cache", "local", maps.Keys(local))
+		}
 		if len(missLocalIds) > util.ZeroLength {
 			// Get from db
 			storeModel, err := funcDbGetList(ctx, missLocalIds)
@@ -350,11 +369,15 @@ func getProductTemplateOrInsertCache(s *Service, ctx context.Context, ids []int6
 
 	// Get from mem cache
 	mem, missMemIds = funcMemGetList(ids)
-	logger.Info("Get from mem cache", "mem", maps.Keys(mem))
+	if len(mem) > util.ZeroLength {
+		logger.Info("Get from mem cache", "mem", maps.Keys(mem))
+	}
 	if len(missMemIds) > util.ZeroLength {
 		// Get from redis
 		local, missLocalIds = funcLocalGetList(missMemIds)
-		logger.Info("Get from local cache", "local", maps.Keys(local))
+		if len(local) > util.ZeroLength {
+			logger.Info("Get from local cache", "local", maps.Keys(local))
+		}
 		if len(missLocalIds) > util.ZeroLength {
 			// Get from db
 			storeModel, err := funcDbGetList(ctx, missLocalIds)
@@ -413,11 +436,15 @@ func getUomOrInsertCache(s *Service, ctx context.Context, ids []int64) (result m
 
 	// Get from mem cache
 	mem, missMemIds = funcMemGetList(ids)
-	logger.Info("Get from mem cache", "mem", maps.Keys(mem))
+	if len(mem) > util.ZeroLength {
+		logger.Info("Get from mem cache", "mem", maps.Keys(mem))
+	}
 	if len(missMemIds) > util.ZeroLength {
 		// Get from redis
 		local, missLocalIds = funcLocalGetList(missMemIds)
-		logger.Info("Get from local cache", "local", maps.Keys(local))
+		if len(local) > util.ZeroLength {
+			logger.Info("Get from local cache", "local", maps.Keys(local))
+		}
 		if len(missLocalIds) > util.ZeroLength {
 			// Get from db
 			storeModel, err := funcDbGetList(ctx, missLocalIds)
@@ -476,11 +503,15 @@ func getCategoryOrInsertCache(s *Service, ctx context.Context, ids []int64) (res
 
 	// Get from mem cache
 	mem, missMemIds = funcMemGetList(ids)
-	logger.Info("Get from mem cache", "mem", maps.Keys(mem))
+	if len(mem) > util.ZeroLength {
+		logger.Info("Get from mem cache", "mem", maps.Keys(mem))
+	}
 	if len(missMemIds) > util.ZeroLength {
 		// Get from redis
 		local, missLocalIds = funcLocalGetList(missMemIds)
-		logger.Info("Get from local cache", "local", maps.Keys(local))
+		if len(local) > util.ZeroLength {
+			logger.Info("Get from local cache", "local", maps.Keys(local))
+		}
 		if len(missLocalIds) > util.ZeroLength {
 			// Get from db
 			storeModel, err := funcDbGetList(ctx, missLocalIds)
@@ -539,11 +570,15 @@ func getSellerOrInsertCache(s *Service, ctx context.Context, ids []int64) (resul
 
 	// Get from mem cache
 	mem, missMemIds = funcMemGetList(ids)
-	logger.Info("Get from mem cache", "mem", maps.Keys(mem))
+	if len(mem) > util.ZeroLength {
+		logger.Info("Get from mem cache", "mem", maps.Keys(mem))
+	}
 	if len(missMemIds) > util.ZeroLength {
 		// Get from redis
 		local, missLocalIds = funcLocalGetList(missMemIds)
-		logger.Info("Get from local cache", "local", maps.Keys(local))
+		if len(local) > util.ZeroLength {
+			logger.Info("Get from local cache", "local", maps.Keys(local))
+		}
 		if len(missLocalIds) > util.ZeroLength {
 			// Get from db
 			storeModel, err := funcDbGetList(ctx, missLocalIds)
@@ -602,11 +637,15 @@ func getUserOrInsertCache(s *Service, ctx context.Context, ids []int64) (result 
 
 	// Get from mem cache
 	mem, missMemIds = funcMemGetList(ids)
-	logger.Info("Get from mem cache", "mem", maps.Keys(mem))
+	if len(mem) > util.ZeroLength {
+		logger.Info("Get from mem cache", "mem", maps.Keys(mem))
+	}
 	if len(missMemIds) > util.ZeroLength {
 		// Get from redis
 		local, missLocalIds = funcLocalGetList(missMemIds)
-		logger.Info("Get from local cache", "local", maps.Keys(local))
+		if len(local) > util.ZeroLength {
+			logger.Info("Get from local cache", "local", maps.Keys(local))
+		}
 		if len(missLocalIds) > util.ZeroLength {
 			// Get from db
 			storeModel, err := funcDbGetList(ctx, missLocalIds)
@@ -647,7 +686,7 @@ func getUserOrInsertCache(s *Service, ctx context.Context, ids []int64) (result 
 
 func (s *Service) GetListProduct(ctx context.Context, req *api.GetListProductRequest) (res *api.GetListProductResponse, err error) {
 	logger := s.log.WithName("GetListProduct").WithValues("request", req)
-	isCacheRedisPage := req.Page < s.cfg.RedisConfig.NumberCachePage
+	isCacheRedisPage := req.Page < s.cfg.RedisConfig.NumberCachePage && s.cfg.EnableCache && s.cfg.EnableRedis
 	if isCacheRedisPage {
 		res = &api.GetListProductResponse{}
 		pageCache, ok := s.localCache.GetPageProduct(req.Page, req.PageSize, req.Key)
@@ -655,10 +694,10 @@ func (s *Service) GetListProduct(ctx context.Context, req *api.GetListProductReq
 			err := json.Unmarshal([]byte(pageCache), res)
 			if err != nil {
 				logger.Error(err, "Unmarshall pageCache fail")
-				return nil, err
+			} else {
+				logger.Info("Get page product from cache")
+				return res, nil
 			}
-			logger.Info("Get page product from cache")
-			return res, nil
 		}
 	}
 
@@ -684,27 +723,6 @@ func (s *Service) GetListProduct(ctx context.Context, req *api.GetListProductReq
 		},
 	}
 
-	if isCacheRedisPage {
-		go func(logger logr.Logger) {
-			data, err := json.Marshal(res)
-			if err != nil {
-				logger.Error(err, "Marshal res fail")
-				return
-			}
-			err = s.localCache.SetPageProduct(
-				req.Page, req.PageSize, req.Key,
-				string(data),
-				time.Duration(s.cfg.RedisConfig.ExpireCachePageInSecond)*time.Second,
-			)
-			if err != nil {
-				logger.Error(err, "Set page product fail")
-				return
-			}
-			logger.Info("Set page product success")
-		}(logger)
-
-	}
-
 	if len(rows) == util.ZeroLength {
 		logger.Info("Not found items")
 		return res, nil
@@ -720,8 +738,8 @@ func (s *Service) GetListProduct(ctx context.Context, req *api.GetListProductReq
 			Image:       row.Image,
 		}
 	})
-	logger.Info("Get list product success", "ids", slice.Map(rows, func(row store.GetProductsByKeywordRow) int64 { return row.ID }))
-	return &api.GetListProductResponse{
+
+	res = &api.GetListProductResponse{
 		Code:    0,
 		Message: "OK",
 		Data: &api.GetListProductResponse_Data{
@@ -730,5 +748,28 @@ func (s *Service) GetListProduct(ctx context.Context, req *api.GetListProductReq
 			PageSize:   int32(req.PageSize),
 			Items:      items,
 		},
-	}, nil
+	}
+
+	if isCacheRedisPage {
+		go func(res *api.GetListProductResponse) {
+			data, errCache := json.Marshal(res)
+			if errCache != nil {
+				logger.Error(errCache, "Marshal res fail")
+				return
+			}
+			errCache = s.localCache.SetPageProduct(
+				req.Page, req.PageSize, req.Key,
+				string(data),
+				time.Duration(s.cfg.RedisConfig.ExpireCachePageInSecond)*time.Second,
+			)
+			if errCache != nil {
+				logger.Error(errCache, "Set page product fail")
+				return
+			}
+			logger.Info("Set page product success", "data", string(data))
+		}(res)
+	}
+
+	logger.Info("Get list product success", "ids", slice.Map(rows, func(row store.GetProductsByKeywordRow) int64 { return row.ID }))
+	return res, nil
 }

@@ -17,6 +17,9 @@ type Config struct {
 	RedisConfig      RedisConfig         `json:"redis_config" mapstructure:"redis_config"`
 	KafkaConfig      KafkaConfig         `json:"kafka_config" mapstructure:"kafka_config"`
 	MemCacheConfig   MemConfig           `json:"mem_cache_config" mapstructure:"mem_cache_config"`
+	EnableMem        bool                `json:"enable_mem" mapstructure:"enable_mem"`
+	EnableRedis      bool                `json:"enable_redis" mapstructure:"enable_redis"`
+	EnableCache      bool                `json:"enable_cache" mapstructure:"enable_cache"`
 }
 
 type RedisConfig struct {
@@ -29,17 +32,20 @@ type RedisConfig struct {
 
 type KafkaConfig struct {
 	UpdateDbConsumer Consumer `json:"update_db_consumer" mapstructure:"update_db_consumer"`
+	Connections      []string `json:"connections" mapstructure:"connections"`
 }
 
 type MemConfig struct {
-	MaxTimeMiss    int `json:"max_time_miss" mapstructure:"max_time_miss"`
-	MaxNumberCache int `json:"max_number_cache" mapstructure:"max_number_cache"`
+	MaxTimeMiss                     int `json:"max_time_miss" mapstructure:"max_time_miss"`
+	MaxCacheSizeInMB                int `json:"max_cache_size_in_mb" mapstructure:"max_cache_size_in_mb"`
+	ExpiredTimeInSecond             int `json:"expired_time_in_second" mapstructure:"expired_time_in_second"`
+	TimeBetweenCleanExpiredInSecond int `json:"time_between_clean_expired_in_second" mapstructure:"time_between_clean_expired_in_second"`
+	Shards                          int `json:"shards" mapstructure:"shards"`
 }
 
 type Consumer struct {
-	Topic       string   `json:"topic" mapstructure:"topic"`
-	Connections []string `json:"connections" mapstructure:"connections"`
-	Group       string   `json:"group" mapstructure:"group"`
+	Topic string `json:"topic" mapstructure:"topic"`
+	Group string `json:"group" mapstructure:"group"`
 }
 
 // Load system env config
@@ -82,22 +88,22 @@ func loadDefaultConfig() *Config {
 		MigrationFolder:  "file://app_v2/product_service/database/migrations",
 		ProductServiceDB: database.PostgresSQLDefaultConfig(),
 		RedisConfig: RedisConfig{
-			Addr:                    "localhost:6379",
-			Password:                "redis@123",
 			ExpiredDefault:          180,
 			NumberCachePage:         5,
 			ExpireCachePageInSecond: 60 * 10,
 		},
 		KafkaConfig: KafkaConfig{
 			UpdateDbConsumer: Consumer{
-				Topic:       "update_cache",
-				Connections: []string{"localhost:9092", "localhost:9093"},
-				Group:       "product_consume_update_product_consumer",
+				Topic: "update_cache",
+				Group: "product_consume_update_product_consumer",
 			},
 		},
 		MemCacheConfig: MemConfig{
-			MaxTimeMiss:    3,
-			MaxNumberCache: 100,
+			MaxTimeMiss:                     3,
+			MaxCacheSizeInMB:                1024 * 3, // 3 GB
+			ExpiredTimeInSecond:             60 * 10,  // 10 minutes
+			TimeBetweenCleanExpiredInSecond: 60 * 5,   // 5 minutes
+			Shards:                          1024,
 		},
 	}
 }

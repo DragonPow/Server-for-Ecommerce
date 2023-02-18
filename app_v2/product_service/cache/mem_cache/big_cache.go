@@ -2,10 +2,12 @@ package mem_cache
 
 import (
 	"Server-for-Ecommerce/app_v2/product_service/cache"
+	"Server-for-Ecommerce/app_v2/product_service/config"
 	"context"
 	"encoding/json"
 	"github.com/allegro/bigcache/v3"
 	"sync"
+	"time"
 )
 
 type myBigCache struct {
@@ -14,17 +16,16 @@ type myBigCache struct {
 	missMu          sync.RWMutex
 	maxNumberMiss   int
 	cacheMissNumber sync.Map
-	maxNumberCache  int
 }
 
-func NewBigCache(maxNumberMiss, maxNumberCache int) (MemCache, error) {
+func NewBigCache(cfgCache config.MemConfig) (MemCache, error) {
 	config := bigcache.Config{
-		Shards:             1024,
-		LifeWindow:         0,
-		CleanWindow:        0,
-		MaxEntriesInWindow: 1000 * 10 * 60,
+		Shards:             cfgCache.Shards,
+		MaxEntriesInWindow: cfgCache.ExpiredTimeInSecond * 1000,
 		MaxEntrySize:       500,
-		HardMaxCacheSize:   8192,
+		HardMaxCacheSize:   cfgCache.MaxCacheSizeInMB,
+		LifeWindow:         time.Duration(cfgCache.ExpiredTimeInSecond) * time.Second,
+		CleanWindow:        time.Duration(cfgCache.TimeBetweenCleanExpiredInSecond) * time.Second,
 	}
 	bCache, err := bigcache.New(context.Background(), config)
 	if err != nil {
@@ -32,9 +33,8 @@ func NewBigCache(maxNumberMiss, maxNumberCache int) (MemCache, error) {
 	}
 	return &myBigCache{
 		BigCache:        bCache,
-		maxNumberMiss:   maxNumberMiss,
+		maxNumberMiss:   cfgCache.MaxTimeMiss,
 		cacheMissNumber: sync.Map{},
-		maxNumberCache:  maxNumberCache,
 		mu:              sync.RWMutex{},
 		missMu:          sync.RWMutex{},
 	}, nil

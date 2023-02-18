@@ -15,6 +15,7 @@ type RedisCache interface {
 	Close() error
 	GetPageProduct(page, pageSize int64, keyword string) (string, bool)
 	SetPageProduct(page, pageSize int64, keyword string, data string, expireTime time.Duration) error
+	DeletePage(page, pageSize int64, keyword string) error
 }
 
 type redisCache struct {
@@ -97,4 +98,9 @@ func (r *redisCache) GetPageProduct(page, pageSize int64, keyword string) (strin
 func (r *redisCache) SetPageProduct(page, pageSize int64, keyword string, data string, expireTime time.Duration) error {
 	key := parseKey(cache.TypePageProduct, fmt.Sprintf("%d_%d_%s", page, pageSize, keyword))
 	return r.base.Set(context.Background(), key, data, redis.WithExpireTime(expireTime))
+}
+
+func (r *redisCache) DeletePage(page, pageSize int64, keyword string) error {
+	key := parseKey(cache.TypePageProduct, fmt.Sprintf("%d_%d_%s", page, pageSize, keyword))
+	return r.base.Delete(context.Background(), []string{key})
 }

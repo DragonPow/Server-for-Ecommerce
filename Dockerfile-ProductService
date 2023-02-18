@@ -6,6 +6,7 @@ WORKDIR /go/src/Server-for-Ecommerce
 COPY ["./go.mod", "./go.sum", "./"]
 COPY ./app_v2/product_service ./app_v2/product_service
 COPY ./app_v2/db_manager_service ./app_v2/db_manager_service
+COPY ./app_v2/redis_manager_service ./app_v2/redis_manager_service
 COPY ./library ./library
 COPY ./third_party ./third_party
 # Config GO Env
@@ -14,10 +15,9 @@ ENV GOARCH=amd64
 ENV GO111MODULE=on
 ENV CGO_ENABLED=0
 # Run build step
-RUN apk update -qq && apk add git
 RUN go mod tidy
 RUN go mod vendor
-RUN go build -o app ./app_v2/product_service/cmd/main.go
+RUN go build -ldflags "-s -w" -o app ./app_v2/product_service/cmd/main.go
 
 FROM gcr.io/distroless/base-debian11 as publisher
 WORKDIR /
