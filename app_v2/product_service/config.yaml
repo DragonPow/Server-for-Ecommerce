@@ -35,3 +35,4 @@ REDIS_CONFIG:
 ENABLE_CACHE: true # if true, check ENABLE_MEM and ENABLE_REDIS, else ignore all
 ENABLE_MEM: true
 ENABLE_REDIS: false
+CONN_MAX_TIME_IDLE_IN_SECOND: 0

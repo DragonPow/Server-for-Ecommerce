@@ -11,15 +11,16 @@ import (
 )
 
 type Config struct {
-	Server           config.ServerConfig `json:"server" mapstructure:"server"`
-	MigrationFolder  string              `json:"migration_folder" mapstructure:"migration_folder"`
-	ProductServiceDB database.DBConfig   `json:"product_service_db" mapstructure:"product_service_db"`
-	RedisConfig      RedisConfig         `json:"redis_config" mapstructure:"redis_config"`
-	KafkaConfig      KafkaConfig         `json:"kafka_config" mapstructure:"kafka_config"`
-	MemCacheConfig   MemConfig           `json:"mem_cache_config" mapstructure:"mem_cache_config"`
-	EnableMem        bool                `json:"enable_mem" mapstructure:"enable_mem"`
-	EnableRedis      bool                `json:"enable_redis" mapstructure:"enable_redis"`
-	EnableCache      bool                `json:"enable_cache" mapstructure:"enable_cache"`
+	Server                  config.ServerConfig `json:"server" mapstructure:"server"`
+	MigrationFolder         string              `json:"migration_folder" mapstructure:"migration_folder"`
+	ProductServiceDB        database.DBConfig   `json:"product_service_db" mapstructure:"product_service_db"`
+	ConnMaxTimeIdleInSecond int                 `json:"conn_max_time_idle_in_second" mapstructure:"conn_max_time_idle_in_second"`
+	RedisConfig             RedisConfig         `json:"redis_config" mapstructure:"redis_config"`
+	KafkaConfig             KafkaConfig         `json:"kafka_config" mapstructure:"kafka_config"`
+	MemCacheConfig          MemConfig           `json:"mem_cache_config" mapstructure:"mem_cache_config"`
+	EnableMem               bool                `json:"enable_mem" mapstructure:"enable_mem"`
+	EnableRedis             bool                `json:"enable_redis" mapstructure:"enable_redis"`
+	EnableCache             bool                `json:"enable_cache" mapstructure:"enable_cache"`
 }
 
 type RedisConfig struct {

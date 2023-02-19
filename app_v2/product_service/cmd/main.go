@@ -13,6 +13,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/urfave/cli/v2"
 	"os"
+	"time"
 )
 
 var (
@@ -87,7 +88,7 @@ func serverAction(context *cli.Context) error {
 }
 
 func newService(cfg *config.Config) (*service.Service, error) {
-	db, err := newDB(cfg.ProductServiceDB.String())
+	db, err := newDB(cfg.ProductServiceDB.String(), time.Duration(cfg.ConnMaxTimeIdleInSecond)*time.Second)
 	if err != nil {
 		logger.Error(err, "Error connect database")
 		return nil, err
@@ -125,9 +126,9 @@ func newService(cfg *config.Config) (*service.Service, error) {
 	return service.NewService(cfg, logger, store, redis, memCache), nil
 }
 
-func newDB(dsn string) (*sqlx.DB, error) {
+func newDB(dsn string, connMaxIdleTime time.Duration) (*sqlx.DB, error) {
 	db, err := sqlx.Open("postgres", dsn)
-	db.SetConnMaxIdleTime(0)
+	db.SetConnMaxIdleTime(connMaxIdleTime)
 	if err != nil {
 		return nil, err
 	}
