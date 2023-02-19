@@ -23,21 +23,31 @@ func (s *Service) Consume() error {
 	errChan := make(chan error)
 
 	// Wait ring signal
-	go func() {
-		for {
-			if s.redis.Ring.Length() == util.ZeroLength {
-				s.log.Info("Ring empty, wait write")
-				<-s.redis.Ring.SignalWrite
-				s.log.Info("Write success, continue")
+	if s.cfg.EnableRing {
+		go func() {
+			for {
+				if s.redis.Ring.Length() == util.ZeroLength {
+					//s.log.Info("Ring empty, wait write")
+					<-s.redis.Ring.SignalWrite
+					//s.log.Info("Write success, continue")
+				}
+				timeout := time.After(time.Duration(s.redis.TimeoutRingWriterInMillisecond) * time.Millisecond)
+				err := s.WaitRing(timeout)
+				if err != nil {
+					//s.log.Error(err, "WaitRing fail")
+					continue
+				}
+				//s.log.Info("Wait ring success")
 			}
-			timeout := time.After(time.Duration(s.redis.TimeoutRingWriterInMillisecond) * time.Millisecond)
-			err := s.WaitRing(timeout)
-			if err != nil {
-				s.log.Error(err, "WaitRing fail")
-			}
-			s.log.Info("Wait ring success")
-		}
-	}()
+		}()
+	}
+
+	var funcConsumeUpdate func(ctx context.Context, message kafka.Message) error
+	if s.cfg.EnableRing {
+		funcConsumeUpdate = s.AddUpdateMessageToRing
+	} else {
+		funcConsumeUpdate = s.computeMessagesUpdateV3
+	}
 
 	// Consumer update database
 	updateConsumer := kafkaConfig.UpdateDbConsumer
@@ -53,7 +63,7 @@ func (s *Service) Consume() error {
 			MaxWait:                1 * time.Second,
 			PartitionWatchInterval: 1 * time.Second,
 		})
-		err := s.ProcessConsume(r, s.AddUpdateMessageToRing)
+		err := s.ProcessConsume(r, funcConsumeUpdate)
 		if err != nil {
 			errChan <- err
 		}
@@ -85,7 +95,7 @@ func (s *Service) ProcessConsume(r *kafka.Reader, process func(ctx context.Conte
 		m, err := r.ReadMessage(ctx)
 		if err != nil {
 			if err == io.EOF {
-				s.log.Info("Message EOF")
+				//s.log.Info("Message EOF")
 				continue
 			}
 			s.log.Error(err, "Read message fail")
@@ -236,6 +246,17 @@ func (s *Service) computeMessagesUpdateV2(buf []kafka.Message) error {
 	}
 
 	return s.UpdateRedisV2(context.Background(), maps.Keys(mapBuf))
+}
+
+func (s *Service) computeMessagesUpdateV3(ctx context.Context, message kafka.Message) error {
+	// Marshal from message
+	var payload producerDb.UpdateDatabaseEventValue
+	err := json.Unmarshal(message.Value, &payload)
+	if err != nil {
+		return err
+	}
+	// Update
+	return s.UpdateRedisV2(context.Background(), []int64{payload.Id})
 }
 
 //func (s *Service) UpdateRedis(ctx context.Context, payload producerDb.UpdateDatabaseEventValue) error {

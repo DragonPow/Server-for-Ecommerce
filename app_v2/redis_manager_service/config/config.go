@@ -16,6 +16,7 @@ type Config struct {
 	ProductServiceDB database.DBConfig   `json:"product_service_db" mapstructure:"product_service_db"`
 	RedisConfig      RedisConfig         `json:"redis_config" mapstructure:"redis_config"`
 	KafkaConfig      KafkaConfig         `json:"kafka_config" mapstructure:"kafka_config"`
+	EnableRing       bool                `json:"enable_ring" mapstructure:"enable_ring"`
 }
 
 type RedisConfig struct {
