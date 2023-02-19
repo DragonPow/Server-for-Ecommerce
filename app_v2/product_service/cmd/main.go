@@ -127,6 +127,7 @@ func newService(cfg *config.Config) (*service.Service, error) {
 
 func newDB(dsn string) (*sqlx.DB, error) {
 	db, err := sqlx.Open("postgres", dsn)
+	db.SetConnMaxIdleTime(0)
 	if err != nil {
 		return nil, err
 	}
