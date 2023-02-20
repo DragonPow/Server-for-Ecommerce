@@ -21,6 +21,7 @@ type Config struct {
 	EnableMem               bool                `json:"enable_mem" mapstructure:"enable_mem"`
 	EnableRedis             bool                `json:"enable_redis" mapstructure:"enable_redis"`
 	EnableCache             bool                `json:"enable_cache" mapstructure:"enable_cache"`
+	EnableBlockRedisSet     bool                `json:"enable_block_redis_set" mapstructure:"enable_block_redis_set"`
 }
 
 type RedisConfig struct {

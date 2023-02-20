@@ -57,34 +57,36 @@ func (s *Service) GetDetailProduct(ctx context.Context, req *api.GetDetailProduc
 			return s.computeGetDetailProduct(ctx, logger, localCacheProduct)
 		}
 
-		type funcCallDb struct {
-			wg  *sync.WaitGroup
-			res *api.GetDetailProductResponse
-			err error
-		}
-
-		keyLoad := fmt.Sprintf("product:%d", req.Id)
-		s.lockCache.mu.Lock()
-		v, ok := s.lockCache.list.Load(keyLoad)
-		if ok {
-			rs := v.(*funcCallDb)
-			s.lockCache.mu.Unlock()
-			logger.Info("Wait lockCache")
-			rs.wg.Wait()
-			return rs.res, rs.err
-		} else {
-			rs := &funcCallDb{
-				wg:  &sync.WaitGroup{},
-				res: nil,
-				err: nil,
+		if s.cfg.EnableBlockRedisSet {
+			type funcCallDb struct {
+				wg  *sync.WaitGroup
+				res *api.GetDetailProductResponse
+				err error
 			}
-			rs.wg.Add(1)
-			s.lockCache.list.Store(keyLoad, rs)
-			s.lockCache.mu.Unlock()
-			// Get from database
-			rs.res, rs.err = s.FetchFromDb(ctx, req, logger)
-			rs.wg.Done()
-			return rs.res, rs.err
+
+			keyLoad := fmt.Sprintf("product:%d", req.Id)
+			s.lockCache.mu.Lock()
+			v, ok := s.lockCache.list.Load(keyLoad)
+			if ok {
+				rs := v.(*funcCallDb)
+				s.lockCache.mu.Unlock()
+				logger.Info("Wait lockCache")
+				rs.wg.Wait()
+				return rs.res, rs.err
+			} else {
+				rs := &funcCallDb{
+					wg:  &sync.WaitGroup{},
+					res: nil,
+					err: nil,
+				}
+				rs.wg.Add(1)
+				s.lockCache.list.Store(keyLoad, rs)
+				s.lockCache.mu.Unlock()
+				// Get from database
+				rs.res, rs.err = s.FetchFromDb(ctx, req, logger)
+				rs.wg.Done()
+				return rs.res, rs.err
+			}
 		}
 	}
 
